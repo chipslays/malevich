@@ -2,7 +2,7 @@
 
 **Stop writing spaghetti `class="{{ ... ? ... : ... }}"` strings in your Blade components.**
 
-Malevich lets you describe every visual option of a component — variant, color, size, or anything else you invent — as a simple, declarative map: *"this option → these classes."* Then, right in your markup, you just say which option is active. Malevich does the boring part: picks the right classes, merges them, removes duplicates, and hands you back a clean class string.
+Malevich lets you describe every visual option of a component - variant, color, size, or anything else you invent - as a simple, declarative map: *"this option → these classes."* Then, right in your markup, you just say which option is active. Malevich does the boring part: picks the right classes, merges them, removes duplicates, and hands you back a clean class string.
 
 That's it. No new templating language, no build step, no runtime JS. Just Blade, PHP arrays, and the `$attributes` bag you already know.
 
@@ -18,7 +18,7 @@ class="inline-flex items-center font-medium
     ..."
 ```
 
-It works — until you need a fourth variant, a second color, or a size prop. Then it's a wall of ternaries nobody wants to touch, buried inside markup that's supposed to be about structure, not logic.
+It works - until you need a fourth variant, a second color, or a size prop. Then it's a wall of ternaries nobody wants to touch, buried inside markup that's supposed to be about structure, not logic.
 
 ### The solution
 
@@ -45,14 +45,14 @@ No conditionals in the markup. No string concatenation. Just data in, classes ou
 ### Why you'll like it
 
 - **Reads top to bottom.** All the "what classes does this option produce" logic lives in one place, separate from the markup that renders it.
-- **Works with anything, not just Tailwind.** Under the hood it's plain `Arr::toCssClasses`, so conditional arrays, BEM classes, whatever — all fine.
+- **Works with anything, not just Tailwind.** Under the hood it's plain `Arr::toCssClasses`, so conditional arrays, BEM classes, whatever - all fine.
 - **Multi-element components? No problem.** Named "targets" let a single component style its wrapper, icon, and label independently, each with its own variant/color/size, without prop-name collisions.
 - **Reuse combos with presets.** Register a set of directive values once (`@preset`), apply it anywhere with `->preset('name')`.
 - **Zero new concepts to learn.** It's just methods on the `ComponentAttributeBag` you already call `$attributes->merge()` on every day.
-- **Add your own directives.** Not just `variant`/`color`/`size` — one config line and `@radius`, `@shadow`, whatever you need, gets its own directive and fluent method for free.
+- **Add your own directives.** Not just `variant`/`color`/`size` - one config line and `@radius`, `@shadow`, whatever you need, gets its own directive and fluent method for free.
 - **Framework-native.** No JS, no compiler, no config beyond a single optional file. Install it and it's already working.
 
-If you're building a UI kit or design system in Blade — buttons, badges, alerts, cards — and you're tired of variant logic leaking into your templates, this is exactly the tool you were about to write yourself.
+If you're building a UI kit or design system in Blade - buttons, badges, alerts, cards - and you're tired of variant logic leaking into your templates, this is exactly the tool you were about to write yourself.
 
 ---
 
