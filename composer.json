@@ -1,0 +1,48 @@
+{
+    "name": "malevich/ui",
+    "description": "A lightweight variant API for building consistent Blade component libraries",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "chipslays",
+            "homepage": "https://github.com/chipslays",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^11.0|^12.0|^13.0",
+        "illuminate/view": "^11.0|^12.0|^13.0",
+        "illuminate/contracts": "^11.0|^12.0|^13.0"
+    },
+    "require-dev": {
+        "pestphp/pest": "^5.1",
+        "laravel/pint": "^1.30",
+        "orchestra/testbench": "^11.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Malevich\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Malevich\\MalevichServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
