@@ -331,6 +331,7 @@ If you find yourself repeating the same directive values across components, regi
 </div>
 ```
 
+> [!IMPORTANT]
 > **Order matters:** always call `->preset('name')` **before** any explicit directive calls (`->color(...)`, `->use(...)`, etc.), so the explicit values you pass afterwards can override the preset defaults.
 
 ---
@@ -429,7 +430,8 @@ You can also call just the directives you need - for example, if you only care a
 
 A small helper component for rendering an arbitrary tag (`div`, `button`, `a`, ...) while still resolving Malevich classes through `:class`.
 
-> **Important:** because `<x-ui::primitive>` renders a dynamic tag, you must pass resolved classes explicitly through `:class` - using `{{ $attributes->... }}` directly on the tag will not work here.
+> [!IMPORTANT]
+> Because `<x-ui::primitive>` renders a dynamic tag, you must pass resolved classes explicitly through `:class` - using `{{ $attributes->... }}` directly on the tag will not work here.
 
 ```php
 @props([
