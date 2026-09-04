@@ -53,7 +53,7 @@ No conditionals in the markup. No string concatenation. Just data in, classes ou
 - **Multi-element components? No problem.** Named "targets" let a single component style its wrapper, icon, and label independently, each with its own variant/color/size, without prop-name collisions.
 - **Reuse combos with presets.** Register a set of directive values once (`@preset`), apply it anywhere with `->preset('name')`.
 - **Zero new concepts to learn.** It's just methods on the `ComponentAttributeBag` you already call `$attributes->merge()` on every day.
-- **Add your own directives.** Not just `variant`/`color`/`size` - one config line and `@radius`, `@shadow`, whatever you need, gets its own directive and fluent method for free.
+- **Add your own directives.** Not just `@variant`/`@color`/`@size` - one config line and `@radius`, `@shadow`, whatever you need, gets its own directive and fluent method for free.
 - **Framework-native.** No JS, no compiler, no config beyond a single optional file. Install it and it's already working.
 
 If you're building a UI kit or design system in Blade - buttons, badges, alerts, cards - and you're tired of variant logic leaking into your templates, this is exactly the tool you were about to write yourself.
