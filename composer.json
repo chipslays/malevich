@@ -3,6 +3,11 @@
     "description": "A lightweight variant API for building consistent Blade component libraries",
     "type": "library",
     "license": "MIT",
+    "homepage": "https://github.com/chipslays/malevich",
+    "support": {
+        "issues": "https://github.com/chipslays/malevich/issues",
+        "source": "https://github.com/chipslays/malevich"
+    },
     "authors": [
         {
             "name": "chipslays",
@@ -30,6 +35,9 @@
         "psr-4": {
             "Tests\\": "tests/"
         }
+    },
+    "scripts": {
+        "test": "php vendor/bin/pest"
     },
     "config": {
         "allow-plugins": {
