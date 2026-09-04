@@ -11,8 +11,8 @@ use Malevich\Support\DirectiveRegistry;
 
 /**
  * Registers the fluent Selector API onto ComponentAttributeBag (`for`,
- * `use`, `directive`, `preset`), plus the two generic Blade directives —
- * `@directive` and `@preset` — used to declare directive configuration and
+ * `use`, `directive`, `preset`), plus the two generic Blade directives -
+ * `@directive` and `@preset` - used to declare directive configuration and
  * reusable presets from within a component's own Blade template.
  */
 trait RegistersComponentMacros

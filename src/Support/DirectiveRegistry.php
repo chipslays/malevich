@@ -14,7 +14,7 @@ use WeakMap;
  *
  * A WeakMap keys the store on the ComponentAttributeBag instance itself, so
  * registered configuration is garbage collected automatically once the
- * owning component goes out of scope — the package never needs to clean up
+ * owning component goes out of scope - the package never needs to clean up
  * after a render.
  */
 final class DirectiveRegistry

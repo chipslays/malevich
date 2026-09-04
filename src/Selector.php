@@ -12,8 +12,8 @@ use Malevich\Support\DirectiveRegistry;
 use Stringable;
 
 /**
- * Fluent, immutable resolver for a component "target" — a named, separately
- * styled part of a component (e.g. a slider's "track" and "handle") — that
+ * Fluent, immutable resolver for a component "target" - a named, separately
+ * styled part of a component (e.g. a slider's "track" and "handle") - that
  * turns the directives declared against a component's attribute bag
  * (@variant, @color, @size, ...) into a final class string.
  *
@@ -76,13 +76,13 @@ final class Selector implements Htmlable, Stringable
      * Set one or more directive choices at once, or switch target and set
      * choices in a single call.
      *
-     * Array form — each value may either be a plain choice, or an array
+     * Array form - each value may either be a plain choice, or an array
      * keyed by target from which the choice for the *current* target is
      * picked:
      *
      *     ->use(['size' => ['track' => 'lg', 'handle' => 'sm']])
      *
-     * String form — shorthand for `for($target)->use($choices)`:
+     * String form - shorthand for `for($target)->use($choices)`:
      *
      *     ->use('track', ['size' => 'lg'])
      *
@@ -213,7 +213,7 @@ final class Selector implements Htmlable, Stringable
     /**
      * The attribute bag whose non-class attributes should be rendered
      * alongside the resolved classes: the slot's bag when one was set via
-     * slot(), otherwise the component's own bag — but only while resolving
+     * slot(), otherwise the component's own bag - but only while resolving
      * the default target, since non-default targets represent a sub-part
      * of the component rather than its root element.
      */

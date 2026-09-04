@@ -8,9 +8,9 @@ use Illuminate\Support\Arr;
 use Stringable;
 
 /**
- * Accumulates one or more class fragments — each of which may be a plain
+ * Accumulates one or more class fragments - each of which may be a plain
  * string, an array, or a conditional array as accepted by Laravel's
- * Arr::toCssClasses() — and compiles them into a single, de-duplicated
+ * Arr::toCssClasses() - and compiles them into a single, de-duplicated
  * class string.
  *
  * Instances are immutable: add() returns a new instance rather than

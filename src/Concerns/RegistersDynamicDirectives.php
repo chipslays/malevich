@@ -10,8 +10,8 @@ use Malevich\Selector;
 use Malevich\Support\DirectiveRegistry;
 
 /**
- * Registers a Blade directive — and, unless a macro of the same name
- * already exists, a matching ComponentAttributeBag macro — for every
+ * Registers a Blade directive - and, unless a macro of the same name
+ * already exists, a matching ComponentAttributeBag macro - for every
  * directive name configured under `malevich.directives` (by default
  * `variant`, `color` and `size`).
  *
