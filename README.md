@@ -32,7 +32,11 @@ Declare the class maps once, near the top of the component. Apply them with one 
 ])
 
 @color([
-    'primary' => 'bg-blue-100 text-blue-700',
+    'primary' => [
+        'text-blue-500',
+        'bg-blue-100' => $variant === 'solid',
+        'border-blue-200' => $variant === 'outline',
+    ],
 ])
 
 <span {{ $attributes->variant($variant)->color($color) }}>
