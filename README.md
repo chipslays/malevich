@@ -2,7 +2,7 @@
 
 **Stop writing spaghetti `class="{{ ... ? ... : ... }}"` strings in your Blade components.**
 
-Malevich lets you describe every visual option of a component - variant, color, size, or anything else you invent - as a simple, declarative map: *"this option → these classes."* Then, right in your markup, you just say which option is active. Malevich does the boring part: picks the right classes, merges them, removes duplicates, and hands you back a clean class string.
+Malevich lets you describe every visual option of a component - variant, color, size, or anything else you invent - as a simple, declarative map: *"this option -> these classes."* Then, right in your markup, you just say which option is active. Malevich does the boring part: picks the right classes, merges them, removes duplicates, and hands you back a clean class string.
 
 That's it. No new templating language, no build step, no runtime JS. Just Blade, PHP arrays, and the `$attributes` bag you already know.
 
