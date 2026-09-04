@@ -6,7 +6,7 @@ Malevich lets you describe every visual option of a component - variant, color, 
 
 That's it. No new templating language, no build step, no runtime JS. Just Blade, PHP arrays, and the `$attributes` bag you already know.
 
-### The problem
+### The problem 🫩
 
 Every reusable Blade component ends up looking like this sooner or later:
 
@@ -20,7 +20,7 @@ class="inline-flex items-center font-medium
 
 It works - until you need a fourth variant, a second color, or a size prop. Then it's a wall of ternaries nobody wants to touch, buried inside markup that's supposed to be about structure, not logic.
 
-### The solution
+### The solution 🙂👍
 
 Declare the class maps once, near the top of the component. Apply them with one fluent chain:
 
@@ -42,7 +42,7 @@ Declare the class maps once, near the top of the component. Apply them with one 
 
 No conditionals in the markup. No string concatenation. Just data in, classes out.
 
-### Why you'll like it
+### Why you'll like it 🤔
 
 - **Reads top to bottom.** All the "what classes does this option produce" logic lives in one place, separate from the markup that renders it.
 - **Works with anything, not just Tailwind.** Under the hood it's plain `Arr::toCssClasses`, so conditional arrays, BEM classes, whatever - all fine.
