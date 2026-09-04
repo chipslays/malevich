@@ -117,9 +117,9 @@ Here's the smallest complete example - a `<x-badge>` component with a `variant`,
 Usage:
 
 ```blade
-<x-badge variant="outline" color="primary" size="md">
+<x-ui.badge variant="outline" color="primary" size="md">
     New
-</x-badge>
+</x-ui.badge>
 ```
 
 Renders:
@@ -370,7 +370,7 @@ If a component element should also inherit `class` (and other attributes) passed
 Usage:
 
 ```blade
-<x-foo :colors="['heading' => 'primary', 'footer' => 'secondary']">
+<x-ui.foo :colors="['heading' => 'primary', 'footer' => 'secondary']">
     <x-slot name="heading" class="text-2xl">
         Heading
     </x-slot>
@@ -380,7 +380,7 @@ Usage:
     <x-slot name="footer" class="text-xs">
         Footer
     </x-slot>
-</x-foo>
+</x-ui.foo>
 ```
 
 The `class="text-2xl"` passed to the `heading` slot is merged together with the `text-blue-600 font-bold` classes registered for the `heading` target - without `->slot()`, slot attributes are never picked up automatically, so nothing "leaks" unexpectedly.
