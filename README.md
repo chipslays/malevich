@@ -39,7 +39,7 @@ Declare the class maps once, near the top of the component. Apply them with one 
     ],
 ])
 
-<span {{ $attributes->variant($variant)->color($color) }}>
+<span {{ $attributes->variant('solid')->color('primary') }}>
     {{ $slot }}
 </span>
 ```
