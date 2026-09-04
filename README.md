@@ -60,6 +60,22 @@ If you're building a UI kit or design system in Blade - buttons, badges, alerts,
 
 ---
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Basic usage](#basic-usage)
+- [Adding your own directives](#adding-your-own-directives)
+- [Named targets – styling multiple elements in one component](#named-targets--styling-multiple-elements-in-one-component)
+- [Presets – reuse common combinations](#presets--reuse-common-combinations)
+- [Slots – merging classes from named slots](#slots--merging-classes-from-named-slots)
+- [Lifehacks](#lifehacks)
+- [Bundled components](#bundled-components)
+- [Configuration reference](#configuration-reference)
+- [API summary](#api-summary)
+- [License](#license)
+
+---
+
 ## Installation
 
 Install the package via Composer:
