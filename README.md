@@ -6,7 +6,7 @@ Malevich lets you describe every visual option of a component - variant, color, 
 
 That's it. No new templating language, no build step, no runtime JS. Just Blade, PHP arrays, and the `$attributes` bag you already know.
 
-### The problem 🫩
+### The problem 🫩👎
 
 Every reusable Blade component ends up looking like this sooner or later:
 
