@@ -11,13 +11,15 @@ That's it. No new templating language, no build step, no runtime JS. Just Blade,
 Every reusable Blade component ends up looking like this sooner or later:
 
 ```php
-@class([
+<div @class([
     'inline-flex items-center font-medium',
     'hover:brightness-95' => $variant === 'solid',
     'border-2 border-dashed bg-transparent' => $variant === 'outline',
     'bg-blue-100' => $color === 'primary' && $variant === 'solid',
     ...
-])
+])>
+    ...
+</div>
 ```
 
 It works - until you need a fourth variant, a second color, or a size prop. Then it's a wall of ternaries nobody wants to touch, buried inside markup that's supposed to be about structure, not logic.
