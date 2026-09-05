@@ -661,7 +661,10 @@ the map itself:
 @color(['active' => expensive_lookup($request) ? 'ring-2' : ''])
 
 // ✅ computed once, directive stays a plain lookup
+@php
 $ring = expensive_lookup($request) ? 'ring-2' : '';
+@endphp
+
 @color(['active' => $ring])
 ```
 
