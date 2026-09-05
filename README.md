@@ -75,7 +75,7 @@ If you're building a UI kit or design system in Blade - buttons, badges, alerts,
 - [Named targets - styling multiple elements in one component](#named-targets---styling-multiple-elements-in-one-component)
 - [Presets - reuse common combinations](#presets---reuse-common-combinations)
 - [Slots - merging classes from named slots](#slots---merging-classes-from-named-slots)
-- [Lifehacks](#lifehacks)
+- [Best practices & lifehacks](#best-practices--lifehacks)
 - [Bundled components](#bundled-components)
 - [Configuration reference](#configuration-reference)
 - [API summary](#api-summary)
@@ -415,39 +415,286 @@ The `class="text-2xl"` passed to the `heading` slot is merged together with the 
 
 ---
 
-## Lifehacks
+## Best practices & lifehacks
 
-The default target is called `default` (configurable via `malevich.default_target`). This makes a few shortcuts possible.
+A set of small, working patterns that make Malevich code shorter, more
+readable, and easier to maintain — plus a few gotchas that aren't obvious
+from reading the API alone.
 
-**Wildcard-only directives** don't need any option value passed at all:
+### 1. Put everything shared behind `'*'`, don't repeat it per option
 
 ```php
-@variant(['*' => 'border-2 border-dashed rounded-2xl font-medium'])
+// 🚫 base classes duplicated across every variant
+@variant([
+    'solid'   => 'inline-flex items-center font-medium hover:brightness-95',
+    'outline' => 'inline-flex items-center font-medium border-2 border-dashed',
+])
+
+// ✅ shared once, each variant only describes the delta
+@variant([
+    '*'       => 'inline-flex items-center font-medium',
+    'solid'   => 'hover:brightness-95',
+    'outline' => 'border-2 border-dashed bg-transparent',
+])
+```
+
+`'*'` always applies, regardless of the chosen value — use it for the
+component's "skeleton", not as another variant key.
+
+### 2. Conditional classes as arrays, not ternaries
+
+Every directive goes through `Arr::toCssClasses`, so skip the `? :` string
+building entirely and describe the condition next to the class itself:
+
+```php
+// 🚫
+@color([
+    'primary' => 'text-blue-500 ' . ($variant === 'solid' ? 'bg-blue-100' : ''),
+])
+
+// ✅
+@color([
+    'primary' => [
+        'text-blue-500',
+        'bg-blue-100'     => $variant === 'solid',
+        'border-blue-200' => $variant === 'outline',
+    ],
+])
+```
+
+The logic stays declarative and never leaves the section that defines the
+color itself.
+
+### 3. Reach for `use()` once the prop count grows
+
+```php
+// 🚫 verbose
+$attributes->variant($variant)->color($color)->size($size)->radius($radius)
+
+// ✅ scales to any number of directives
+$attributes->use(compact('variant', 'color', 'size', 'radius'))
+```
+
+Also works with `for()`: `$attributes->for('wrapper')->use(compact('color', 'size'))`.
+
+### 4. Only introduce a target when an element genuinely needs its own axis
+
+Targets are worth it when a sub-element truly has its own set of
+variants/colors/sizes (an icon, a label, a wrapper). If every part of the
+component shares the same `variant`, don't split it into a target — just
+apply it directly on each node:
+
+```php
+<div {{ $attributes->for('wrapper')->color($colors['wrapper']) }}>
+    <svg {{ $attributes->for('icon')->color($colors['icon']) }} />
+</div>
+```
+
+Extra targets add indirection without buying you anything.
+
+### 5. Presets: base first, overrides after — and you can stack them
+
+```php
+@preset('outline-card', [
+    'variant' => 'outline',
+    'color'   => 'gray',
+    'size'    => 'md',
+])
+
+{{-- preset() BEFORE explicit calls, or the override won't stick --}}
+<div {{ $attributes->preset('outline-card')->color($color ?? null) }}>
+```
+
+Order matters: explicit values called after `preset()` win over it, and
+before it get overwritten by it. This also means presets can be **layered**
+— apply a base design-system preset, then a theme preset on top, and
+whichever directive the second one touches wins:
+
+```php
+<div {{ $attributes->preset('card-base')->preset('theme-danger') }}>
+```
+
+Useful for a "base + theme" split instead of duplicating full class sets per
+theme.
+
+### 6. Use `slot()` only where outer classes should actually land
+
+```php
+<h1 {{ $attributes->for('heading')->slot($heading)->color($colors) }}>
+    {{ $heading }}
+</h1>
+```
+
+Without `->slot()`, a named slot's `class`/attributes never leak in
+automatically — that's intentional, not a missing step. Add `slot()`
+selectively, only on the elements that should be customizable from the
+outside via `<x-slot class="...">`.
+
+### 7. Wildcard-only directives can be called with no argument at all
+
+If a directive has nothing to choose between (one fixed set of classes),
+don't invent a prop for it — just call it bare:
+
+```php
 @color(['*' => 'border-black'])
-@size(['*' => 'p-4'])
 
-<div {{ $attributes->variant()->color()->size() }}>
-    ...
-</div>
-{{-- <div class="border-2 border-dashed rounded-2xl font-medium border-black p-4">...</div> --}}
+<div {{ $attributes->color() }}>
 ```
 
-This is exactly equivalent to:
+Handy for purely decorative sub-elements inside a compound component that
+don't need their own prop.
+
+### 8. Add a new directive instead of encoding two axes into one
+
+If a single directive's options start encoding two independent concerns
+(`'solid-danger'`, `'outline-danger'`, `'solid-brand'`...), that's the
+signal to add a directive rather than multiply combinations:
 
 ```php
-<div {{ $attributes->for('default')->variant('*')->color('*')->size('*') }}>
-    ...
-</div>
+// config/malevich.php
+'directives' => ['variant', 'color', 'size', 'tone'],
 ```
-
-You can also call just the directives you need - for example, if you only care about size:
 
 ```php
-<div {{ $attributes->size() }}>
-    ...
-</div>
-{{-- <div class="p-4">...</div> --}}
+@tone(['danger' => 'ring-red-500', 'brand' => 'ring-blue-500'])
+
+$attributes->variant('outline')->tone('danger')
 ```
+
+Each directive is one orthogonal styling axis; Malevich merges and
+de-duplicates the combination for you.
+
+### 9. Reuse a partially-built `Selector` as a base
+
+`Selector` is immutable — every call returns a new instance, so it's safe to
+keep a "base" chain and branch it for different parts of the same component:
+
+```php
+$base = $attributes->color($color)->size($size); // shared base
+
+<div {{ $base->for('wrapper')->variant('dashed') }}>
+    <span {{ $base->for('icon') }}></span>
+</div>
+```
+
+`$base` never mutates between calls — `for('wrapper')` and `for('icon')` can
+both branch off it safely without affecting one another.
+
+### 10. Leave `default_target` alone unless you actually collide with it
+
+If nothing forces your hand, keep `default_target = 'default'`. That's what
+lets the component's root element automatically pick up a `class` passed
+from the outside (`<x-badge class="ml-2">`), while named targets
+intentionally don't (they aren't the component's root). Only change
+`default_target` if you have a real target literally named `default` that
+conflicts in meaning.
+
+### 11. `directive()` is your escape hatch for dynamic directive names
+
+If a directive's name comes from a variable (e.g. driven by theme config),
+you don't need it to be declared in `malevich.directives` with a magic
+method — call it explicitly:
+
+```php
+foreach (['variant', 'color', 'size'] as $name) {
+    $attributes = $attributes->directive($name, $props[$name] ?? null);
+}
+```
+
+### 12. Register `@variant/@color/@size` in the order the markup reads
+
+Declare directives in the order they logically show up in the rendered
+markup (shape first — `variant`, then `color`, then `size`) rather than the
+order your editor's autocomplete suggested. Registration order never
+affects the resolved output, but it makes a big difference in how easy the
+component is to read six months later.
+
+---
+
+### A few extra ones
+
+### 13. Grab the raw string with `resolveClasses()` when you don't want a full attribute bag
+
+`toHtml()`/`__toString()` wrap the result as `class="..."` (plus any other
+attributes on the root). If you just need the plain class string — say, to
+feed an Alpine `x-bind:class`, a JS prop, or to concatenate manually — call
+`resolveClasses()` directly instead:
+
+```php
+<div x-bind:class="{{ json_encode([$attributes->for('icon')->resolveClasses() => true]) }}">
+```
+
+### 14. Share a directive block across components with a Blade partial
+
+If several components in your design system reuse the exact same
+`@variant`/`@color` maps (e.g. every "surface" component shares the same
+color palette), don't copy-paste the directive block — extract it into a
+partial and `@include` it:
+
+```php
+{{-- resources/views/partials/surface-directives.blade.php --}}
+@color([
+    'neutral' => 'bg-white text-gray-900',
+    'muted'   => 'bg-gray-50 text-gray-600',
+])
+```
+
+```php
+{{-- card.blade.php / panel.blade.php / callout.blade.php --}}
+@include('partials.surface-directives')
+```
+
+One source of truth for the palette, reused across every component that
+needs it, no drift between them over time.
+
+### 15. Don't do expensive work inside a directive's config array
+
+`@variant([...])` / `@color([...])` register their config on **every
+render** of the component (it's cheap array building normally, but it does
+run every time). Keep the maps to literal arrays and simple expressions;
+if a class fragment needs real computation, compute it once above the
+directive call and reference the variable instead of inlining logic into
+the map itself:
+
+```php
+// 🚫 recomputes on every render, buried inside the map
+@color(['active' => expensive_lookup($request) ? 'ring-2' : ''])
+
+// ✅ computed once, directive stays a plain lookup
+$ring = expensive_lookup($request) ? 'ring-2' : '';
+@color(['active' => $ring])
+```
+
+### 16. Always call the macros on the exact `$attributes` instance you were given
+
+The registry keys everything off the `ComponentAttributeBag` object's
+identity (via `WeakMap`). If you reassign or rebuild `$attributes` (e.g.
+`$attributes = $attributes->merge([...])` returns a *new* bag under the
+hood in some Laravel versions, or you pass a manually constructed bag into
+a sub-view) before calling `->for()`/`->use()`, you can end up resolving
+against a bag that never had any directives registered on it, and get back
+empty classes. When in doubt, register directives and resolve classes
+against the same `$attributes` variable the component method received.
+
+### 17. Build your own macro on top of Malevich's for very common combos
+
+If a "mode" (variant + color + size + preset, all together) repeats across
+many components, wrap it in your own macro so call sites don't have to
+spell it out every time:
+
+```php
+ComponentAttributeBag::macro('dangerButton', function () {
+    /** @var \Illuminate\View\ComponentAttributeBag $this */
+    return $this->preset('button-base')->variant('solid')->color('danger');
+});
+```
+
+```blade
+<button {{ $attributes->dangerButton() }}>Delete</button>
+```
+
+It's just a thin macro over the fluent API Malevich already exposes, but it
+turns a recurring combination into a single named call.
 
 ---
 
