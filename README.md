@@ -443,7 +443,7 @@ You don't need to learn a second API for "the rest of the attributes" - once you
 ## Best practices & lifehacks
 
 A set of small, working patterns that make Malevich code shorter, more
-readable, and easier to maintain — plus a few gotchas that aren't obvious
+readable, and easier to maintain - plus a few gotchas that aren't obvious
 from reading the API alone.
 
 ### 1. Put everything shared behind `'*'`, don't repeat it per option
@@ -463,7 +463,7 @@ from reading the API alone.
 ])
 ```
 
-`'*'` always applies, regardless of the chosen value — use it for the
+`'*'` always applies, regardless of the chosen value - use it for the
 component's "skeleton", not as another variant key.
 
 ### 2. Conditional classes as arrays, not ternaries
@@ -506,7 +506,7 @@ Also works with `for()`: `$attributes->for('wrapper')->use(compact('color', 'siz
 
 Targets are worth it when a sub-element truly has its own set of
 variants/colors/sizes (an icon, a label, a wrapper). If every part of the
-component shares the same `variant`, don't split it into a target — just
+component shares the same `variant`, don't split it into a target - just
 apply it directly on each node:
 
 ```php
@@ -517,7 +517,7 @@ apply it directly on each node:
 
 Extra targets add indirection without buying you anything.
 
-### 5. Presets: base first, overrides after — and you can stack them
+### 5. Presets: base first, overrides after - and you can stack them
 
 ```php
 @preset('outline-card', [
@@ -532,7 +532,7 @@ Extra targets add indirection without buying you anything.
 
 Order matters: explicit values called after `preset()` win over it, and
 before it get overwritten by it. This also means presets can be **layered**
-— apply a base design-system preset, then a theme preset on top, and
+- apply a base design-system preset, then a theme preset on top, and
 whichever directive the second one touches wins:
 
 ```php
@@ -551,14 +551,14 @@ theme.
 ```
 
 Without `->slot()`, a named slot's `class`/attributes never leak in
-automatically — that's intentional, not a missing step. Add `slot()`
+automatically - that's intentional, not a missing step. Add `slot()`
 selectively, only on the elements that should be customizable from the
 outside via `<x-slot class="...">`.
 
 ### 7. Wildcard-only directives can be called with no argument at all
 
 If a directive has nothing to choose between (one fixed set of classes),
-don't invent a prop for it — just call it bare:
+don't invent a prop for it - just call it bare:
 
 ```php
 @color(['*' => 'border-black'])
@@ -591,7 +591,7 @@ de-duplicates the combination for you.
 
 ### 9. Reuse a partially-built `Selector` as a base
 
-`Selector` is immutable — every call returns a new instance, so it's safe to
+`Selector` is immutable - every call returns a new instance, so it's safe to
 keep a "base" chain and branch it for different parts of the same component:
 
 ```php
@@ -602,7 +602,7 @@ $base = $attributes->color($color)->size($size); // shared base
 </div>
 ```
 
-`$base` never mutates between calls — `for('wrapper')` and `for('icon')` can
+`$base` never mutates between calls - `for('wrapper')` and `for('icon')` can
 both branch off it safely without affecting one another.
 
 ### 10. Leave `default_target` alone unless you actually collide with it
@@ -618,7 +618,7 @@ conflicts in meaning.
 
 If a directive's name comes from a variable (e.g. driven by theme config),
 you don't need it to be declared in `malevich.directives` with a magic
-method — call it explicitly:
+method - call it explicitly:
 
 ```php
 foreach (['variant', 'color', 'size'] as $name) {
@@ -629,7 +629,7 @@ foreach (['variant', 'color', 'size'] as $name) {
 ### 12. Register `@variant/@color/@size` in the order the markup reads
 
 Declare directives in the order they logically show up in the rendered
-markup (shape first — `variant`, then `color`, then `size`) rather than the
+markup (shape first - `variant`, then `color`, then `size`) rather than the
 order your editor's autocomplete suggested. Registration order never
 affects the resolved output, but it makes a big difference in how easy the
 component is to read six months later.
@@ -641,8 +641,8 @@ component is to read six months later.
 ### 13. Grab the raw string with `toClasses()` when you don't want a full attribute bag
 
 `toHtml()`/`__toString()` wrap the result as `class="..."` (plus any other
-attributes on the root). If you just need the plain class string — say, to
-feed an Alpine `x-bind:class`, a JS prop, or to concatenate manually — call
+attributes on the root). If you just need the plain class string - say, to
+feed an Alpine `x-bind:class`, a JS prop, or to concatenate manually - call
 `toClasses()` directly instead:
 
 ```php
@@ -653,7 +653,7 @@ feed an Alpine `x-bind:class`, a JS prop, or to concatenate manually — call
 
 If several components in your design system reuse the exact same
 `@variant`/`@color` maps (e.g. every "surface" component shares the same
-color palette), don't copy-paste the directive block — extract it into a
+color palette), don't copy-paste the directive block - extract it into a
 partial and `@include` it:
 
 ```php
@@ -727,7 +727,7 @@ turns a recurring combination into a single named call.
 ### 18. Native `ComponentAttributeBag` methods (`only`, `except`, `merge`, ...) go at the *end* of the chain
 
 A `Selector` transparently forwards any method it doesn't recognize as a
-directive to the underlying `ComponentAttributeBag` — with the resolved
+directive to the underlying `ComponentAttributeBag` - with the resolved
 `class` already merged in. That means you can keep using the bag methods
 you already know, right after a Malevich chain:
 
@@ -740,7 +740,7 @@ you already know, right after a Malevich chain:
 ```
 
 The trap is calling them in the opposite order. `only()`/`except()`/
-`filter()` act on whatever attributes exist *at that point in the chain* —
+`filter()` act on whatever attributes exist *at that point in the chain* -
 called **before** `use()`/directive methods, they strip out the very
 `@variant`/`@color`/`@size` attributes Malevich still needs to read, and
 you silently get an empty `class` back with no error:
