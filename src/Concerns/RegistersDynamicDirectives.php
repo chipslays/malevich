@@ -40,7 +40,7 @@ trait RegistersDynamicDirectives
     protected function registerDynamicBladeDirective(string $directive): void
     {
         Blade::directive($directive, function (string $expression) use ($directive) {
-            return "<?php \\".DirectiveRegistry::class."::registerDirective(\$attributes, '{$directive}', {$expression}); ?>";
+            return '<?php \\'.DirectiveRegistry::class."::registerDirective(\$attributes, '{$directive}', {$expression}); ?>";
         });
     }
 

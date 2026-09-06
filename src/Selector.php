@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Malevich;
 
-use BadMethodCallException;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\Arr;
 use Illuminate\View\ComponentAttributeBag;
 use Illuminate\View\ComponentSlot;
 use Malevich\Support\ClassListBuilder;
@@ -133,6 +131,7 @@ final class Selector implements Htmlable, Stringable
 
     /**
      * Apply every directive value from a named preset (registered via
+     *
      * @preset) to the current target.
      */
     public function preset(string $name): static
@@ -155,12 +154,12 @@ final class Selector implements Htmlable, Stringable
      */
     public function __call(string $name, array $arguments): mixed
     {
-        if (! DirectiveRegistry::hasDirective($this->attributes, $name)) {
-            return $this->resolvedAttributes()->{$name}(...$arguments);
-        }
-
         if (! isset($arguments[0])) {
             return $this;
+        }
+
+        if (! DirectiveRegistry::hasDirective($this->attributes, $this->target, $name)) {
+            return $this->resolvedAttributes()->{$name}(...$arguments);
         }
 
         return $this->directive($name, $arguments[0]);
@@ -208,7 +207,6 @@ final class Selector implements Htmlable, Stringable
         return (new ComponentAttributeBag(['class' => $this->toClasses()]))->toHtml();
     }
 
-
     public function __toString(): string
     {
         return $this->toHtml();
@@ -221,7 +219,7 @@ final class Selector implements Htmlable, Stringable
      */
     private function resolvedAttributes(): ComponentAttributeBag
     {
-        $base = $this->ownAttributes() ?? new ComponentAttributeBag();
+        $base = $this->ownAttributes() ?? new ComponentAttributeBag;
 
         return $base->except(['class'])->merge(['class' => $this->toClasses()]);
     }

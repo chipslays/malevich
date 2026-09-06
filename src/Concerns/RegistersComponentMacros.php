@@ -43,11 +43,11 @@ trait RegistersComponentMacros
     protected function registerDirectiveBladeDirectives(): void
     {
         Blade::directive('directive', function (string $expression) {
-            return "<?php \\".DirectiveRegistry::class."::registerDirective(\$attributes, {$expression}); ?>";
+            return '<?php \\'.DirectiveRegistry::class."::registerDirective(\$attributes, {$expression}); ?>";
         });
 
         Blade::directive('preset', function (string $expression) {
-            return "<?php \\".DirectiveRegistry::class."::registerPreset({$expression}); ?>";
+            return '<?php \\'.DirectiveRegistry::class."::registerPreset({$expression}); ?>";
         });
     }
 }

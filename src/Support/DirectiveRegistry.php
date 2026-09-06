@@ -55,9 +55,9 @@ final class DirectiveRegistry
      */
     public static function registerDirective(ComponentAttributeBag $attributes, string $directive, mixed ...$args): void
     {
-        [$target, $config] = static::resolveTargetAndConfig($args);
+        [$target, $config] = self::resolveTargetAndConfig($args);
 
-        $directives = static::directives();
+        $directives = self::directives();
 
         $directives[$attributes] ??= [];
         $directives[$attributes][$target] ??= [];
@@ -72,18 +72,16 @@ final class DirectiveRegistry
      */
     public static function getDirectives(ComponentAttributeBag $attributes, string $target): array
     {
-        return static::directives()[$attributes][$target] ?? [];
+        return self::directives()[$attributes][$target] ?? [];
     }
 
     /**
-     * Check if a directive has been registered for a given
-     * component instance and target.
-     *
-     * @return bool
+     * Check if a directive with the given name has been registered for a
+     * given component instance and target.
      */
-    public static function hasDirective(ComponentAttributeBag $attributes, string $target): bool
+    public static function hasDirective(ComponentAttributeBag $attributes, string $target, string $directive): bool
     {
-        return isset(static::directives()[$attributes][$target]);
+        return array_key_exists($directive, self::directives()[$attributes][$target] ?? []);
     }
 
     /**
@@ -93,7 +91,7 @@ final class DirectiveRegistry
      */
     public static function registerPreset(string $name, array $config): void
     {
-        static::$presets[$name] = $config;
+        self::$presets[$name] = $config;
     }
 
     /**
@@ -103,7 +101,7 @@ final class DirectiveRegistry
      */
     public static function getPreset(string $name): array
     {
-        return static::$presets[$name] ?? [];
+        return self::$presets[$name] ?? [];
     }
 
     /**
@@ -128,6 +126,6 @@ final class DirectiveRegistry
      */
     private static function directives(): WeakMap
     {
-        return static::$directives ??= new WeakMap;
+        return self::$directives ??= new WeakMap;
     }
 }
