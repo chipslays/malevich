@@ -56,7 +56,7 @@ No conditionals in the markup. No string concatenation. Just data in, classes ou
 - **Works with anything, not just Tailwind.** Under the hood it's plain `Arr::toCssClasses`, so conditional arrays, BEM classes, whatever - all fine.
 - **Multi-element components? No problem.** Named "targets" let a single component style its wrapper, icon, and label independently, each with its own variant/color/size, without prop-name collisions.
 - **Reuse combos with presets.** Register a set of directive values once (`@preset`), apply it anywhere with `->preset('name')`.
-- **Zero new concepts to learn.** It's just methods on the `ComponentAttributeBag` you already call `$attributes->merge()` on every day.
+- **Zero new concepts to learn.** It's just methods on the `ComponentAttributeBag` you already call `$attributes->merge()` on every day - and it still behaves like one, see [Calling native `ComponentAttributeBag` methods](#calling-native-componentattributebag-methods).
 - **Add your own directives.** Not just `@variant`/`@color`/`@size` - one config line and `@radius`, `@shadow`, whatever you need, gets its own directive and fluent method for free.
 - **Framework-native.** No JS, no compiler, no config beyond a single optional file. Install it and it's already working.
 
@@ -75,8 +75,8 @@ If you're building a UI kit or design system in Blade - buttons, badges, alerts,
 - [Named targets - styling multiple elements in one component](#named-targets---styling-multiple-elements-in-one-component)
 - [Presets - reuse common combinations](#presets---reuse-common-combinations)
 - [Slots - merging classes from named slots](#slots---merging-classes-from-named-slots)
+- [Calling native `ComponentAttributeBag` methods](#calling-native-componentattributebag-methods)
 - [Best practices & lifehacks](#best-practices--lifehacks)
-- [Bundled components](#bundled-components)
 - [Configuration reference](#configuration-reference)
 - [API summary](#api-summary)
 - [License](#license)
@@ -95,12 +95,6 @@ Publish the config file (optional, but recommended if you want to customize dire
 
 ```bash
 php artisan vendor:publish --tag malevich:config
-```
-
-Publish the bundled components (optional - gives you an editable copy of `<x-ui::primitive>` and friends):
-
-```bash
-php artisan vendor:publish --tag malevich:components
 ```
 
 ---
@@ -415,6 +409,37 @@ The `class="text-2xl"` passed to the `heading` slot is merged together with the 
 
 ---
 
+## Calling native `ComponentAttributeBag` methods
+
+A `Selector` is not a replacement for `ComponentAttributeBag` - it's a thin wrapper you build on top of it. Any method you'd normally call on `$attributes` (`only()`, `except()`, `merge()`, `whereStartsWith()`, `has()`, `get()`, ...) still works after any Malevich chain, and is transparently forwarded to a `ComponentAttributeBag` that already has the resolved `class` baked in:
+
+```blade
+{{ $attributes->use(compact('variant', 'color', 'size'))->only(['class']) }}
+```
+
+```blade
+{{ $attributes->for('icon')->color($color)->except(['class'])->merge(['aria-hidden' => 'true']) }}
+```
+
+You don't need to learn a second API for "the rest of the attributes" - once you're done describing directives, just keep chaining whatever `ComponentAttributeBag` method you need.
+
+> [!IMPORTANT]
+> **Directives first, native methods last.** Native `ComponentAttributeBag` methods like `only()`/`except()`/`filter()` operate on whatever bag is "current" at the point you call them. If you call one of them **before** `->use()`/`->directive()`/`->preset()`, it filters the attributes *before* Malevich has a chance to read the directive values back out of them - which silently produces an empty (or wrong) `class`, with no error thrown:
+>
+> ```blade
+> {{-- 🚫 breaks: `only(['class'])` strips the @variant/@color/@size
+>      attributes before Selector ever sees them --}}
+> {{ $attributes->only(['class'])->use(compact('variant', 'color', 'size')) }}
+>
+> {{-- ✅ works: directives are resolved first, only() just trims
+>      the final result afterwards --}}
+> {{ $attributes->use(compact('variant', 'color', 'size'))->only(['class']) }}
+> ```
+>
+> As a rule of thumb: put `for()`, `slot()`, `use()`, `directive()`, `preset()` and your directive methods (`->variant()`, `->color()`, ...) **at the start** of the chain, and any plain `ComponentAttributeBag` method **at the end**, once classes are already resolved.
+
+---
+
 ## Best practices & lifehacks
 
 A set of small, working patterns that make Malevich code shorter, more
@@ -426,14 +451,14 @@ from reading the API alone.
 ```php
 // 🚫 base classes duplicated across every variant
 @variant([
-    'solid'   => 'inline-flex items-center font-medium hover:brightness-95',
+    'solid' => 'inline-flex items-center font-medium hover:brightness-95',
     'outline' => 'inline-flex items-center font-medium border-2 border-dashed',
 ])
 
 // ✅ shared once, each variant only describes the delta
 @variant([
-    '*'       => 'inline-flex items-center font-medium',
-    'solid'   => 'hover:brightness-95',
+    '*' => 'inline-flex items-center font-medium',
+    'solid' => 'hover:brightness-95',
     'outline' => 'border-2 border-dashed bg-transparent',
 ])
 ```
@@ -456,7 +481,7 @@ building entirely and describe the condition next to the class itself:
 @color([
     'primary' => [
         'text-blue-500',
-        'bg-blue-100'     => $variant === 'solid',
+        'bg-blue-100' => $variant === 'solid',
         'border-blue-200' => $variant === 'outline',
     ],
 ])
@@ -497,8 +522,8 @@ Extra targets add indirection without buying you anything.
 ```php
 @preset('outline-card', [
     'variant' => 'outline',
-    'color'   => 'gray',
-    'size'    => 'md',
+    'color' => 'gray',
+    'size' => 'md',
 ])
 
 {{-- preset() BEFORE explicit calls, or the override won't stick --}}
@@ -613,15 +638,15 @@ component is to read six months later.
 
 ### A few extra ones
 
-### 13. Grab the raw string with `resolveClasses()` when you don't want a full attribute bag
+### 13. Grab the raw string with `toClasses()` when you don't want a full attribute bag
 
 `toHtml()`/`__toString()` wrap the result as `class="..."` (plus any other
 attributes on the root). If you just need the plain class string — say, to
 feed an Alpine `x-bind:class`, a JS prop, or to concatenate manually — call
-`resolveClasses()` directly instead:
+`toClasses()` directly instead:
 
 ```php
-<div x-bind:class="{{ json_encode([$attributes->for('icon')->resolveClasses() => true]) }}">
+<div x-bind:class="{{ json_encode([$attributes->for('icon')->toClasses() => true]) }}">
 ```
 
 ### 14. Share a directive block across components with a Blade partial
@@ -635,7 +660,7 @@ partial and `@include` it:
 {{-- resources/views/partials/surface-directives.blade.php --}}
 @color([
     'neutral' => 'bg-white text-gray-900',
-    'muted'   => 'bg-gray-50 text-gray-600',
+    'muted' => 'bg-gray-50 text-gray-600',
 ])
 ```
 
@@ -679,7 +704,7 @@ against a bag that never had any directives registered on it, and get back
 empty classes. When in doubt, register directives and resolve classes
 against the same `$attributes` variable the component method received.
 
-### 17. Build your own macro on top of Malevich's for very common combos
+### 17. Build your own macro on top of Malevich for very common combos
 
 If a "mode" (variant + color + size + preset, all together) repeats across
 many components, wrap it in your own macro so call sites don't have to
@@ -699,46 +724,38 @@ ComponentAttributeBag::macro('dangerButton', function () {
 It's just a thin macro over the fluent API Malevich already exposes, but it
 turns a recurring combination into a single named call.
 
----
+### 18. Native `ComponentAttributeBag` methods (`only`, `except`, `merge`, ...) go at the *end* of the chain
 
-## Bundled components
-
-### `<x-ui::primitive>`
-
-A small helper component for rendering an arbitrary tag (`div`, `button`, `a`, ...) while still resolving Malevich classes through `:class`.
-
-> [!IMPORTANT]
-> Because `<x-ui::primitive>` renders a dynamic tag, you must pass resolved classes explicitly through `:class` - using `{{ $attributes->... }}` directly on the tag will not work here.
+A `Selector` transparently forwards any method it doesn't recognize as a
+directive to the underlying `ComponentAttributeBag` — with the resolved
+`class` already merged in. That means you can keep using the bag methods
+you already know, right after a Malevich chain:
 
 ```php
-@props([
-    'variant' => 'solid',
-])
+{{-- keep only the resolved class, drop everything else --}}
+{{ $attributes->use(compact('variant', 'color', 'size'))->only(['class']) }}
 
-@variant([
-    '*' => 'active:scale-95 active:translate-y-0.5',
-    'solid' => 'px-6 py-2 rounded-xl bg-black text-white font-medium',
-])
-
-<x-ui::primitive as="button" type="button" :class="$attributes->variant($variant)">
-    {{ $slot }}
-</x-ui::primitive>
-
-{{-- or using use() --}}
-<x-ui::primitive as="button" type="button" :class="$attributes->use(compact('variant'))">
-    {{ $slot }}
-</x-ui::primitive>
+{{-- resolve classes for a target, then add a plain attribute on top --}}
+{{ $attributes->for('icon')->color($color)->merge(['aria-hidden' => 'true']) }}
 ```
 
-Renders:
+The trap is calling them in the opposite order. `only()`/`except()`/
+`filter()` act on whatever attributes exist *at that point in the chain* —
+called **before** `use()`/directive methods, they strip out the very
+`@variant`/`@color`/`@size` attributes Malevich still needs to read, and
+you silently get an empty `class` back with no error:
 
-```html
-<button class="active:scale-95 active:translate-y-0.5 px-6 py-2 rounded-xl bg-black text-white font-medium" type="button">
-    test
-</button>
+```php
+// 🚫 only(['class']) runs first and throws away the directive attributes
+{{ $attributes->only(['class'])->use(compact('variant', 'color', 'size')) }}
+
+// ✅ resolve first, filter the result after
+{{ $attributes->use(compact('variant', 'color', 'size'))->only(['class']) }}
 ```
 
-By default, components are registered under the `ui::` prefix from `resources/views/components/ui` (both your published copy and the package's own copy are auto-registered, so it works even before publishing).
+Rule of thumb: `for()` / `slot()` / `use()` / `directive()` / `preset()` /
+your directive methods go **first**, plain `ComponentAttributeBag` methods
+go **last**.
 
 ---
 
@@ -750,8 +767,6 @@ By default, components are registered under the `ui::` prefix from `resources/vi
 |---|---|---|
 | `directives` | `['variant', 'size', 'color']` | List of directives to auto-register as both `@directive(...)` Blade directives and `$attributes->directive(...)` methods. |
 | `default_target` | `'default'` | Internal name used when `->for()` is not called. Change only if it conflicts with a target name you actually use. |
-| `components.path` | `resource_path('views/components/ui')` | Where your published `<x-ui::*>` components live. |
-| `components.prefix` | `'ui'` | Tag prefix for the registered components (`<x-ui::primitive>`, etc.). |
 
 ---
 
@@ -765,6 +780,8 @@ By default, components are registered under the `ui::` prefix from `resources/vi
 | `->directive(string $name, mixed $value)` | Manually set a value for any directive by name (used internally by the generated methods). |
 | `->{directiveName}(string $value)` | Auto-generated per configured directive, e.g. `->variant('solid')`, `->color('primary')`. |
 | `->preset(string $name)` | Apply a previously registered `@preset(...)` to the current target. |
+| `->toClasses()` | Return the resolved class string only, without wrapping it in `class="..."`. |
+| `->{bagMethod}(...)` | Anything not recognized as a directive (`->only()`, `->except()`, `->merge()`, `->has()`, `->get()`, ...) is forwarded to a `ComponentAttributeBag` with the resolved `class` already applied. Call it **after** the directive/`use()`/`preset()` calls - see [Calling native `ComponentAttributeBag` methods](#calling-native-componentattributebag-methods). |
 
 Blade directives available in your components:
 

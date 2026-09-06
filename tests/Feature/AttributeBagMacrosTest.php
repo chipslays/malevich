@@ -14,14 +14,14 @@ it('adds a use() macro backed by Selector::use()', function () {
     $bag = new ComponentAttributeBag;
     DirectiveRegistry::registerDirective($bag, 'color', ['red' => 'text-red-500']);
 
-    expect($bag->use(['color' => 'red'])->resolveClasses())->toBe('text-red-500');
+    expect($bag->use(['color' => 'red'])->toClasses())->toBe('text-red-500');
 });
 
 it('adds a directive() macro backed by Selector::directive()', function () {
     $bag = new ComponentAttributeBag;
     DirectiveRegistry::registerDirective($bag, 'color', ['red' => 'text-red-500']);
 
-    expect($bag->directive('color', 'red')->resolveClasses())->toBe('text-red-500');
+    expect($bag->directive('color', 'red')->toClasses())->toBe('text-red-500');
 });
 
 it('adds a preset() macro backed by Selector::preset()', function () {
@@ -29,7 +29,7 @@ it('adds a preset() macro backed by Selector::preset()', function () {
     DirectiveRegistry::registerDirective($bag, 'color', ['red' => 'text-red-500']);
     DirectiveRegistry::registerPreset('danger', ['color' => 'red']);
 
-    expect($bag->preset('danger')->resolveClasses())->toBe('text-red-500');
+    expect($bag->preset('danger')->toClasses())->toBe('text-red-500');
 });
 
 it('registers one macro per directive configured in malevich.directives', function () {
@@ -42,5 +42,5 @@ it('a dynamic directive macro behaves like ->directive(name, value)', function (
     $bag = new ComponentAttributeBag;
     DirectiveRegistry::registerDirective($bag, 'variant', ['solid' => 'bg-black']);
 
-    expect($bag->variant('solid')->resolveClasses())->toBe('bg-black');
+    expect($bag->variant('solid')->toClasses())->toBe('bg-black');
 });

@@ -11,7 +11,7 @@ it('defaults to the configured default target', function () {
 
     $selector = (new Selector($bag))->directive('color', 'red');
 
-    expect($selector->resolveClasses())->toBe('text-red-500');
+    expect($selector->toClasses())->toBe('text-red-500');
 });
 
 it('for() switches the target without mutating the original selector', function () {
@@ -21,8 +21,8 @@ it('for() switches the target without mutating the original selector', function 
     $base = new Selector($bag);
     $forIcon = $base->for('icon')->directive('color', 'red');
 
-    expect($forIcon->resolveClasses())->toBe('text-red-500')
-        ->and($base->directive('color', 'red')->resolveClasses())->toBe('');
+    expect($forIcon->toClasses())->toBe('text-red-500')
+        ->and($base->directive('color', 'red')->toClasses())->toBe('');
 });
 
 it('applies a wildcard rule regardless of the selected choice', function () {
@@ -34,7 +34,7 @@ it('applies a wildcard rule regardless of the selected choice', function () {
 
     $selector = (new Selector($bag))->directive('size', 'sm');
 
-    expect($selector->resolveClasses())->toBe('inline-flex items-center text-sm');
+    expect($selector->toClasses())->toBe('inline-flex items-center text-sm');
 });
 
 it('applies only the wildcard rule when no matching choice was selected', function () {
@@ -46,7 +46,7 @@ it('applies only the wildcard rule when no matching choice was selected', functi
 
     $selector = new Selector($bag);
 
-    expect($selector->resolveClasses())->toBe('inline-flex');
+    expect($selector->toClasses())->toBe('inline-flex');
 });
 
 it('ignores a selected choice that is not present in the directive map', function () {
@@ -55,7 +55,7 @@ it('ignores a selected choice that is not present in the directive map', functio
 
     $selector = (new Selector($bag))->directive('color', 'blue');
 
-    expect($selector->resolveClasses())->toBe('');
+    expect($selector->toClasses())->toBe('');
 });
 
 it('use() sets a target and merges choices in one call', function () {
@@ -64,7 +64,7 @@ it('use() sets a target and merges choices in one call', function () {
 
     $selector = (new Selector($bag))->use('btn', ['color' => 'red']);
 
-    expect($selector->resolveClasses())->toBe('text-red-500');
+    expect($selector->toClasses())->toBe('text-red-500');
 });
 
 it('use() resolves per-target choice arrays against the current target', function () {
@@ -75,7 +75,7 @@ it('use() resolves per-target choice arrays against the current target', functio
         ->for('icon')
         ->use(['color' => ['icon' => 'red', 'label' => 'blue']]);
 
-    expect($selector->resolveClasses())->toBe('text-red-500');
+    expect($selector->toClasses())->toBe('text-red-500');
 });
 
 it('use() merges an explicit extra choices array on top', function () {
@@ -85,7 +85,7 @@ it('use() merges an explicit extra choices array on top', function () {
 
     $selector = (new Selector($bag))->use(['color' => 'red'], ['size' => 'lg']);
 
-    expect($selector->resolveClasses())->toBe('text-red-500 text-lg');
+    expect($selector->toClasses())->toBe('text-red-500 text-lg');
 });
 
 it('directive() resolves a per-target value array against the current target', function () {
@@ -96,7 +96,7 @@ it('directive() resolves a per-target value array against the current target', f
         ->for('icon')
         ->directive('color', ['icon' => 'red', 'label' => 'blue']);
 
-    expect($selector->resolveClasses())->toBe('text-red-500');
+    expect($selector->toClasses())->toBe('text-red-500');
 });
 
 it('applies a preset registered for the current target', function () {
@@ -107,7 +107,7 @@ it('applies a preset registered for the current target', function () {
 
     $selector = (new Selector($bag))->preset('danger');
 
-    expect($selector->resolveClasses())->toBe('text-red-500 text-lg');
+    expect($selector->toClasses())->toBe('text-red-500 text-lg');
 });
 
 it('falls back to the flat preset shape when no per-target key matches', function () {
@@ -117,7 +117,7 @@ it('falls back to the flat preset shape when no per-target key matches', functio
 
     $selector = (new Selector($bag))->preset('danger');
 
-    expect($selector->resolveClasses())->toBe('text-red-500');
+    expect($selector->toClasses())->toBe('text-red-500');
 });
 
 it('supports magic method calls as directive shortcuts', function () {
@@ -126,7 +126,7 @@ it('supports magic method calls as directive shortcuts', function () {
 
     $selector = (new Selector($bag))->variant('solid');
 
-    expect($selector->resolveClasses())->toBe('bg-black');
+    expect($selector->toClasses())->toBe('bg-black');
 });
 
 it('a magic method call without an argument is a no-op', function () {
@@ -135,7 +135,7 @@ it('a magic method call without an argument is a no-op', function () {
     $selector = (new Selector($bag))->somethingUndefined();
 
     expect($selector)->toBeInstanceOf(Selector::class)
-        ->and($selector->resolveClasses())->toBe('');
+        ->and($selector->toClasses())->toBe('');
 });
 
 it('merges the component own class attribute for the default target', function () {
@@ -144,7 +144,7 @@ it('merges the component own class attribute for the default target', function (
 
     $selector = (new Selector($bag))->directive('color', 'red');
 
-    expect($selector->resolveClasses())->toBe('text-red-500 own-class');
+    expect($selector->toClasses())->toBe('text-red-500 own-class');
 });
 
 it('does not leak the component class into a non-default target without an explicit slot', function () {
@@ -153,7 +153,7 @@ it('does not leak the component class into a non-default target without an expli
 
     $selector = (new Selector($bag))->for('icon')->directive('color', 'red');
 
-    expect($selector->resolveClasses())->toBe('text-red-500');
+    expect($selector->toClasses())->toBe('text-red-500');
 });
 
 it('merges the slot class when a slot is explicitly provided for a non-default target', function () {
@@ -163,7 +163,7 @@ it('merges the slot class when a slot is explicitly provided for a non-default t
 
     $selector = (new Selector($bag))->for('icon')->slot($slotBag)->directive('color', 'red');
 
-    expect($selector->resolveClasses())->toBe('text-red-500 slot-class');
+    expect($selector->toClasses())->toBe('text-red-500 slot-class');
 });
 
 it('extracts attributes from a ComponentSlot instance passed to slot()', function () {
@@ -174,7 +174,7 @@ it('extracts attributes from a ComponentSlot instance passed to slot()', functio
 
     $selector = (new Selector($bag))->for('icon')->slot($slot)->directive('color', 'red');
 
-    expect($selector->resolveClasses())->toBe('text-red-500 slot-class');
+    expect($selector->toClasses())->toBe('text-red-500 slot-class');
 });
 
 it('ignores slot() when given a value it cannot recognise', function () {
@@ -185,7 +185,7 @@ it('ignores slot() when given a value it cannot recognise', function () {
     // component's own attributes rather than merging nothing.
     $selector = (new Selector($bag))->slot('not-an-attribute-bag')->directive('color', 'red');
 
-    expect($selector->resolveClasses())->toBe('text-red-500 own-class');
+    expect($selector->toClasses())->toBe('text-red-500 own-class');
 });
 
 it('toHtml renders the resolved class together with passthrough attributes', function () {

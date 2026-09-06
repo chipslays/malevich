@@ -76,6 +76,17 @@ final class DirectiveRegistry
     }
 
     /**
+     * Check if a directive has been registered for a given
+     * component instance and target.
+     *
+     * @return bool
+     */
+    public static function hasDirective(ComponentAttributeBag $attributes, string $target): bool
+    {
+        return isset(static::directives()[$attributes][$target]);
+    }
+
+    /**
      * Register a named, reusable set of directive values.
      *
      * @param  array<string, mixed>  $config

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Malevich;
 
+use BadMethodCallException;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Arr;
 use Illuminate\View\ComponentAttributeBag;
 use Illuminate\View\ComponentSlot;
 use Malevich\Support\ClassListBuilder;
@@ -151,8 +153,12 @@ final class Selector implements Htmlable, Stringable
      * Allow any directive to be set fluently by name, e.g. `->color('red')`
      * as an alternative to `->directive('color', 'red')`.
      */
-    public function __call(string $name, array $arguments): static
+    public function __call(string $name, array $arguments): mixed
     {
+        if (! DirectiveRegistry::hasDirective($this->attributes, $name)) {
+            return $this->resolvedAttributes()->{$name}(...$arguments);
+        }
+
         if (! isset($arguments[0])) {
             return $this;
         }
@@ -168,7 +174,7 @@ final class Selector implements Htmlable, Stringable
      * relevant attribute bag so consumers can still extend/override
      * classes from the outside.
      */
-    public function resolveClasses(): string
+    public function toClasses(): string
     {
         $builder = new ClassListBuilder;
 
@@ -193,21 +199,31 @@ final class Selector implements Htmlable, Stringable
 
     public function toHtml(): string
     {
-        $classes = $this->resolveClasses();
-
-        if ($ownAttributes = $this->ownAttributes()) {
-            return $ownAttributes
-                ->except(['class', 'as'])
-                ->merge(['class' => $classes])
+        if ($this->ownAttributes()) {
+            return $this->resolvedAttributes()
+                ->except(['as'])
                 ->toHtml();
         }
 
-        return (new ComponentAttributeBag(['class' => $classes]))->toHtml();
+        return (new ComponentAttributeBag(['class' => $this->toClasses()]))->toHtml();
     }
+
 
     public function __toString(): string
     {
         return $this->toHtml();
+    }
+
+    /**
+     * The attribute bag that should back any delegated
+     * ComponentAttributeBag call (::only(), ::except(), ::merge(), ...),
+     * with its "class" attribute replaced by the resolved class string.
+     */
+    private function resolvedAttributes(): ComponentAttributeBag
+    {
+        $base = $this->ownAttributes() ?? new ComponentAttributeBag();
+
+        return $base->except(['class'])->merge(['class' => $this->toClasses()]);
     }
 
     /**
