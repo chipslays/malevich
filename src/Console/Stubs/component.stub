@@ -1,0 +1,21 @@
+@props([
+    'variant' => null,
+    'color' => null,
+    'size' => null,
+])
+
+@variant([
+    //
+])
+
+@color([
+    //
+])
+
+@size([
+    //
+])
+
+<div {{ $attributes->use(compact('variant', 'color', 'size')) }}>
+    {{ $slot }}
+</div>

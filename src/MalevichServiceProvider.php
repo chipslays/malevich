@@ -8,6 +8,7 @@ use Illuminate\Support\ServiceProvider;
 use Malevich\Concerns\RegistersComponentMacros;
 use Malevich\Concerns\RegistersDynamicDirectives;
 use Malevich\Concerns\RegistersViews;
+use Malevich\Console\Commands\MakeCommand;
 
 /**
  * Bootstraps Malevich: a small toolkit for declaring per-component class
@@ -30,6 +31,9 @@ class MalevichServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->registerPublishing();
+            $this->commands([
+                MakeCommand::class,
+            ]);
         }
 
         $this->registerComponentMacros();

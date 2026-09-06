@@ -71,6 +71,7 @@ If you're building a UI kit or design system in Blade - buttons, badges, alerts,
 - [Why you'll like it](#why-youll-like-it)
 - [Installation](#installation)
 - [Basic usage](#basic-usage)
+- [Scaffolding a new component](#scaffolding-a-new-component)
 - [Adding your own directives](#adding-your-own-directives)
 - [Named targets - styling multiple elements in one component](#named-targets---styling-multiple-elements-in-one-component)
 - [Presets - reuse common combinations](#presets---reuse-common-combinations)
@@ -170,6 +171,28 @@ If you have several props to apply at once, `use()` lets you pass them all in a 
 ```
 
 This is functionally identical to the chained version above.
+
+---
+
+## Scaffolding a new component
+
+Instead of creating a new component file by hand, generate one with the bundled Artisan command:
+
+```bash
+php artisan make:malevich badge
+```
+
+This creates `badge.blade.php` from a starter stub (with a ready-to-edit `@variant`/`@color`/`@size` skeleton) inside your configured components directory - `resources/views/components/ui` by default, or whatever `malevich.components.path` is set to.
+
+You don't need the `.blade.php` suffix - `php artisan make:malevich badge` and `php artisan make:malevich badge.blade.php` produce the same file. Nested names create the intermediate directories for you, e.g.:
+
+```bash
+php artisan make:malevich forms/input
+```
+
+creates `resources/views/components/ui/forms/input.blade.php` (registered as `<x-ui::forms.input>`), ensuring the `forms` directory exists first.
+
+If a component with that name already exists, the command refuses to overwrite it and exits with an error instead - safe to run without worrying about clobbering existing work.
 
 ---
 
@@ -767,6 +790,7 @@ go **last**.
 |---|---|---|
 | `directives` | `['variant', 'size', 'color']` | List of directives to auto-register as both `@directive(...)` Blade directives and `$attributes->directive(...)` methods. |
 | `default_target` | `'default'` | Internal name used when `->for()` is not called. Change only if it conflicts with a target name you actually use. |
+| `components.path` | `resource_path('views/components/ui')` | Directory `php artisan make:malevich` writes new component files into. |
 
 ---
 
@@ -790,6 +814,12 @@ Blade directives available in your components:
 | `@directive($target = null, $config)` | Low-level directive registration (used to build the others). |
 | `@preset($name, $config)` | Register a reusable preset of directive values, optionally keyed per target. |
 | `@variant(...)`, `@color(...)`, `@size(...)` and any custom directive from config | Register a class map for the current component: `'option' => 'classes'`. Use `'*'` for classes applied regardless of the selected option. |
+
+Artisan commands:
+
+| Command | Description |
+|---|---|
+| `php artisan make:malevich {name}` | Scaffold a new component file from a starter stub into `malevich.components.path`. See [Scaffolding a new component](#scaffolding-a-new-component). |
 
 ---
 
