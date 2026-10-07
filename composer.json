@@ -1,0 +1,71 @@
+{
+    "name": "malevich/malevich",
+    "description": "Variant-driven Blade components: declare class maps, render them with @ui.",
+    "keywords": ["laravel", "blade", "components", "variants", "tailwind", "ui", "design-system"],
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://github.com/chipslays/malevich",
+    "support": {
+        "issues": "https://github.com/chipslays/malevich/issues",
+        "source": "https://github.com/chipslays/malevich"
+    },
+    "authors": [
+        {
+            "name": "chipslays",
+            "homepage": "https://github.com/chipslays",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^11.0|^12.0|^13.0",
+        "illuminate/view": "^11.0|^12.0|^13.0",
+        "illuminate/contracts": "^11.0|^12.0|^13.0"
+    },
+    "require-dev": {
+        "pestphp/pest": "^5.1",
+        "laravel/pint": "^1.30",
+        "orchestra/testbench": "^11.2",
+        "larastan/larastan": "^3.13"
+    },
+    "autoload": {
+        "psr-4": {
+            "Malevich\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/",
+            "Workbench\\App\\": "workbench/app/"
+        }
+    },
+    "scripts": {
+        "test": "pest",
+        "lint": "pint",
+        "lint:check": "pint --test",
+        "analyse": "phpstan analyse --memory-limit=1G",
+        "check": [
+            "@lint:check",
+            "@analyse",
+            "@test"
+        ],
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php vendor/bin/testbench serve --ansi"
+        ]
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Malevich\\MalevichServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
