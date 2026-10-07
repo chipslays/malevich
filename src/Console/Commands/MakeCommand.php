@@ -24,11 +24,13 @@ class MakeCommand extends Command
             ->replace('\\', '/')
             ->replaceEnd('.blade.php', '')
             ->replace('.', '/')
+            ->replaceMatches('#/+#', '/')
             ->trim('/')
             ->value();
 
-        if ($name === '') {
-            $this->components->error('Please provide a component name.');
+        // Letters, digits, "-", "_" and "/" only: the file must stay inside the components folder.
+        if (! preg_match('#^[\w-]+(/[\w-]+)*$#', $name)) {
+            $this->components->error('Use only letters, digits, "-", "_" and "/" in the component name, e.g. "forms/input".');
 
             return self::FAILURE;
         }

@@ -189,7 +189,7 @@ final class Element implements Htmlable, Stringable
         }
 
         $classes = $classes
-            ->add($this->extra['class'] ?? null)
+            ->add($this->escapedExtra()['class'] ?? null)
             ->add($this->ownAttributes()?->get('class'));
 
         return Malevich::mergeClasses((string) $classes);
@@ -204,7 +204,7 @@ final class Element implements Htmlable, Stringable
             $consumed[] = 'preset';
         }
 
-        $attributes = $own + $this->extra;
+        $attributes = $own + $this->escapedExtra();
         $attributes = array_diff_key($attributes, array_flip($consumed));
 
         $classes = $this->toClasses();
@@ -212,6 +212,17 @@ final class Element implements Htmlable, Stringable
         return new ComponentAttributeBag(
             $classes === '' ? $attributes : ['class' => $classes, ...$attributes],
         );
+    }
+
+    /**
+     * `merge:` values come from PHP, not from a Blade tag, so they are escaped
+     * here - exactly like ComponentAttributeBag::merge() does.
+     *
+     * @return array<string, mixed>
+     */
+    private function escapedExtra(): array
+    {
+        return array_map(fn (mixed $value) => is_string($value) ? e($value) : $value, $this->extra);
     }
 
     public function toHtml(): string

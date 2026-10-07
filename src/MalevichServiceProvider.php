@@ -7,7 +7,9 @@ namespace Malevich;
 use Closure;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\View\ComponentAttributeBag;
+use InvalidArgumentException;
 use Malevich\Console\Commands\MakeCommand;
 use Malevich\Support\ComponentTagCompiler;
 
@@ -39,6 +41,8 @@ class MalevichServiceProvider extends ServiceProvider
 
     protected function registerBladeDirectives(): void
     {
+        $this->ensureValidNames();
+
         // The recipe is also kept in a template variable, so @ui still finds it
         // after Blade swaps $attributes for a new bag (e.g. inside <x-...> tags).
         $recipe = '($'.Malevich::SCOPE_VARIABLE.' ??= \\'.Malevich::class.'::recipe($attributes))';
@@ -60,6 +64,36 @@ class MalevichServiceProvider extends ServiceProvider
 
         // Blade ignores directives inside <x-...> tags, so @ui is rewritten there first.
         Blade::prepareStringsForCompilationUsing(ComponentTagCompiler::compile(...));
+    }
+
+    /**
+     * Fail loudly on names from the config that would silently break things:
+     * a custom Blade directive replaces a built-in one (`@if`, `@class`, ...)
+     * for the whole application, and a name that is already a method of
+     * $attributes (`merge`, `get`, ...) can never work as a fluent call.
+     */
+    protected function ensureValidNames(): void
+    {
+        $render = Malevich::renderDirective();
+        $own = ['directive', 'base', 'compound', 'preset'];
+
+        foreach ([$render, ...$this->axes()] as $name) {
+            $problem = match (true) {
+                ! preg_match('/^[A-Za-z_]\w*$/', $name) => 'is not a valid directive name',
+                in_array($name, $own, true) => 'is already a Malevich directive',
+                method_exists(BladeCompiler::class, 'compile'.ucfirst($name)) => 'is a built-in Blade directive',
+                $name !== $render && method_exists(ComponentAttributeBag::class, $name) => 'is already a method of $attributes',
+                default => null,
+            };
+
+            if ($problem !== null) {
+                throw new InvalidArgumentException("Malevich: [@{$name}] {$problem}. Pick another name in config/malevich.php.");
+            }
+        }
+
+        if (in_array($render, $this->axes(), true)) {
+            throw new InvalidArgumentException("Malevich: [@{$render}] is used both as render_directive and in directives. Pick another name in config/malevich.php.");
+        }
     }
 
     protected function registerAttributeBagMacros(): void
@@ -100,14 +134,12 @@ class MalevichServiceProvider extends ServiceProvider
     {
         $path = config('malevich.components.path');
 
-        // Blade takes the first match, so published copies override the package's.
-        $published = resource_path('views/vendor/malevich/components');
-
-        if (is_dir($published)) {
-            Blade::anonymousComponentPath($published, 'malevich');
-        }
-
-        Blade::anonymousComponentPath(__DIR__.'/../resources/views/components', 'malevich');
+        // A view namespace, not an anonymous path: Blade searches anonymous paths
+        // even for unprefixed tags, so <x-button> in the app would hit ours.
+        // loadViewsFrom() also checks resources/views/vendor/malevich first,
+        // which is where `vendor:publish --tag malevich:components` puts copies.
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'malevich');
+        Blade::anonymousComponentNamespace('malevich::components', 'malevich');
 
         if (is_string($path) && is_dir($path)) {
             Blade::anonymousComponentPath($path, config('malevich.components.prefix') ?: null);

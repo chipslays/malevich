@@ -25,3 +25,8 @@ it('prefers a published copy over the package component', function () {
 
     expect($this->render('<x-malevich::primitive id="x">hi</x-malevich::primitive>'))->toBe('<p id="x">custom hi</p>');
 });
+
+it('never resolves unprefixed tags to package components', function () {
+    // There is no primitive fixture, so <x-primitive> must not find malevich::primitive.
+    $this->render('<x-primitive />');
+})->throws(InvalidArgumentException::class, 'Unable to locate a class or view for component [primitive]');

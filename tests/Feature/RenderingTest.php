@@ -114,3 +114,7 @@ it('ignores a same-named prop that is not a slot', function () {
     expect($this->render('<x-panel title="Hi" footer="Bye" />'))
         ->toBe('<div> <h2 class="font-bold">Hi</h2> <p class="text-xs">Bye</p> </div>');
 });
+
+it('escapes values passed through merge:', function () {
+    expect($this->render('<x-merge-escape :value="$v" />', ['v' => '"><b>']))->toBe('<div data-v="&quot;&gt;&lt;b&gt;"></div>');
+});

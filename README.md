@@ -967,6 +967,13 @@ New components created with [`make:malevich`](#makemalevich-command) will includ
 > [!NOTE]
 > Blade compiles views once and caches them. After changing the `directives` list, run `php artisan view:clear`.
 
+Not every name is allowed. Malevich throws an exception on boot if a name:
+
+- is a built-in Blade directive (`if`, `class`, `foreach`, `props`, ...) - it would replace that directive in your whole app;
+- is a Malevich directive (`base`, `compound`, `preset`, `directive`, or your `render_directive`);
+- is already a method of `$attributes` (`merge`, `get`, `only`, ...) - the fluent call `$attributes->merge(...)` could never reach it;
+- contains anything but letters, digits and `_`.
+
 ## Sharing styles between components
 
 Class maps are plain Blade, so you can move them into a partial and `@include` it:

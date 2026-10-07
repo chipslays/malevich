@@ -46,8 +46,9 @@ final class ComponentTagCompiler
         /xs";
 
         return (string) preg_replace_callback($tag, function (array $match) use ($directive): string {
+            // Quoted values and {{ }} echoes are skipped, so `title="press @ui"` stays text.
             $attributes = (string) preg_replace_callback(
-                "/(?<=\s)@{$directive}(?<parens>\((?:(?>[^()]+)|(?&parens))*\))?(?=\s|$)/",
+                "/(?:\"[^\"]*\"|'[^']*'|\{\{.*?\}\})(*SKIP)(*FAIL)|(?<=\s)@{$directive}(?<parens>\((?:(?>[^()]+)|(?&parens))*\))?(?=\s|$)/s",
                 fn (array $ui) => self::binding($ui['parens'] ?? ''),
                 $match['attributes'],
             );

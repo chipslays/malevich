@@ -12,7 +12,7 @@
 
 @variant([
     'soft' => '',
-    'solid' => 'text-white',
+    'solid' => 'text-white!',
     'outline' => 'border bg-transparent',
 ])
 
