@@ -125,7 +125,7 @@ It works, but every new option makes it harder to read. Malevich splits it into 
 
 ## Installation
 
-Needs PHP 8.2+ and Laravel 11, 12 or 13. The service provider is registered automatically.
+Needs Laravel 12 (PHP 8.2+) or Laravel 13 (PHP 8.3+). The service provider is registered automatically.
 
 ```bash
 composer require malevich/malevich

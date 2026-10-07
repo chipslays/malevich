@@ -18,15 +18,13 @@
     ],
     "require": {
         "php": "^8.2",
-        "illuminate/support": "^11.0|^12.0|^13.0",
-        "illuminate/view": "^11.0|^12.0|^13.0",
-        "illuminate/contracts": "^11.0|^12.0|^13.0"
+        "laravel/framework": "^12.0|^13.0"
     },
     "require-dev": {
-        "pestphp/pest": "^5.1",
-        "laravel/pint": "^1.30",
-        "orchestra/testbench": "^11.2",
-        "larastan/larastan": "^3.13"
+        "larastan/larastan": "^3.13",
+        "laravel/pint": "^1.18",
+        "orchestra/testbench": "^10.0|^11.0",
+        "pestphp/pest": "^3.0|^4.0|^5.0"
     },
     "autoload": {
         "psr-4": {
