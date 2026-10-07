@@ -9,7 +9,6 @@
   <a href="https://github.com/chipslays/malevich/actions/workflows/php.yml"><img src="https://github.com/chipslays/malevich/actions/workflows/php.yml/badge.svg" alt="Tests"></a>
   <a href="https://packagist.org/packages/malevich/malevich"><img src="https://img.shields.io/packagist/php-v/malevich/malevich" alt="PHP version"></a>
   <a href="https://packagist.org/packages/malevich/malevich"><img src="https://img.shields.io/packagist/dt/malevich/malevich" alt="Downloads"></a>
-  <a href="https://github.com/chipslays/malevich/blob/main/LICENSE.md"><img src="https://img.shields.io/packagist/l/malevich/malevich" alt="License"></a>
 </p>
 
 ---
