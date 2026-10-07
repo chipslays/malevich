@@ -36,6 +36,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Components
+    |--------------------------------------------------------------------------
+    |
+    | The directory where `php artisan make:malevich` writes new components.
+    | If it exists, Malevich registers it with Blade as anonymous components.
+    | Subfolders become dots: forms/input.blade.php is <x-forms.input>.
+    |
+    | The prefix only changes the tag, the files stay where they are:
+    |
+    |   'prefix' => null   ->  button.blade.php is <x-button>
+    |   'prefix' => 'ui'   ->  button.blade.php is <x-ui::button>
+    |
+    */
+
+    'components' => [
+        'path' => resource_path('views/components'),
+        'prefix' => null,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Target
     |--------------------------------------------------------------------------
     |
@@ -45,23 +66,5 @@ return [
     */
 
     'default_target' => 'default',
-
-    /*
-    |--------------------------------------------------------------------------
-    | Components
-    |--------------------------------------------------------------------------
-    |
-    | Where `php artisan make:malevich` writes new components. If the
-    | directory exists, Malevich registers it with Blade:
-    |
-    |   'prefix' => null   ->  button.blade.php is <x-button>
-    |   'prefix' => 'ui'   ->  button.blade.php is <x-ui::button>
-    |
-    */
-
-    'components' => [
-        'path' => resource_path('views/components/ui'),
-        'prefix' => null,
-    ],
 
 ];
