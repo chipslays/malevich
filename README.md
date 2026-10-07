@@ -1,7 +1,7 @@
 <h1 align="center">Malevich 🎨</h1>
 
 <p align="center">
-  Build shadcn-style Blade components without the class spaghetti.
+  Variant-driven Blade components without the class spaghetti.
 </p>
 
 <p align="center">
