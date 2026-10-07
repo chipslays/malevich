@@ -1243,19 +1243,6 @@ composer test      # tests (Pest)
 composer check     # all three, without fixing
 ```
 
-## Upgrading from 0.2
-
-- `$attributes->variant($variant)->color($color)` still works. Switch to `@ui` whenever you like.
-- Presets now belong to the component that declares them, instead of being global.
-- Option names (`variant="..."`) are no longer printed as HTML attributes.
-- `components.prefix` is `null` by default: components are `<x-button>`, not `<x-ui::button>`.
-- Renamed classes: `Selector` -> `Element`, `ClassListBuilder` -> `ClassList`, `DirectiveRegistry` -> `RecipeRegistry`.
-- New `@base` directive for always-on classes. It replaces the `'*'` key (which still works) and dummy option names like `@directive('style', 'title', ...)`.
-- `@ui('title')` picks up the attributes of `<x-slot:title>` automatically; `slot:` is only needed for a differently named slot.
-- `@ui` now works on component tags (`<x-icon @ui('icon') />`).
-- New unstyled `<x-malevich::primitive>` component.
-- **Run `php artisan view:clear` after upgrading** - directives compile differently now.
-
 ## License
 
 MIT. See [LICENSE.md](LICENSE.md).
