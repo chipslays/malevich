@@ -81,10 +81,11 @@ No ternaries, no `{{ $attributes->merge(['class' => ...]) }}`, no JavaScript, no
 22. [`make:malevich` command](#makemalevich-command)
 23. [The `$attributes` API](#the-attributes-api)
 24. [Configuration](#configuration)
-25. [A complete example](#a-complete-example)
-26. [FAQ and troubleshooting](#faq-and-troubleshooting)
-27. [Cheat sheet](#cheat-sheet)
-28. [Playground and contributing](#playground-and-contributing)
+25. [Editor support (Tailwind IntelliSense)](#editor-support-tailwind-intellisense)
+26. [A complete example](#a-complete-example)
+27. [FAQ and troubleshooting](#faq-and-troubleshooting)
+28. [Cheat sheet](#cheat-sheet)
+29. [Playground and contributing](#playground-and-contributing)
 
 ---
 
@@ -1092,6 +1093,30 @@ Every call returns a **new** object, so you can safely branch:
 | `default_target` | `'default'` | Name of the main element in per-target arrays and presets. |
 | `components.path` | `resource_path('views/components/ui')` | Where `make:malevich` creates components. |
 | `components.prefix` | `null` | Tag prefix for that folder: `null` -> `<x-button>`, `'ui'` -> `<x-ui::button>`. |
+
+## Editor support (Tailwind IntelliSense)
+
+The [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss) extension only looks for classes in `class="..."` and a few known places. To get autocomplete, hover previews and color swatches inside `@base`, `@variant` & co., tell it where the classes are. Add this to `.vscode/settings.json` in your project:
+
+```json
+{
+    "tailwindCSS.includeLanguages": {
+        "blade": "html"
+    },
+    "tailwindCSS.experimental.classRegex": [
+        [
+            "@(?:base|variant|color|size|directive|compound)\\s*\\(([\\s\\S]*?)\\)\\s*(?:\\n|$)",
+            "(?:^|=>|[\\[(,])\\s*[\"']([^\"']*)[\"'](?!\\s*=>)"
+        ]
+    ]
+}
+```
+
+How it works: the first pattern finds the directive and its arguments, the second picks the strings inside that hold classes - values, not the `'primary' =>` keys.
+
+- Added [your own directives](#your-own-directives)? Add their names to the first pattern: `(?:base|variant|color|size|directive|compound|radius)`.
+- Reload the window after changing the settings (**Developer: Reload Window**).
+- The same `classRegex` setting works in other editors that use the Tailwind language server (e.g. PhpStorm's Tailwind plugin, Zed, Neovim).
 
 ## A complete example
 
