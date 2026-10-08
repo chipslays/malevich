@@ -300,7 +300,7 @@ The classes can be written in three ways - use whichever reads best:
     'green' => ['bg-green-100', 'text-green-700'],
 
     // 3. conditional classes, exactly like Blade's @class
-    'blue' => ['bg-blue-100', 'text-blue-700', 'animate-pulse' => $live],
+    'blue' => ['bg-blue-100 text-blue-700', 'animate-pulse' => $live],
 ])
 ```
 
