@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Malevich;
 
+use Illuminate\Support\Arr;
 use InvalidArgumentException;
 
 /**
@@ -65,6 +66,41 @@ final class Recipe
         };
 
         $this->axes[$target][$axis] = is_array($map) ? $map : ['*' => $map];
+
+        return $this;
+    }
+
+    /**
+     * Declare an axis grouped by its values instead of by targets:
+     *
+     *     ->theme('variant', [
+     *         'teal' => ['default' => 'bg-teal-600', 'title' => 'text-teal-100'],
+     *         'dark' => ['default' => 'bg-gray-900', 'title' => 'text-white'],
+     *     ])
+     *
+     * It fills the same [target][axis][value] slots as one `axis()` call per
+     * target would, and merges into what is already declared for the axis.
+     * A value may also be plain classes (a string or a list), which style
+     * the root element.
+     *
+     * @param  array<string, mixed>  $themes  [axis value] => [target => classes]
+     */
+    public function theme(string $axis, array $themes): self
+    {
+        foreach ($themes as $value => $targets) {
+            if (! is_array($targets) || array_is_list($targets)) {
+                $targets = [Malevich::defaultTarget() => $targets];
+            }
+
+            foreach ($targets as $target => $classes) {
+                $target = (string) $target;
+                $existing = $this->axes[$target][$axis][$value] ?? null;
+
+                $this->axes[$target][$axis][$value] = $existing === null
+                    ? $classes
+                    : trim(Arr::toCssClasses($existing).' '.Arr::toCssClasses($classes));
+            }
+        }
 
         return $this;
     }

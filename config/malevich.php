@@ -36,6 +36,32 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Theme Directive
+    |--------------------------------------------------------------------------
+    |
+    | Name of the directive that declares an axis grouped by its values:
+    | @theme('variant', ['teal' => ['default' => '...', 'title' => '...']]).
+    | Change it if 'theme' collides with a directive of your own.
+    |
+    */
+
+    'theme_directive' => 'theme',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Has Directive
+    |--------------------------------------------------------------------------
+    |
+    | Name of the conditional that renders its body only when an element has
+    | classes: @hasUi('glow') <div @ui('glow')></div> @endif. Change it if
+    | 'hasUi' collides with a directive of your own.
+    |
+    */
+
+    'has_directive' => 'hasUi',
+
+    /*
+    |--------------------------------------------------------------------------
     | Components
     |--------------------------------------------------------------------------
     |

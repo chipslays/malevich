@@ -80,6 +80,23 @@ final class Malevich
             ->merge($merge);
     }
 
+    /**
+     * Runtime of `@hasUi('target')`: whether the element ends up with any
+     * classes. Lets a template skip a part that exists only in some variants.
+     *
+     * @param  array<string, mixed>  $scope  The template's get_defined_vars().
+     * @param  array<string, mixed>  $merge  Extra attributes, as with @ui.
+     */
+    public static function has(
+        ComponentAttributeBag $attributes,
+        array $scope,
+        ?string $target = null,
+        mixed $slot = null,
+        array $merge = [],
+    ): bool {
+        return self::ui($attributes, $scope, $target, $slot, $merge)->toClasses() !== '';
+    }
+
     public static function defaultTarget(): string
     {
         return config('malevich.default_target') ?: 'default';
@@ -88,6 +105,16 @@ final class Malevich
     public static function renderDirective(): string
     {
         return config('malevich.render_directive') ?: 'ui';
+    }
+
+    public static function themeDirective(): string
+    {
+        return config('malevich.theme_directive') ?: 'theme';
+    }
+
+    public static function hasDirective(): string
+    {
+        return config('malevich.has_directive') ?: 'hasUi';
     }
 
     /**

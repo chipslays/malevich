@@ -12,9 +12,25 @@ use Illuminate\View\ComponentAttributeBag;
 use InvalidArgumentException;
 use Malevich\Console\Commands\MakeCommand;
 use Malevich\Support\ComponentTagCompiler;
+use Malevich\Support\HtmlTagCompiler;
+use WeakMap;
 
 class MalevichServiceProvider extends ServiceProvider
 {
+    /**
+     * Directives with a fixed name. Everything else is configurable.
+     */
+    private const FIXED = ['directive', 'base', 'compound', 'preset'];
+
+    /**
+     * Directive names Malevich registered, per Blade compiler. Tells our own
+     * directives apart from a clash with another package when the provider
+     * boots again.
+     *
+     * @var WeakMap<object, array<string, true>>|null
+     */
+    private static ?WeakMap $registered = null;
+
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/malevich.php', 'malevich');
@@ -47,42 +63,104 @@ class MalevichServiceProvider extends ServiceProvider
         // after Blade swaps $attributes for a new bag (e.g. inside <x-...> tags).
         $recipe = '($'.Malevich::SCOPE_VARIABLE.' ??= \\'.Malevich::class.'::recipe($attributes))';
 
-        Blade::directive('directive', fn (string $expression) => "<?php {$recipe}->axis({$expression}); ?>");
-        Blade::directive('base', fn (string $expression) => "<?php {$recipe}->base({$expression}); ?>");
-        Blade::directive('compound', fn (string $expression) => "<?php {$recipe}->compound({$expression}); ?>");
-        Blade::directive('preset', fn (string $expression) => "<?php {$recipe}->preset({$expression}); ?>");
+        $this->declaration('directive', fn (string $expression) => "<?php {$recipe}->axis({$expression}); ?>");
+        $this->declaration('base', fn (string $expression) => "<?php {$recipe}->base({$expression}); ?>");
+        $this->declaration('compound', fn (string $expression) => "<?php {$recipe}->compound({$expression}); ?>");
+        $this->declaration('preset', fn (string $expression) => "<?php {$recipe}->preset({$expression}); ?>");
+        $this->declaration(Malevich::themeDirective(), fn (string $expression) => "<?php {$recipe}->theme({$expression}); ?>");
 
         foreach ($this->axes() as $axis) {
-            Blade::directive($axis, fn (string $expression) => "<?php {$recipe}->axis('{$axis}', {$expression}); ?>");
+            $this->declaration($axis, fn (string $expression) => "<?php {$recipe}->axis('{$axis}', {$expression}); ?>");
         }
 
-        Blade::directive(Malevich::renderDirective(), function (string $expression) {
+        $this->registerDirective(Malevich::renderDirective(), function (string $expression) {
             $arguments = trim($expression) === '' ? '' : ", {$expression}";
 
             return '<?php echo \\'.Malevich::class."::ui(\$attributes, get_defined_vars(){$arguments}); ?>";
         });
 
+        $this->registerDirective(Malevich::hasDirective(), function (string $expression) {
+            $arguments = trim($expression) === '' ? '' : ", {$expression}";
+
+            return '<?php if (\\'.Malevich::class."::has(\$attributes, get_defined_vars(){$arguments})): ?>";
+        });
+
         // Blade ignores directives inside <x-...> tags, so @ui is rewritten there first.
         Blade::prepareStringsForCompilationUsing(ComponentTagCompiler::compile(...));
+        // On plain tags a `class="..."` next to @ui would become a second class attribute.
+        Blade::prepareStringsForCompilationUsing(HtmlTagCompiler::compile(...));
     }
 
     /**
-     * Fail loudly on names from the config that would silently break things:
-     * a custom Blade directive replaces a built-in one (`@if`, `@class`, ...)
-     * for the whole application, and a name that is already a method of
-     * $attributes (`merge`, `get`, ...) can never work as a fluent call.
+     * A directive that only makes sense with an expression: `@variant([...])`.
+     * Without parentheses it is not ours, so the text is left alone. That keeps
+     * CSS inside a template intact, e.g. Tailwind's own `@theme {` and `@variant dark`.
+     *
+     * @param  Closure(string): string  $compile
+     */
+    private function declaration(string $name, Closure $compile): void
+    {
+        $this->registerDirective($name, fn (string $expression) => $expression === '' ? "@{$name}" : $compile($expression));
+    }
+
+    /**
+     * @param  Closure(string): string  $compile
+     */
+    private function registerDirective(string $name, Closure $compile): void
+    {
+        Blade::directive($name, $compile);
+
+        self::$registered ??= new WeakMap;
+        $compiler = Blade::getFacadeRoot();
+        $names = self::$registered[$compiler] ?? [];
+        $names[$name] = true;
+        self::$registered[$compiler] = $names;
+    }
+
+    /**
+     * Fail loudly on names that would silently break things: a custom Blade
+     * directive replaces a built-in one (`@if`, `@class`, ...) or a directive of
+     * another package for the whole application, and a name that is already a
+     * method of $attributes (`merge`, `get`, ...) can never work as a fluent call.
      */
     protected function ensureValidNames(): void
     {
-        $render = Malevich::renderDirective();
-        $own = ['directive', 'base', 'compound', 'preset'];
+        foreach (self::FIXED as $name) {
+            if ($this->isBuiltIn($name) || $this->isTakenByAnotherPackage($name)) {
+                throw new InvalidArgumentException("Malevich: the directive [@{$name}] is already taken by Blade or another package, and its name cannot be changed. Remove the clash or open an issue.");
+            }
+        }
 
-        foreach ([$render, ...$this->axes()] as $name) {
+        // name => the config option it comes from
+        $names = [];
+
+        foreach ([
+            'render_directive' => Malevich::renderDirective(),
+            'theme_directive' => Malevich::themeDirective(),
+            'has_directive' => Malevich::hasDirective(),
+        ] as $option => $name) {
+            if (isset($names[$name])) {
+                throw new InvalidArgumentException("Malevich: [@{$name}] is used both as {$names[$name]} and {$option}. Pick another name in config/malevich.php.");
+            }
+
+            $names[$name] = $option;
+        }
+
+        foreach ($this->axes() as $name) {
+            if (isset($names[$name]) && $names[$name] !== 'directives') {
+                throw new InvalidArgumentException("Malevich: [@{$name}] is used both as {$names[$name]} and in directives. Pick another name in config/malevich.php.");
+            }
+
+            $names[$name] = 'directives';
+        }
+
+        foreach ($names as $name => $option) {
             $problem = match (true) {
                 ! preg_match('/^[A-Za-z_]\w*$/', $name) => 'is not a valid directive name',
-                in_array($name, $own, true) => 'is already a Malevich directive',
-                method_exists(BladeCompiler::class, 'compile'.ucfirst($name)) => 'is a built-in Blade directive',
-                $name !== $render && method_exists(ComponentAttributeBag::class, $name) => 'is already a method of $attributes',
+                in_array($name, self::FIXED, true) => 'is already a Malevich directive',
+                $this->isBuiltIn($name) => 'is a built-in Blade directive',
+                $this->isTakenByAnotherPackage($name) => 'is already registered as a Blade directive by your application or another package',
+                $option === 'directives' && method_exists(ComponentAttributeBag::class, $name) => 'is already a method of $attributes',
                 default => null,
             };
 
@@ -90,10 +168,18 @@ class MalevichServiceProvider extends ServiceProvider
                 throw new InvalidArgumentException("Malevich: [@{$name}] {$problem}. Pick another name in config/malevich.php.");
             }
         }
+    }
 
-        if (in_array($render, $this->axes(), true)) {
-            throw new InvalidArgumentException("Malevich: [@{$render}] is used both as render_directive and in directives. Pick another name in config/malevich.php.");
-        }
+    private function isBuiltIn(string $name): bool
+    {
+        return method_exists(BladeCompiler::class, 'compile'.ucfirst($name));
+    }
+
+    private function isTakenByAnotherPackage(string $name): bool
+    {
+        $mine = self::$registered[Blade::getFacadeRoot()] ?? [];
+
+        return array_key_exists($name, Blade::getCustomDirectives()) && ! isset($mine[$name]);
     }
 
     protected function registerAttributeBagMacros(): void
