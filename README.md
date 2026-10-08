@@ -57,34 +57,35 @@ No ternaries, no `{{ $attributes->merge(['class' => ...]) }}`, no JavaScript, no
 8. [`@directive` - the universal form](#directive---the-universal-form)
 9. [`@compound` - classes for a combination](#compound---classes-for-a-combination)
 10. [`@preset` - saved combinations](#preset---saved-combinations)
-11. [Which tool should I use?](#which-tool-should-i-use)
+11. [`@theme` - one declaration per value](#theme---one-declaration-per-value)
+12. [Which tool should I use?](#which-tool-should-i-use)
 
 **Rendering**
 
-12. [`@ui` - full reference](#ui---full-reference)
-13. [Where values come from](#where-values-come-from)
-14. [Inner elements (targets)](#inner-elements-targets)
-15. [Named slots](#named-slots)
-16. [Booleans and enums](#booleans-and-enums)
+13. [`@ui` - full reference](#ui---full-reference)
+14. [Where values come from](#where-values-come-from)
+15. [Inner elements (targets)](#inner-elements-targets)
+16. [Named slots](#named-slots)
+17. [Booleans and enums](#booleans-and-enums)
 
 **Components**
 
-17. [Building on other components](#building-on-other-components)
-18. [Unstyled primitive](#unstyled-primitive)
+18. [Building on other components](#building-on-other-components)
+19. [Unstyled primitive](#unstyled-primitive)
 
 **More**
 
-19. [Your own directives](#your-own-directives)
-20. [Sharing styles between components](#sharing-styles-between-components)
-21. [Fixing Tailwind conflicts](#fixing-tailwind-conflicts)
-22. [`make:malevich` command](#makemalevich-command)
-23. [The `$attributes` API](#the-attributes-api)
-24. [Configuration](#configuration)
-25. [Editor support (Tailwind IntelliSense)](#editor-support-tailwind-intellisense)
-26. [A complete example](#a-complete-example)
-27. [FAQ and troubleshooting](#faq-and-troubleshooting)
-28. [Cheat sheet](#cheat-sheet)
-29. [Playground and contributing](#playground-and-contributing)
+20. [Your own directives](#your-own-directives)
+21. [Sharing styles between components](#sharing-styles-between-components)
+22. [Fixing Tailwind conflicts](#fixing-tailwind-conflicts)
+23. [`make:malevich` command](#makemalevich-command)
+24. [The `$attributes` API](#the-attributes-api)
+25. [Configuration](#configuration)
+26. [Editor support (Tailwind IntelliSense)](#editor-support-tailwind-intellisense)
+27. [A complete example](#a-complete-example)
+28. [FAQ and troubleshooting](#faq-and-troubleshooting)
+29. [Cheat sheet](#cheat-sheet)
+30. [Playground and contributing](#playground-and-contributing)
 
 ---
 
@@ -530,6 +531,47 @@ A preset can hold values for inner elements too. Use target names as keys (`defa
 
 **When to use presets:** a few combinations repeat all over your app ("the danger button", "the featured card"). For one-off looks, just pass the props.
 
+## `@theme` - one declaration per value
+
+`@variant('title', [...])` groups classes **by element**. When a component has many elements and every option value changes most of them ("teal" and "graphite" stat cards), the same classes read better grouped **by value**:
+
+```blade
+@props(['variant' => 'teal'])
+
+@base('flex')
+@base('title', 'font-medium')
+
+@theme('variant', [
+    'teal' => [
+        'default' => 'bg-teal-600',
+        'title' => 'text-teal-100',
+        'icon' => 'text-teal-200',
+    ],
+    'graphite' => [
+        'default' => 'bg-gray-900',
+        'title' => 'text-white',
+        'icon' => 'text-white/40',
+    ],
+])
+
+<div @ui>
+    <svg @ui('icon')></svg>
+    <h2 @ui('title')>{{ $title }}</h2>
+</div>
+```
+
+`@theme('variant', [...])` fills exactly the same slots as one `@variant('target', [...])` per element: `variant="teal"` styles the main element, `icon` and `title`, each with its own classes. Everything else (`@ui`, presets, `@compound`, [named slots](#named-slots)) works as before.
+
+- The first argument is the option name: `@theme('size', [...])`, `@theme('color', [...])`, any [`@directive`](#directive---the-universal-form) name.
+- Keys of the inner array are targets. `default` is the main element, like in presets and per-target values.
+- A value can also be plain classes (a string or a list) - they style the main element: `'teal' => 'bg-teal-600'`.
+- Several `@theme` calls for one option add up. A `@variant([...])` written **after** `@theme('variant', ...)` for the same element replaces it, so keep one style per option.
+
+> [!NOTE]
+> Write conditional classes (`['a', 'b' => $cond]`) under a target key, never directly as a value: a string-keyed array is read as a list of targets.
+
+The name `@theme` can be changed with the `theme_directive` [config option](#configuration).
+
 ## Which tool should I use?
 
 | I want to... | Use |
@@ -537,6 +579,8 @@ A preset can hold values for inner elements too. Use target names as keys (`defa
 | Change classes depending on one prop | [`@variant` / `@color` / `@size`](#variant-color-size), or [`@directive('name', ...)`](#directive---the-universal-form) for any other name |
 | Add classes that are always there | [`@base('...')`](#base---classes-that-are-always-there) |
 | Add fixed classes to an inner element | [`@base('title', '...')`](#base---classes-that-are-always-there) |
+| Style many elements at once, grouped by the value of one prop | [`@theme`](#theme---one-declaration-per-value) |
+| Render an element only in some variants | [`@hasUi`](#parts-that-exist-only-in-some-variants-hasui) |
 | Add classes when two props have certain values | [`@compound`](#compound---classes-for-a-combination) |
 | React to a boolean flag (`loading`, `active`) | [`@compound(['loading' => true], ...)`](#compound---classes-for-a-combination) or a [`true`/`false` class map](#booleans-and-enums) |
 | Give a name to a common set of props | [`@preset`](#preset---saved-combinations) |
@@ -623,6 +667,7 @@ If there are no classes at all, no empty `class=""` is printed.
 - `@ui` works on HTML tags **and on other components**: `<x-icon @ui('icon') />`. The classes and attributes are passed to that component as its `$attributes`. See [Building on other components](#building-on-other-components).
 - Inside `<x-...>` tags, write arguments with single quotes: `@ui(merge: ['type' => 'submit'])`. A double quote would end the generated attribute.
 - You can use `@ui` as many times as you want in one component, including several times for the same target.
+- A `class="..."` on the same tag is **added after** the element's own classes, as on a component tag: `<span @ui('chip') class="size-4 {{ $extra }}">`. Static text and `{{ }}` are supported. For anything else (`{!! !!}`, `@if` inside the class, or `merge:` already in use) Malevich throws on compile - pass the classes through `merge: ['class' => ...]` instead.
 
 > [!NOTE]
 > The name `@ui` can be changed with the `render_directive` [config option](#configuration).
@@ -713,6 +758,30 @@ One `size="sm"` styled **both** elements, each with its own classes.
 - Any directive takes a target: `@color('icon', ...)`, `@base('title', ...)`, `@compound('icon', [...], ...)`, and presets can be keyed by target.
 - Targets only get **their own** classes. `class="..."` and other attributes from the component tag always go to the main element.
 - To let the user style an inner element from outside, use a [named slot](#named-slots).
+
+### Parts that exist only in some variants (`@hasUi`)
+
+An element with no classes at all usually means "this part is not drawn in this variant". `@hasUi('target')` renders its body only when the element ends up with at least one class:
+
+```blade
+@theme('variant', [
+    'teal' => ['default' => 'bg-teal-600', 'glow' => 'absolute blur-3xl bg-teal-300/30'],
+    'graphite' => ['default' => 'bg-gray-900'],
+])
+
+<div @ui>
+    @hasUi('glow')
+        <div @ui('glow')></div>
+    @endif
+</div>
+```
+
+It is a normal conditional: `@else` and `@endif` work, and it takes the same arguments as `@ui` (`@hasUi('glow', merge: [...])`).
+
+> [!IMPORTANT]
+> `@base('glow', ...)` is always there, so a part with a `@base` is never "empty". For an optional part put **all** of its classes into the variants, as above.
+
+The name `@hasUi` can be changed with the `has_directive` [config option](#configuration).
 
 ## Named slots
 
@@ -970,9 +1039,18 @@ New components created with [`make:malevich`](#makemalevich-command) will includ
 Not every name is allowed. Malevich throws an exception on boot if a name:
 
 - is a built-in Blade directive (`if`, `class`, `foreach`, `props`, ...) - it would replace that directive in your whole app;
-- is a Malevich directive (`base`, `compound`, `preset`, `directive`, or your `render_directive`);
+- is already registered as a Blade directive by your application or another package (a Blade directive is global, the last one wins and silently breaks the other);
+- is a Malevich directive (`base`, `compound`, `preset`, `directive`, or your `render_directive`, `theme_directive`, `has_directive`);
 - is already a method of `$attributes` (`merge`, `get`, `only`, ...) - the fluent call `$attributes->merge(...)` could never reach it;
 - contains anything but letters, digits and `_`.
+
+### Name collisions
+
+The names of Malevich's own directives are rarely a problem, but they are all configurable or checked:
+
+- `@ui`, `@theme` and `@hasUi` can be renamed with `render_directive`, `theme_directive` and `has_directive`.
+- `@base`, `@compound`, `@preset` and `@directive` are fixed. On boot Malevich checks that Blade or another package has not taken them and throws a clear exception if so.
+- A directive that needs an expression (`@variant([...])`, `@theme('x', [...])`, `@base('...')`) and is written **without parentheses** is left alone. So CSS inside a template survives: Tailwind's `@theme {` and `@variant dark (...)` are not touched.
 
 ## Sharing styles between components
 
@@ -1089,8 +1167,10 @@ Every call returns a **new** object, so you can safely branch:
 |---|---|---|
 | `directives` | `['variant', 'size', 'color']` | Option directives: `@variant`, `@size`, ... Add your own here. |
 | `render_directive` | `'ui'` | The name of `@ui`. Change it if it clashes with another package. |
+| `theme_directive` | `'theme'` | The name of [`@theme`](#theme---one-declaration-per-value). |
+| `has_directive` | `'hasUi'` | The name of [`@hasUi`](#parts-that-exist-only-in-some-variants-hasui). |
 | `default_target` | `'default'` | Name of the main element in per-target arrays and presets. |
-| `components.path` | `resource_path('views/components/ui')` | Where `make:malevich` creates components. |
+| `components.path` | `resource_path('views/components')` | Where `make:malevich` creates components. |
 | `components.prefix` | `null` | Tag prefix for that folder: `null` -> `<x-button>`, `'ui'` -> `<x-ui::button>`. |
 
 ## Editor support (Tailwind IntelliSense)
@@ -1188,6 +1268,15 @@ Check, in this order:
 **I see `variant="..."` in my HTML.**
 The directive for that option is missing or written after `@ui`. Malevich only removes option names it knows about.
 
+**I wrote `class="..."` next to `@ui` and got an exception.**
+On a plain tag it is merged into `@ui` for you, but only for static text and `{{ }}`. With `{!! !!}`, a Blade directive inside the class, or an existing `merge:`, use `@ui('x', merge: ['class' => $classes])`.
+
+**An optional element renders as an empty `<div>`.**
+It has a `@base`, which makes it non-empty in every variant. Move its classes into the variants and wrap it in [`@hasUi`](#parts-that-exist-only-in-some-variants-hasui).
+
+**`@theme` or `@variant` inside my `<style>` / Tailwind CSS in a Blade file.**
+Fine. Without parentheses these are left as they are.
+
 **`class` from the tag isn't applied to my icon.**
 By design: tag attributes go to the main element only. Use a [named slot](#named-slots) or a separate prop.
 
@@ -1233,6 +1322,12 @@ No, only in Blade components - it needs the component's `$attributes`.
 {{-- always-on classes for inner element "title" --}}
 @base('title', 'font-semibold')
 
+{{-- the same, grouped by value: one entry per option value, a class per element --}}
+@theme('variant', [
+    'primary' => ['default' => '...', 'icon' => '...', 'title' => '...'],
+    'outline' => ['default' => '...', 'icon' => '...'],
+])
+
 {{-- classes when ALL conditions match; array = any of --}}
 @compound(['variant' => 'primary', 'size' => 'lg'], 'shadow-lg')
 @compound(['variant' => ['outline', 'ghost']], 'bg-transparent')
@@ -1244,6 +1339,7 @@ No, only in Blade components - it needs the component's `$attributes`.
 <button @ui(merge: ['type' => 'button'])>
     <svg @ui('icon')></svg>
     <span @ui('title')>{{ $title }}</span>   {{-- picks up <x-slot:title class="..."> --}}
+    @hasUi('badge')<i @ui('badge')></i>@endif {{-- only when the element has classes --}}
     {{ $slot }}
 </button>
 ```

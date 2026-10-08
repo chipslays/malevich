@@ -3,7 +3,7 @@
 ## Hard rules
 
 1. Declare every directive **before** `@ui`, right after `@props`.
-2. Always-on classes go in `@base`. Never put `class="..."` on the element that has `@ui`, and never combine `@ui` with `$attributes->class(...)`, `{{ $attributes }}` or `@class` on the same element.
+2. Always-on classes go in `@base`, not in a `class="..."` on the element that has `@ui` (it would be merged after, but `@base` is the right place). Never combine `@ui` with `$attributes->class(...)`, `{{ $attributes }}` or `@class` on the same element.
 3. Write full literal class names in maps. Never build them: `'bg-'.$color.'-500'`, `bg-{{ $color }}-500`. Tailwind cannot see them.
 4. Every default in `@props` must be an existing key of that option's map (case-sensitive).
 5. In components with `@preset`, options default to `null`.
@@ -11,12 +11,16 @@
 7. Primitive-based components: `as` is a prop forwarded with `:as="$as"`; do not declare `href`, `target`, `disabled`, `type` in `@props` unless forwarding them.
 8. Inner elements: each `@ui('x')` needs matching target declarations if it should be styled; tag `class` never reaches it.
 9. Match the project: option names, value names, size scale, palette, prefix (`components.prefix`), Tailwind version.
-10. Keep public prop names and values stable when refactoring; do not change rendered classes unless asked.
+10. Optional parts (drawn in some variants only): no `@base` for them, all classes in the variants, rendered in `@hasUi('target') ... @endif`. No `hidden` placeholders.
+11. Keep public prop names and values stable when refactoring; do not change rendered classes unless asked.
 
 ## Anti-patterns
 
 - `@ui` before the directives it depends on.
-- Hardcoded `class` next to `@ui`.
+- Hardcoded `class` next to `@ui` for always-on classes (use `@base`).
+- Repeating the same variant keys in many `@variant('target', ...)` calls when `@theme` reads better.
+- An empty or `hidden` placeholder element for a part that a variant does not have (use `@hasUi`).
+- Computing classes per variant in a PHP array inside the component instead of `@theme`.
 - Dynamic class-name concatenation.
 - Encoding a combination as a fake value (`'primary-lg'`) instead of `@compound`.
 - Using `@preset` for one-off looks.

@@ -14,6 +14,18 @@
 
 Arguments: target (1st, positional), `slot:`, `merge:` (named).
 
+## `@hasUi`
+
+`@hasUi('target') ... @endif` renders its body only if the element ends up with classes (same arguments as `@ui`; `@else` works). Use it for parts that exist in some variants only. A `@base` makes a part non-empty everywhere, so an optional part has no `@base`: all its classes live in the variants.
+
+```blade
+@hasUi('glow')<div @ui('glow')></div>@endif
+```
+
+## `class="..."` next to `@ui`
+
+On a plain HTML tag a `class` next to `@ui` is merged into one `class` attribute, after the element's own classes: `<span @ui('chip') class="size-4 {{ $extra }}">`. Only static text and `{{ }}` are supported; with `{!! !!}`, a Blade directive inside the class, or an existing `merge:`, compilation throws and you pass `merge: ['class' => ...]` yourself. `<x-...>` tags always merge their `class`.
+
 ## Output rules (main element)
 
 - `class` order: `@base` -> class maps (file order) -> `@compound` -> `class` from `merge:` -> `class` from the tag. Duplicates removed. No empty `class=""`.

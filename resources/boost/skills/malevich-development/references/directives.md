@@ -9,6 +9,7 @@ All directives must be declared **before** `@ui`.
 | `@variant([...])`, `@color([...])`, `@size([...])` | Class map for `$variant` / `$color` / `$size`. Identical behaviour, only the name differs. |
 | `@directive('radius', [...])` | Class map for any option name. |
 | `@directive('radius', 'target', [...])` / `@variant('target', [...])` | Same, for an inner element. |
+| `@theme('axis', [value => [target => classes]])` | The same class maps as `@variant('target', [...])` per element, grouped by value. |
 | `@compound([conds], 'classes')` | Classes when ALL conditions match. A list value means "any of". Added after all class maps. |
 | `@compound('target', [conds], 'classes')` | Same for an inner element. |
 | `@preset('name', [...])` | Named bundle of values, chosen with `preset="name"`. |
@@ -31,6 +32,23 @@ Key = option value, item = classes. Classes can be a string, a list, or `@class`
 - Backed enums by value, plain enums by case name, numbers by string form (`:level="2"` -> `'2'`).
 - `'*'` key = always. Works, but prefer `@base`.
 - Order: classes are added in the order directives appear in the file. Duplicates removed.
+
+## `@theme`
+
+Use it when one prop changes the classes of several elements and you want to read "what does `teal` look like" in one place:
+
+```blade
+@theme('variant', [
+    'teal' => ['default' => 'bg-teal-600', 'title' => 'text-teal-100', 'glow' => 'absolute blur-3xl'],
+    'dark' => ['default' => 'bg-gray-900', 'title' => 'text-white'],
+])
+```
+
+- First argument: the option name (`variant`, `size`, any `@directive` name).
+- Inner keys are targets, `default` is the main element. A plain string or list as a value styles the main element.
+- It fills the same slots as one `@variant('target', [...])` per element; several `@theme` calls add up. A later `@variant([...])` for the same element and option **replaces** the theme's classes.
+- Conditional classes (`['a', 'b' => $cond]`) go under a target key, never directly as a value.
+- An optional part: no `@base` for it, all classes in the variants, render it inside `@hasUi('target') ... @endif`.
 
 ## `@compound`
 
@@ -70,6 +88,12 @@ Key = option value, item = classes. Classes can be a string, a list, or `@class`
 
 Per-target values: pass an array keyed by target, main element is `default`:
 `<x-button :size="['default' => 'lg', 'spinner' => 'sm']" />`.
+
+## Directive names and collisions
+
+- `@ui`, `@theme`, `@hasUi` are renamable: `render_directive`, `theme_directive`, `has_directive` in `config/malevich.php`. `@base`, `@compound`, `@preset`, `@directive` are fixed.
+- Boot throws if a configured name is a Blade built-in, is already registered by the app or another package, is a Malevich name, is a method of `$attributes`, or is invalid.
+- A directive written without parentheses is left as text, so Tailwind's `@theme {` / `@variant dark` inside a template stay intact.
 
 ## Custom option directives
 
