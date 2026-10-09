@@ -46,7 +46,7 @@ Never write `$color` in the markup. Static classes go in `@base`, not in a `clas
 @directive('radius', ['md' => 'rounded-md'])              {{-- any option name --}}
 @size('icon', ['sm' => 'size-3', 'md' => 'size-4'])       {{-- inner element "icon" --}}
 @base('title', 'font-semibold')                           {{-- always-on for inner element --}}
-@theme('variant', ['teal' => ['default' => '...', 'title' => '...'], 'dark' => [...]])   {{-- same maps, grouped by value --}}
+@cases('variant', ['teal' => ['default' => '...', 'title' => '...'], 'dark' => [...]])   {{-- same maps, grouped by value --}}
 @compound(['variant' => 'primary', 'size' => 'lg'], 'shadow-lg')   {{-- ALL conditions; list = any of --}}
 @compound(['loading' => true], 'cursor-wait')             {{-- flag --}}
 @preset('big', ['size' => 'lg'])                          {{-- used as preset="big" --}}
@@ -54,7 +54,7 @@ Never write `$color` in the markup. Static classes go in `@base`, not in a `clas
 <button @ui(merge: ['type' => 'button'])>                 {{-- default attributes, user wins --}}
     <svg @ui('icon')></svg>
     <span @ui('title')>{{ $title }}</span>                {{-- picks up <x-slot:title class="..."> --}}
-    @hasUi('badge')<i @ui('badge')></i>@endif             {{-- only when that element has classes --}}
+    @has('badge')<i @ui('badge')></i>@endhas             {{-- only when that element has classes --}}
     {{ $slot }}
 </button>
 ```
@@ -72,8 +72,8 @@ php artisan view:clear     # after config changes or package upgrade
 |---|---|
 | Classes depend on one prop | `@variant` / `@color` / `@size` / `@directive('name', ...)` |
 | Classes always present | `@base` |
-| Several elements change together per value of one prop | `@theme('variant', [value => [target => classes]])` |
-| An element exists only in some variants | `@hasUi('target') ... @endif`, all its classes in the variants (no `@base`) |
+| Several elements change together per value of one prop | `@cases('variant', [value => [target => classes]])` |
+| An element exists only in some variants | `@has('target') ... @endhas`, all its classes in the variants (no `@base`) |
 | Classes depend on 2+ props or a flag | `@compound` |
 | Named bundle of props | `@preset` (options must default to `null`) |
 | Style an inner element | target: `@size('icon', [...])` + `@ui('icon')` |
@@ -101,4 +101,4 @@ php artisan view:clear     # after config changes or package upgrade
 
 ## Templates
 
-Finished, working components to start from (copy and adapt names/palette to the project): [templates/button.blade.php](templates/button.blade.php) (primitive, variants, sizes, spinner target), [templates/badge.blade.php](templates/badge.blade.php) (`@compound` matrix), [templates/alert.blade.php](templates/alert.blade.php) (targets, named slot, `merge:` a11y), [templates/card.blade.php](templates/card.blade.php) (presets, custom `@directive`), [templates/switch.blade.php](templates/switch.blade.php) (boolean option, inner element), [templates/stat.blade.php](templates/stat.blade.php) (`@theme`, optional part with `@hasUi`).
+Finished, working components to start from (copy and adapt names/palette to the project): [templates/button.blade.php](templates/button.blade.php) (primitive, variants, sizes, spinner target), [templates/badge.blade.php](templates/badge.blade.php) (`@compound` matrix), [templates/alert.blade.php](templates/alert.blade.php) (targets, named slot, `merge:` a11y), [templates/card.blade.php](templates/card.blade.php) (presets, custom `@directive`), [templates/switch.blade.php](templates/switch.blade.php) (boolean option, inner element), [templates/stat.blade.php](templates/stat.blade.php) (`@cases`, optional part with `@has`).

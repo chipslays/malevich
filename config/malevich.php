@@ -36,16 +36,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Theme Directive
+    | Cases Directive
     |--------------------------------------------------------------------------
     |
     | Name of the directive that declares an axis grouped by its values:
-    | @theme('variant', ['teal' => ['default' => '...', 'title' => '...']]).
-    | Change it if 'theme' collides with a directive of your own.
+    | @cases('variant', ['teal' => ['default' => '...', 'title' => '...']]).
+    | Change it if 'cases' collides with a directive of your own.
     |
     */
 
-    'theme_directive' => 'theme',
+    'cases_directive' => 'cases',
 
     /*
     |--------------------------------------------------------------------------
@@ -53,12 +53,12 @@ return [
     |--------------------------------------------------------------------------
     |
     | Name of the conditional that renders its body only when an element has
-    | classes: @hasUi('glow') <div @ui('glow')></div> @endif. Change it if
-    | 'hasUi' collides with a directive of your own.
+    | classes: @has('glow') <div @ui('glow')></div> @endif. Change it if
+    | 'has' collides with a directive of your own.
     |
     */
 
-    'has_directive' => 'hasUi',
+    'has_directive' => 'has',
 
     /*
     |--------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 
 @size(['sm' => 'p-2', 'md' => 'p-4'])
 
-@theme('variant', [
+@cases('variant', [
     'teal' => ['_' => 'bg-teal', 'title' => 'text-teal-100'],
     'plain' => 'bg-plain',
 ])

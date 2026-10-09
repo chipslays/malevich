@@ -14,12 +14,12 @@
 
 Arguments: target (1st, positional), `slot:`, `merge:` (named).
 
-## `@hasUi`
+## `@has`
 
-`@hasUi('target') ... @endif` renders its body only if the element ends up with classes (same arguments as `@ui`; `@else` works). Use it for parts that exist in some variants only. A `@base` makes a part non-empty everywhere, so an optional part has no `@base`: all its classes live in the variants.
+`@has('target') ... @endhas` renders its body only if the element ends up with classes (same arguments as `@ui`; `@else` works). Use it for parts that exist in some variants only. A `@base` makes a part non-empty everywhere, so an optional part has no `@base`: all its classes live in the variants.
 
 ```blade
-@hasUi('glow')<div @ui('glow')></div>@endif
+@has('glow')<div @ui('glow')></div>@endhas
 ```
 
 ## `class="..."` next to `@ui`

@@ -14,18 +14,18 @@ it('boots again without mistaking its own directives for a clash', function () {
     reboot();
     reboot();
 
-    expect(Blade::compileString("@theme('variant', [])"))->toContain('->theme(');
+    expect(Blade::compileString("@cases('variant', [])"))->toContain('->cases(');
 });
 
-it('refuses a theme or has directive that is a built-in Blade directive', function (string $option) {
+it('refuses a cases or has directive that is a built-in Blade directive', function (string $option) {
     reboot(['malevich.'.$option => 'if']);
-})->with(['theme_directive', 'has_directive'])->throws(InvalidArgumentException::class, 'is a built-in Blade directive');
+})->with(['cases_directive', 'has_directive'])->throws(InvalidArgumentException::class, 'is a built-in Blade directive');
 
 it('refuses a name that another package already registered', function (string $option) {
     Blade::directive('taken', fn () => '');
 
     reboot(['malevich.'.$option => 'taken']);
-})->with(['theme_directive', 'has_directive', 'render_directive'])->throws(InvalidArgumentException::class, 'by your application or another package');
+})->with(['cases_directive', 'has_directive', 'render_directive'])->throws(InvalidArgumentException::class, 'by your application or another package');
 
 it('refuses an axis that another package already registered', function () {
     Blade::directive('radius', fn () => '');
@@ -36,15 +36,15 @@ it('refuses an axis that another package already registered', function () {
 it('refuses invalid or doubled names', function (array $config, string $message) {
     reboot($config);
 })->with([
-    'theme invalid' => [['malevich.theme_directive' => 'my-theme'], 'is not a valid directive name'],
-    'theme = render' => [['malevich.theme_directive' => 'ui'], 'used both as render_directive and theme_directive'],
-    'has = theme' => [['malevich.has_directive' => 'theme'], 'used both as theme_directive and has_directive'],
-    'theme as axis' => [['malevich.directives' => ['variant', 'theme']], 'used both as theme_directive and in directives'],
-    'has as axis' => [['malevich.directives' => ['hasUi']], 'used both as has_directive and in directives'],
+    'cases invalid' => [['malevich.cases_directive' => 'my-theme'], 'is not a valid directive name'],
+    'cases = render' => [['malevich.cases_directive' => 'ui'], 'used both as render_directive and cases_directive'],
+    'has = cases' => [['malevich.has_directive' => 'cases'], 'used both as cases_directive and has_directive'],
+    'cases as axis' => [['malevich.directives' => ['variant', 'cases']], 'used both as cases_directive and in directives'],
+    'has as axis' => [['malevich.directives' => ['has']], 'used both as has_directive and in directives'],
 ])->throws(InvalidArgumentException::class);
 
-it('refuses a theme directive that is a fixed Malevich directive', function () {
-    reboot(['malevich.theme_directive' => 'base']);
+it('refuses a cases directive that is a fixed Malevich directive', function () {
+    reboot(['malevich.cases_directive' => 'base']);
 })->throws(InvalidArgumentException::class, 'is already a Malevich directive');
 
 it('refuses to boot when a fixed name is taken by another package', function () {
@@ -56,12 +56,27 @@ it('refuses to boot when a fixed name is taken by another package', function () 
     reboot();
 })->throws(InvalidArgumentException::class, 'cannot be changed');
 
-it('renames the theme and has directives', function () {
-    reboot(['malevich.theme_directive' => 'palette', 'malevich.has_directive' => 'present']);
+it('renames the cases and has directives', function () {
+    reboot(['malevich.cases_directive' => 'palette', 'malevich.has_directive' => 'present']);
 
-    expect(Blade::compileString("@palette('variant', [])"))->toContain('->theme(')
+    expect(Blade::compileString("@palette('variant', [])"))->toContain('->cases(')
         ->and(Blade::compileString("@present('glow')"))->toContain("Malevich::has(\$attributes, get_defined_vars(), 'glow')");
 });
+
+it('closes the has directive with @end plus its name', function () {
+    expect(Blade::compileString("@has('glow')x @endhas"))->toEndWith('x <?php endif; ?>');
+
+    reboot(['malevich.has_directive' => 'present']);
+
+    expect(Blade::compileString("@present('glow')x @endpresent"))->toEndWith('x <?php endif; ?>');
+});
+
+it('refuses a has directive whose closing tag is taken by another package', function () {
+    Blade::swap(new BladeCompiler(app('files'), sys_get_temp_dir()));
+    Blade::directive('endhas', fn () => '');
+
+    reboot();
+})->throws(InvalidArgumentException::class, 'by your application or another package');
 
 it('leaves CSS alone when a directive has no expression', function () {
     $css = "<style type=\"text/tailwindcss\">\n@theme {\n  --color-brand: red;\n}\n@variant dark (&:where(.dark, .dark *));\n@base\n</style>";
@@ -71,5 +86,5 @@ it('leaves CSS alone when a directive has no expression', function () {
 
 it('still compiles directives that have an expression', function () {
     expect(Blade::compileString("@variant(['a' => 'b'])"))->toContain("->axis('variant', ['a' => 'b'])")
-        ->and(Blade::compileString("@theme('variant', [])"))->toContain("->theme('variant', [])");
+        ->and(Blade::compileString("@cases('variant', [])"))->toContain("->cases('variant', [])");
 });

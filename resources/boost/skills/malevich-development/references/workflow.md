@@ -80,7 +80,7 @@ Tailwind IntelliSense `.vscode/settings.json`:
     "tailwindCSS.includeLanguages": { "blade": "html" },
     "tailwindCSS.experimental.classRegex": [
         [
-            "@(?:base|variant|color|size|directive|compound)\\s*\\(([\\s\\S]*?)\\)\\s*(?:\\n|$)",
+            "@(?:base|variant|color|size|directive|compound|cases)\\s*\\(([\\s\\S]*?)\\)\\s*(?:\\n|$)",
             "(?:^|=>|[\\[(,])\\s*[\"']([^\"']*)[\"'](?!\\s*=>)"
         ]
     ]

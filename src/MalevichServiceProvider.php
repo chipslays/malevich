@@ -67,7 +67,7 @@ class MalevichServiceProvider extends ServiceProvider
         $this->declaration('base', fn (string $expression) => "<?php {$recipe}->base({$expression}); ?>");
         $this->declaration('compound', fn (string $expression) => "<?php {$recipe}->compound({$expression}); ?>");
         $this->declaration('preset', fn (string $expression) => "<?php {$recipe}->preset({$expression}); ?>");
-        $this->declaration(Malevich::themeDirective(), fn (string $expression) => "<?php {$recipe}->theme({$expression}); ?>");
+        $this->declaration(Malevich::casesDirective(), fn (string $expression) => "<?php {$recipe}->cases({$expression}); ?>");
 
         foreach ($this->axes() as $axis) {
             $this->declaration($axis, fn (string $expression) => "<?php {$recipe}->axis('{$axis}', {$expression}); ?>");
@@ -85,6 +85,9 @@ class MalevichServiceProvider extends ServiceProvider
             return '<?php if (\\'.Malevich::class."::has(\$attributes, get_defined_vars(){$arguments})): ?>";
         });
 
+        // `@end` + the name, like @endauth: the closing tag is a plain endif.
+        $this->registerDirective('end'.Malevich::hasDirective(), fn () => '<?php endif; ?>');
+
         // Blade ignores directives inside <x-...> tags, so @ui is rewritten there first.
         Blade::prepareStringsForCompilationUsing(ComponentTagCompiler::compile(...));
         // On plain tags a `class="..."` next to @ui would become a second class attribute.
@@ -94,7 +97,7 @@ class MalevichServiceProvider extends ServiceProvider
     /**
      * A directive that only makes sense with an expression: `@variant([...])`.
      * Without parentheses it is not ours, so the text is left alone. That keeps
-     * CSS inside a template intact, e.g. Tailwind's own `@theme {` and `@variant dark`.
+     * CSS inside a template intact, e.g. Tailwind's own `@variant dark`.
      *
      * @param  Closure(string): string  $compile
      */
@@ -136,7 +139,7 @@ class MalevichServiceProvider extends ServiceProvider
 
         foreach ([
             'render_directive' => Malevich::renderDirective(),
-            'theme_directive' => Malevich::themeDirective(),
+            'cases_directive' => Malevich::casesDirective(),
             'has_directive' => Malevich::hasDirective(),
         ] as $option => $name) {
             if (isset($names[$name])) {
@@ -145,6 +148,9 @@ class MalevichServiceProvider extends ServiceProvider
 
             $names[$name] = $option;
         }
+
+        // The closing tag of the has-directive is a name of its own.
+        $names['end'.Malevich::hasDirective()] = 'has_directive';
 
         foreach ($this->axes() as $name) {
             if (isset($names[$name]) && $names[$name] !== 'directives') {

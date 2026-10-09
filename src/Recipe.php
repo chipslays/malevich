@@ -73,7 +73,7 @@ final class Recipe
     /**
      * Declare an axis grouped by its values instead of by targets:
      *
-     *     ->theme('variant', [
+     *     ->cases('variant', [
      *         'teal' => ['default' => 'bg-teal-600', 'title' => 'text-teal-100'],
      *         'dark' => ['default' => 'bg-gray-900', 'title' => 'text-white'],
      *     ])
@@ -83,11 +83,11 @@ final class Recipe
      * A value may also be plain classes (a string or a list), which style
      * the root element.
      *
-     * @param  array<string, mixed>  $themes  [axis value] => [target => classes]
+     * @param  array<string, mixed>  $cases  [axis value] => [target => classes]
      */
-    public function theme(string $axis, array $themes): self
+    public function cases(string $axis, array $cases): self
     {
-        foreach ($themes as $value => $targets) {
+        foreach ($cases as $value => $targets) {
             if (! is_array($targets) || array_is_list($targets)) {
                 $targets = [Malevich::defaultTarget() => $targets];
             }

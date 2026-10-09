@@ -18,16 +18,16 @@
 @base('footer', 'mt-auto flex items-center gap-2 border-t pt-3')
 
 {{--
-    One option, many elements: @theme groups the maps by value, so "what does teal look like"
+    One option, many elements: @cases groups the maps by value, so "what does teal look like"
     is answered in one place. `default` is the main element, other keys are targets.
 --}}
-@theme('variant', [
+@cases('variant', [
     'teal' => [
         'default' => 'from-teal-600 to-teal-800',
         'glow' => '-bottom-16 -left-10 size-40 bg-lime-400/20',
         'title' => 'text-teal-100',
         'footer' => 'border-white/15 text-teal-100',
-        // Only teal has this part: no @base for it, and @hasUi below skips it elsewhere.
+        // Only teal has this part: no @base for it, and @has below skips it elsewhere.
         'halo' => 'pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-teal-300/30 blur-3xl',
     ],
     'graphite' => [
@@ -40,7 +40,7 @@
 
 <div @ui>
     <div @ui('glow')></div>
-    @hasUi('halo')<div @ui('halo')></div>@endif
+    @has('halo')<div @ui('halo')></div>@endhas
 
     <div @ui('head')>
         <span @ui('title')>{{ $title }}</span>

@@ -81,7 +81,7 @@ final class Malevich
     }
 
     /**
-     * Runtime of `@hasUi('target')`: whether the element ends up with any
+     * Runtime of `@has('target')`: whether the element ends up with any
      * classes. Lets a template skip a part that exists only in some variants.
      *
      * @param  array<string, mixed>  $scope  The template's get_defined_vars().
@@ -107,14 +107,14 @@ final class Malevich
         return config('malevich.render_directive') ?: 'ui';
     }
 
-    public static function themeDirective(): string
+    public static function casesDirective(): string
     {
-        return config('malevich.theme_directive') ?: 'theme';
+        return config('malevich.cases_directive') ?: 'cases';
     }
 
     public static function hasDirective(): string
     {
-        return config('malevich.has_directive') ?: 'hasUi';
+        return config('malevich.has_directive') ?: 'has';
     }
 
     /**
