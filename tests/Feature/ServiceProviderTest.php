@@ -12,8 +12,7 @@ it('registers the core attribute-bag macros', function () {
     expect(ComponentAttributeBag::hasMacro('for'))->toBeTrue()
         ->and(ComponentAttributeBag::hasMacro('use'))->toBeTrue()
         ->and(ComponentAttributeBag::hasMacro('option'))->toBeTrue()
-        ->and(ComponentAttributeBag::hasMacro('classesFor'))->toBeTrue()
-        ->and(ComponentAttributeBag::hasMacro('preset'))->toBeTrue();
+        ->and(ComponentAttributeBag::hasMacro('classesFor'))->toBeTrue();
 });
 
 it('registers a macro for every option configured in malevich.options', function () {

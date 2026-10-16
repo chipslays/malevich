@@ -24,13 +24,6 @@ final class Declarations
     private array $unchecked = [];
 
     /**
-     * @var array<string, true>
-     */
-    public array $presets = [];
-
-    public bool $presetsKnown = true;
-
-    /**
      * @param  list<mixed>  $values
      */
     public function values(string $option, array $values): void

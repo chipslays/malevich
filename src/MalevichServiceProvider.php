@@ -23,7 +23,7 @@ class MalevichServiceProvider extends ServiceProvider
     /**
      * Directives with a fixed name. Everything else is configurable.
      */
-    private const FIXED = ['option', 'base', 'compound', 'preset', 'defaults'];
+    private const FIXED = ['option', 'base', 'compound'];
 
     /**
      * Directive names Malevich registered, per Blade compiler. Tells our own
@@ -76,8 +76,6 @@ class MalevichServiceProvider extends ServiceProvider
         $this->declaration('option', fn (string $expression) => "<?php {$recipe}->option({$expression}); ?>");
         $this->declaration('base', fn (string $expression) => "<?php {$recipe}->base({$expression}); ?>");
         $this->declaration('compound', fn (string $expression) => "<?php {$recipe}->compound({$expression}); ?>");
-        $this->declaration('preset', fn (string $expression) => "<?php {$recipe}->preset({$expression}); ?>");
-        $this->declaration('defaults', fn (string $expression) => "<?php {$recipe}->defaults({$expression}); ?>");
         $this->declaration(Malevich::casesDirective(), fn (string $expression) => "<?php {$recipe}->cases({$expression}); ?>");
 
         foreach ($this->options() as $option) {
@@ -204,7 +202,6 @@ class MalevichServiceProvider extends ServiceProvider
         $this->macro('for', fn (Element $element, string $target) => $element->for($target));
         $this->macro('use', fn (Element $element, mixed ...$arguments) => $element->use(...$arguments));
         $this->macro('option', fn (Element $element, string $option, mixed $value = null) => $element->option($option, $value));
-        $this->macro('preset', fn (Element $element, ?string $name) => $element->preset($name));
         $this->macro('classesFor', fn (Element $element, string $option, ?array $values = null) => $element->classesFor($option, $values));
 
         foreach ($this->options() as $option) {

@@ -1,6 +1,4 @@
-@props(['preset' => null, 'tone' => null])
-
-@preset('danger', ['variant' => 'filled', 'tone' => 'red'])
+@props(['tone' => null])
 
 @variant(['filled' => 'shadow', 'flat' => 'border'])
 @option('tone', ['red' => 'bg-red-50', 'blue' => 'bg-blue-50'])

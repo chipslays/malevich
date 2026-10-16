@@ -99,27 +99,6 @@ it('option() resolves a per-target value array against the current target', func
     expect($Element->toClasses())->toBe('text-red-500');
 });
 
-it('applies a preset registered for the current target', function () {
-    $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->option('color', ['red' => 'text-red-500']);
-    Malevich::recipe($bag)->option('size', ['lg' => 'text-lg']);
-    Malevich::recipe($bag)->preset('danger', ['default' => ['color' => 'red', 'size' => 'lg']]);
-
-    $Element = (new Element($bag))->preset('danger');
-
-    expect($Element->toClasses())->toBe('text-red-500 text-lg');
-});
-
-it('falls back to the flat preset shape when no per-target key matches', function () {
-    $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->option('color', ['red' => 'text-red-500']);
-    Malevich::recipe($bag)->preset('danger', ['color' => 'red']);
-
-    $Element = (new Element($bag))->preset('danger');
-
-    expect($Element->toClasses())->toBe('text-red-500');
-});
-
 it('supports magic method calls as option shortcuts', function () {
     $bag = new ComponentAttributeBag;
     Malevich::recipe($bag)->option('variant', ['solid' => 'bg-black']);
@@ -229,14 +208,12 @@ it('applies compound rules with "any of" conditions', function () {
         ->and((new Element($bag))->toClasses())->toBe('');
 });
 
-it('lets an explicit value override a preset, and ignores explicit nulls', function () {
-    $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)
-        ->option('color', ['red' => 'text-red-500', 'blue' => 'text-blue-500'])
-        ->preset('danger', ['color' => 'red']);
+it('lets an explicit value override the tag, and ignores explicit nulls', function () {
+    $bag = new ComponentAttributeBag(['color' => 'red']);
+    Malevich::recipe($bag)->option('color', ['red' => 'text-red-500', 'blue' => 'text-blue-500']);
 
-    expect((new Element($bag))->preset('danger')->color('blue')->toClasses())->toBe('text-blue-500')
-        ->and((new Element($bag))->preset('danger')->color(null)->toClasses())->toBe('text-red-500');
+    expect((new Element($bag))->color('blue')->toClasses())->toBe('text-blue-500')
+        ->and((new Element($bag))->color(null)->toClasses())->toBe('text-red-500');
 });
 
 it('accepts a plain string as a wildcard-only option', function () {

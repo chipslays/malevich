@@ -5,11 +5,9 @@
 1. Declare every directive **before** `@attributes`, right after `@props`.
 2. Always-on classes go in `@base`, not in a `class="..."` on the element that has `@attributes` (it would be merged after, but `@base` is the right place). Never combine `@attributes` with `$attributes->class(...)`, `{{ $attributes }}` or `@class` on the same element.
 3. Write full literal class names in maps. Never build them: `'bg-'.$color.'-500'`, `bg-{{ $color }}-500`. Tailwind cannot see them.
-4. Option defaults go in `@defaults([...])`, and each must be an existing key of that option's map (case-sensitive).
-5. Never give an option a non-null `@props` default: it beats presets. Declare an option in `@props` only when the markup uses the variable, with a `null` default.
-6. Inside `<x-...>` tags use single quotes in `@attributes(...)` arguments.
-7. Primitive-based components: `as` is a prop forwarded with `:as="$as"`; do not declare `href`, `target`, `disabled`, `type` in `@props` unless forwarding them.
-8. Inner elements: each `@attributes('x')` needs matching target declarations if it should be styled; tag `class` never reaches it.
+4. Option defaults go in `@props([...])`, and each must be an existing key of that option's map (case-sensitive).
+5. Primitive-based components: `as` is a prop forwarded with `:as="$as"`; do not declare `href`, `target`, `disabled`, `type` in `@props` unless forwarding them.
+6. Inner elements: each `@attributes('x')` needs matching target declarations if it should be styled; tag `class` never reaches it.
 9. Match the project: option names, value names, size scale, palette, prefix (`components.prefix`), Tailwind version.
 10. Optional parts (drawn in some variants only): no `@base` for them, all classes in the variants, rendered in `@has('target') ... @endhas`. No `hidden` placeholders.
 11. Keep public prop names and values stable when refactoring; do not change rendered classes unless asked.
@@ -23,8 +21,6 @@
 - Computing classes per variant in a PHP array inside the component instead of `@cases`.
 - Dynamic class-name concatenation.
 - Encoding a combination as a fake value (`'primary-lg'`) instead of `@compound`.
-- Using `@preset` for one-off looks.
-- Non-null `@props` defaults for options (they beat the preset; use `@defaults`).
 - Hardcoding `as="button"` on the primitive inside an overridable component.
 - Declaring `href`/`disabled` in `@props` of a primitive-based component without forwarding.
 - `@attributes` in layouts/pages.

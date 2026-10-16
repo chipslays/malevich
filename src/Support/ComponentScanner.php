@@ -13,8 +13,7 @@ use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * Reads the options of every anonymous Blade component from its source,
- * without rendering it: which values each option accepts and which
- * presets exist.
+ * without rendering it: which values each option accepts.
  *
  * Only literal declarations can be read. Whatever is not literal makes the
  * affected part unknown, and unknown parts are never checked - the result
@@ -35,7 +34,7 @@ final class ComponentScanner
      * Components that declare at least one checkable option, by tag name
      * without the `x-` (e.g. "button", "forms.input", "ui::badge").
      *
-     * @return array<string, array{file: string, options: array<string, list<string>>, presets: list<string>|null}>
+     * @return array<string, array{file: string, options: array<string, list<string>>}>
      */
     public function components(): array
     {
@@ -67,7 +66,7 @@ final class ComponentScanner
     /**
      * What one component file declares, or null when it has nothing to check.
      *
-     * @return array{file: string, options: array<string, list<string>>, presets: list<string>|null}|null
+     * @return array{file: string, options: array<string, list<string>>}|null
      */
     public function component(string $path): ?array
     {
@@ -81,10 +80,9 @@ final class ComponentScanner
 
         $options = $declarations->options();
 
-        return $options === [] && $declarations->presets === [] ? null : [
+        return $options === [] ? null : [
             'file' => $path,
             'options' => $options,
-            'presets' => $declarations->presetsKnown ? array_keys($declarations->presets) : null,
         ];
     }
 
@@ -96,7 +94,7 @@ final class ComponentScanner
         $template = (string) preg_replace('/@verbatim.*?@endverbatim|\{\{--.*?--\}\}/s', '', $this->files->get($path));
 
         $options = Malevich::options();
-        $names = ['option', 'compound', 'preset', 'include', 'includeIf', 'includeWhen', 'includeUnless', 'includeFirst', 'each', Malevich::casesDirective(), ...$options];
+        $names = ['option', 'compound', 'include', 'includeIf', 'includeWhen', 'includeUnless', 'includeFirst', 'each', Malevich::casesDirective(), ...$options];
         $pattern = '/(?<!@)@(?<name>'.implode('|', array_map(fn (string $name) => preg_quote($name, '/'), $names)).')\b\s*(?<arguments>'.TagScanner::PARENS.')?/';
 
         preg_match_all($pattern, $template, $matches, PREG_SET_ORDER | PREG_UNMATCHED_AS_NULL);
@@ -117,7 +115,6 @@ final class ComponentScanner
                 str_starts_with($name, 'include'), $name === 'each' => throw new InvalidArgumentException('Conditional partial.'),
                 $name === 'option' => $this->option(null, $arguments, $declarations),
                 $name === 'compound' => $this->compound($arguments, $declarations),
-                $name === 'preset' => $this->preset($arguments, $declarations),
                 $name === Malevich::casesDirective() => $this->cases($arguments, $declarations),
                 default => $this->option($name, $arguments, $declarations),
             };
@@ -181,15 +178,6 @@ final class ComponentScanner
 
         foreach ($conditions as $option => $expected) {
             $declarations->values((string) $option, is_array($expected) ? array_values($expected) : [$expected]);
-        }
-    }
-
-    private function preset(string $arguments, Declarations $declarations): void
-    {
-        try {
-            $declarations->presets[self::string(ConstantExpression::split($arguments)[0] ?? null)] = true;
-        } catch (InvalidArgumentException) {
-            $declarations->presetsKnown = false;
         }
     }
 

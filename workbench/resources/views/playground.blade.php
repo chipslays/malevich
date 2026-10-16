@@ -40,8 +40,8 @@ BLADE,
 </x-alert>
 BLADE,
             <<<'BLADE'
-<x-card preset="featured">...</x-card>
-<x-card preset="featured" padding="sm">...</x-card>  {{-- explicit prop wins --}}
+<x-card>...</x-card>
+<x-card variant="elevated" padding="lg">...</x-card>
 BLADE,
             <<<'BLADE'
 <x-switch />
@@ -104,11 +104,11 @@ BLADE,
 
     {{-- Card --}}
     <section class="{{ $section }}">
-        <h2 class="text-xl font-semibold">Card - @@preset</h2>
+        <h2 class="text-xl font-semibold">Card - @@option</h2>
         <div class="grid gap-4 sm:grid-cols-3">
-            <x-card variant="flat" padding="md">variant="flat" padding="md"</x-card>
-            <x-card preset="featured">preset="featured"</x-card>
-            <x-card preset="featured" padding="sm">preset="featured" padding="sm"</x-card>
+            <x-card>defaults: flat, md</x-card>
+            <x-card variant="elevated" padding="lg">variant="elevated" padding="lg"</x-card>
+            <x-card variant="elevated" padding="sm">variant="elevated" padding="sm"</x-card>
         </div>
 <pre class="{{ $code }}">{{ $snippets[3] }}</pre>
     </section>

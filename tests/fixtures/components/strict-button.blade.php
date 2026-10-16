@@ -1,8 +1,4 @@
-@preset('ghost', ['variant' => 'ghost'])
-@preset('typo', ['variant' => 'gohst'])
-
-@defaults(['variant' => 'primary', 'size' => 'md'])
-@defaults('icon', ['size' => 'sm'])
+@props(['variant' => 'primary', 'size' => 'md'])
 
 @variant(['primary' => 'bg-black', 'ghost' => 'bg-transparent'])
 @size(['sm' => 'h-8', 'md' => 'h-10'])

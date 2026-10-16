@@ -10,8 +10,7 @@ use InvalidArgumentException;
 /**
  * Everything a single component instance declared about its styling:
  * the class map of every option (@variant, @color, @size, ...), compound
- * rules (@compound), presets (@preset) and default values (@defaults),
- * grouped by target.
+ * rules (@compound) and base classes (@base), grouped by target.
  *
  * A target is a named, separately styled element of the component
  * ("icon", "label", ...). Declarations without a target belong to the
@@ -30,24 +29,9 @@ final class Recipe
     private array $compounds = [];
 
     /**
-     * @var array<string, array<string, mixed>>
-     */
-    private array $presets = [];
-
-    /**
      * @var array<string, list<mixed>> [target][] => classes
      */
     private array $base = [];
-
-    /**
-     * @var array<string, mixed> [option] => value, for every target
-     */
-    private array $defaults = [];
-
-    /**
-     * @var array<string, array<string, mixed>> [target][option] => value
-     */
-    private array $targetDefaults = [];
 
     /**
      * @param  string  $defaultTarget  The name of the component's main element.
@@ -138,43 +122,6 @@ final class Recipe
     }
 
     /**
-     * @param  array<string, mixed>  $values  Option values, either flat or keyed by target.
-     */
-    public function preset(string $name, array $values): self
-    {
-        $this->presets[$name] = $values;
-
-        return $this;
-    }
-
-    /**
-     * The value an option takes when nothing else picks one: not the template,
-     * not the tag, not a preset. Accepts `(values)`, which applies to every
-     * target, or `(target, values)`, which applies to that target only.
-     * Later calls add to earlier ones.
-     */
-    public function defaults(mixed ...$args): self
-    {
-        [$target, $values] = match (count($args)) {
-            1 => [null, $args[0]],
-            2 => [$args[0], $args[1]],
-            default => throw new InvalidArgumentException("@defaults expects ([values]) or ('target', [values])."),
-        };
-
-        if (! is_array($values)) {
-            throw new InvalidArgumentException("@defaults expects an array of values, e.g. ['variant' => 'primary', 'size' => 'md'].");
-        }
-
-        if ($target === null) {
-            $this->defaults = array_merge($this->defaults, $values);
-        } else {
-            $this->targetDefaults[$target] = array_merge($this->targetDefaults[$target] ?? [], $values);
-        }
-
-        return $this;
-    }
-
-    /**
      * @return list<mixed>
      */
     public function baseFor(string $target): array
@@ -196,30 +143,6 @@ final class Recipe
     public function compoundsFor(string $target): array
     {
         return $this->compounds[$target] ?? [];
-    }
-
-    /**
-     * Preset values for the given target. A preset keyed by target names
-     * yields that target's values, a flat preset applies to every target.
-     *
-     * @return array<string, mixed>
-     */
-    public function presetFor(string $name, string $target): array
-    {
-        $preset = $this->presets[$name] ?? [];
-
-        return is_array($preset[$target] ?? null) ? $preset[$target] : $preset;
-    }
-
-    /**
-     * Default values for the given target: the ones declared for every
-     * target, overridden by the ones declared for this target.
-     *
-     * @return array<string, mixed>
-     */
-    public function defaultsFor(string $target): array
-    {
-        return array_merge($this->defaults, $this->targetDefaults[$target] ?? []);
     }
 
     /**
@@ -247,11 +170,6 @@ final class Recipe
         }
 
         return array_values(array_filter($values, fn (mixed $value) => $value !== '*'));
-    }
-
-    public function hasPresets(): bool
-    {
-        return $this->presets !== [];
     }
 
     public function hasOption(string $option): bool

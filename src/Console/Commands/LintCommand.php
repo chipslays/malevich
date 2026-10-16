@@ -71,7 +71,7 @@ class LintCommand extends Command
     }
 
     /**
-     * @param  array{file: string, options: array<string, list<string>>, presets: list<string>|null}  $component
+     * @param  array{file: string, options: array<string, list<string>>}  $component
      * @param  array<string, string>  $attributes
      * @return list<string>
      */
@@ -81,10 +81,6 @@ class LintCommand extends Command
 
         foreach ($attributes as $attribute => $value) {
             $option = Str::camel($attribute);
-
-            if ($option === 'preset' && $component['presets'] !== null && ! in_array($value, $component['presets'], true)) {
-                $problems[] = self::message('preset', $value, $component['presets']);
-            }
 
             $known = $component['options'][$option] ?? $component['options'][$attribute] ?? null;
 

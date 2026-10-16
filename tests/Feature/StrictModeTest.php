@@ -20,14 +20,14 @@ function strictElement(Recipe $recipe): Element
 
 it('is off by default: an unknown value renders no classes', function () {
     expect(Malevich::isStrict())->toBeFalse()
-        ->and($this->render('<x-defaulted size="xl">Go</x-defaulted>'))
+        ->and($this->render('<x-strict-button size="xl">Go</x-strict-button>'))
         ->toBe('<button class="bg-black"><svg ></svg>Go</button>');
 });
 
 it('throws on an unknown value, listing the valid ones', function () {
     Malevich::strict();
 
-    $this->render('<x-defaulted size="xl">Go</x-defaulted>');
+    $this->render('<x-strict-button size="xl">Go</x-strict-button>');
 })->throws(ViewException::class, 'size [xl] is not defined; expected one of: sm, md.');
 
 it('throws a dedicated exception', function () {
@@ -38,20 +38,6 @@ it('throws a dedicated exception', function () {
     expect(fn () => strictElement($recipe)->size('xl')->toClasses())
         ->toThrow(UnknownValueException::class, 'Malevich: size [xl] is not defined; expected one of: sm, lg.');
 });
-
-it('catches a typo in a preset', function () {
-    Malevich::strict();
-
-    $this->render('<x-defaulted preset="typo">Go</x-defaulted>');
-})->throws(ViewException::class, 'variant [gohst] is not defined');
-
-it('catches a typo in @defaults', function () {
-    Malevich::strict();
-
-    $recipe = (new Recipe)->option('size', ['sm' => 'h-8'])->defaults(['size' => 'small']);
-
-    strictElement($recipe)->toClasses();
-})->throws(UnknownValueException::class, 'size [small] is not defined');
 
 it('names the element when it is not the root', function () {
     Malevich::strict();
@@ -64,7 +50,7 @@ it('names the element when it is not the root', function () {
 it('accepts every known value', function () {
     Malevich::strict();
 
-    expect($this->render('<x-defaulted variant="ghost" size="sm">Go</x-defaulted>'))
+    expect($this->render('<x-strict-button variant="ghost" size="sm">Go</x-strict-button>'))
         ->toBe('<button class="bg-transparent h-8"><svg class="size-3"></svg>Go</button>');
 });
 

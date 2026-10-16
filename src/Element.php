@@ -29,8 +29,7 @@ use UnitEnum;
  *
  * The value of every option is resolved in this order, first non-null wins:
  * an explicit call (`->color('danger')`), a variable in the template scope
- * (your @props), an attribute on the component tag, active presets, then
- * the recipe's @defaults.
+ * (your @props, with their defaults), then an attribute on the component tag.
  *
  * Unknown method calls are forwarded to a ComponentAttributeBag with the
  * resolved class already applied, so `->only()`, `->has()`, `->get()` and
@@ -48,11 +47,6 @@ final class Element implements Htmlable, Stringable
      * @var array<string, mixed>
      */
     private array $choices = [];
-
-    /**
-     * @var list<string>
-     */
-    private array $presets = [];
 
     private ?ComponentAttributeBag $slotAttributes = null;
 
@@ -143,15 +137,6 @@ final class Element implements Htmlable, Stringable
     public function option(string $option, mixed $value): self
     {
         return $this->with(fn (self $s) => $s->choices[$option] = $value);
-    }
-
-    /**
-     * Apply a preset registered with @preset. Presets stack: a later one
-     * overrides an earlier one, explicit values override both.
-     */
-    public function preset(?string $name): self
-    {
-        return $name === null ? $this : $this->with(fn (self $s) => $s->presets[] = $name);
     }
 
     /**
@@ -262,10 +247,6 @@ final class Element implements Htmlable, Stringable
         $own = $this->ownAttributes()?->getAttributes() ?? [];
         $consumed = [...$this->recipe()->optionNames(), 'class'];
 
-        if ($this->recipe()->hasPresets()) {
-            $consumed[] = 'preset';
-        }
-
         $attributes = $own + $this->escapedExtra();
         $attributes = array_diff_key($attributes, array_flip($consumed)) + $this->dataAttributes();
 
@@ -342,19 +323,9 @@ final class Element implements Htmlable, Stringable
 
     private function resolveChoice(string $option): ?string
     {
-        $value = $this->normalize($this->choices[$option] ?? null)
+        return $this->normalize($this->choices[$option] ?? null)
             ?? $this->normalize($this->scope[$option] ?? null)
             ?? $this->normalize($this->attributes->get($option));
-
-        if ($value !== null) {
-            return $value;
-        }
-
-        foreach ($this->activePresets() as $preset) {
-            $value = $this->normalize($this->recipe()->presetFor($preset, $this->target)[$option] ?? null) ?? $value;
-        }
-
-        return $value ?? $this->normalize($this->recipe()->defaultsFor($this->target)[$option] ?? null);
     }
 
     /**
@@ -398,16 +369,6 @@ final class Element implements Htmlable, Stringable
         }
 
         return true;
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function activePresets(): array
-    {
-        $fromComponent = $this->normalize($this->scope['preset'] ?? $this->attributes->get('preset'));
-
-        return array_values(array_filter([$fromComponent, ...$this->presets]));
     }
 
     /**

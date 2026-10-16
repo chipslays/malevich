@@ -1,15 +1,11 @@
 {{--
-    <x-card preset="featured">...</x-card>
+    <x-card variant="elevated" padding="lg">...</x-card>
 --}}
 
 @props([
-    'preset' => null,
-    'variant' => null,
-    'padding' => null,
+    'variant' => 'flat',
+    'padding' => 'md',
 ])
-
-@preset('featured', ['variant' => 'elevated', 'padding' => 'lg'])
-@preset('compact', ['variant' => 'flat', 'padding' => 'sm'])
 
 @base('rounded-2xl bg-white')
 

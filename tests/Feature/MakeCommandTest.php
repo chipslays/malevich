@@ -20,8 +20,8 @@ it('creates a component with every configured option', function () {
     $contents = file_get_contents($this->path.'/button.blade.php');
 
     expect($contents)
-        ->toContain("@base('')", '@color([', '@radius([', '@defaults([', "// 'variant' => 'name',", "// 'radius' => 'name',", '<div @attributes>')
-        ->not->toContain('@props', '{{ options }}', '{{ defaults }}', '{{ render }}');
+        ->toContain('@props([', "'variant' => null,", "'radius' => null,", "@base('')", '@color([', '@radius([', '<div @attributes>')
+        ->not->toContain('{{ props }}', '{{ options }}', '{{ render }}');
 });
 
 it('creates nested components and accepts the .blade.php suffix', function () {

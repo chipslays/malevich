@@ -56,41 +56,39 @@ No ternaries, no `{{ $attributes->merge(['class' => ...]) }}`, no JavaScript, no
 7. [`@variant`, `@color`, `@size`](#variant-color-size)
 8. [`@option` - the universal form](#option---the-universal-form)
 9. [`@compound` - classes for a combination](#compound---classes-for-a-combination)
-10. [`@preset` - saved combinations](#preset---saved-combinations)
-11. [`@defaults` - default values](#defaults---default-values)
-12. [`@cases` - one declaration per value](#cases---one-declaration-per-value)
-13. [Which tool should I use?](#which-tool-should-i-use)
+10. [`@cases` - one declaration per value](#cases---one-declaration-per-value)
+11. [Which tool should I use?](#which-tool-should-i-use)
 
 **Rendering**
 
-14. [`@attributes` - full reference](#attributes---full-reference)
-15. [Where values come from](#where-values-come-from)
-16. [Inner elements (targets)](#inner-elements-targets)
-17. [Named slots](#named-slots)
-18. [Booleans and enums](#booleans-and-enums)
+12. [`@attributes` - full reference](#attributes---full-reference)
+13. [Where values come from](#where-values-come-from)
+14. [Inner elements (targets)](#inner-elements-targets)
+15. [Named slots](#named-slots)
+16. [Booleans and enums](#booleans-and-enums)
 
 **Components**
 
-19. [Building on other components](#building-on-other-components)
-20. [Unstyled primitive](#unstyled-primitive)
+17. [Building on other components](#building-on-other-components)
+18. [Unstyled primitive](#unstyled-primitive)
 
 **More**
 
-21. [Your own options](#your-own-options)
-22. [Sharing styles between components](#sharing-styles-between-components)
-23. [Fixing Tailwind conflicts](#fixing-tailwind-conflicts)
-24. [Data attributes](#data-attributes)
-25. [Switching options in the browser (Alpine)](#switching-options-in-the-browser-alpine)
-26. [`make:malevich` command](#makemalevich-command)
-27. [The `$attributes` API](#the-attributes-api)
-28. [Testing components](#testing-components)
-29. [Catching typos in CI (`malevich:lint`)](#catching-typos-in-ci-malevichlint)
-30. [Configuration](#configuration)
-31. [Editor support (Tailwind IntelliSense)](#editor-support-tailwind-intellisense)
-32. [A complete example](#a-complete-example)
-33. [FAQ and troubleshooting](#faq-and-troubleshooting)
-34. [Cheat sheet](#cheat-sheet)
-35. [Playground and contributing](#playground-and-contributing)
+19. [Your own options](#your-own-options)
+20. [Sharing styles between components](#sharing-styles-between-components)
+21. [Fixing Tailwind conflicts](#fixing-tailwind-conflicts)
+22. [Data attributes](#data-attributes)
+23. [Switching options in the browser (Alpine)](#switching-options-in-the-browser-alpine)
+24. [`make:malevich` command](#makemalevich-command)
+25. [The `$attributes` API](#the-attributes-api)
+26. [Testing components](#testing-components)
+27. [Catching typos in CI (`malevich:lint`)](#catching-typos-in-ci-malevichlint)
+28. [Configuration](#configuration)
+29. [Editor support (Tailwind IntelliSense)](#editor-support-tailwind-intellisense)
+30. [A complete example](#a-complete-example)
+31. [FAQ and troubleshooting](#faq-and-troubleshooting)
+32. [Cheat sheet](#cheat-sheet)
+33. [Playground and contributing](#playground-and-contributing)
 
 ---
 
@@ -174,6 +172,12 @@ php artisan make:malevich badge
 This creates `resources/views/components/badge.blade.php` with an empty block for every option:
 
 ```blade
+@props([
+    'variant' => null,
+    'size' => null,
+    'color' => null,
+])
+
 @base('')
 
 @variant([
@@ -188,12 +192,6 @@ This creates `resources/views/components/badge.blade.php` with an empty block fo
     // 'name' => 'classes',
 ])
 
-@defaults([
-    // 'variant' => 'name',
-    // 'size' => 'name',
-    // 'color' => 'name',
-])
-
 <div @attributes>
     {{ $slot }}
 </div>
@@ -202,6 +200,8 @@ This creates `resources/views/components/badge.blade.php` with an empty block fo
 **2. Fill it in.** A badge needs only a color, so we remove `variant` and `size`, give `color` a default, and change `<div>` to `<span>`:
 
 ```blade
+@props(['color' => 'gray'])
+
 @base('inline-flex rounded-full px-2 py-0.5 text-xs font-medium')
 
 @color([
@@ -209,8 +209,6 @@ This creates `resources/views/components/badge.blade.php` with an empty block fo
     'green' => 'bg-green-100 text-green-700',
     'red' => 'bg-red-100 text-red-700',
 ])
-
-@defaults(['color' => 'gray'])
 
 <span @attributes>
     {{ $slot }}
@@ -231,7 +229,7 @@ This creates `resources/views/components/badge.blade.php` with an empty block fo
 <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700 ml-2">Overdue</span>
 ```
 
-Notice that you never wrote `$color` in the markup, nor declared it in `@props`: `@attributes` read it from the tag by itself and fell back to the [default](#defaults---default-values).
+Notice that you never wrote `$color` in the markup: `@attributes` picked the value from the tag, or the `@props` default when there was none.
 
 > [!TIP]
 > Prefer to create files by hand? That works too - Malevich doesn't care how the file was made. The command just saves typing.
@@ -250,7 +248,7 @@ Notice that you never wrote `$color` in the markup, nor declared it in `@props`:
 What happens when the component renders:
 
 1. Directives (`@base`, `@variant`, `@color`, ...) run first and **remember** what you declared.
-2. `@attributes` runs. For every remembered option it looks up the current value (on the tag, in your `@props`, in a preset, or in `@defaults`), finds the classes for that value, and adds them.
+2. `@attributes` runs. For every remembered option it looks up the current value (in your `@props` with their defaults, or on the tag), finds the classes for that value, and adds them.
 3. Then it adds `@compound` classes whose conditions match, then the `class` passed from outside, and prints all of it together with the other attributes.
 
 Because of step 1 -> 2, **directives must come before `@attributes`** in the file. Put them at the top, right after `@props`.
@@ -494,93 +492,6 @@ Read each line as a sentence: *"if variant is soft **and** color is red, add `bg
 
 **When not to:** if the class depends on one option only, put it into that option's class map instead.
 
-## `@preset` - saved combinations
-
-A preset gives a **name to a set of values**, so the user can write one word instead of several props:
-
-```blade
-@preset('featured', ['variant' => 'elevated', 'padding' => 'lg'])
-@preset('compact', ['variant' => 'flat', 'padding' => 'sm'])
-
-@base('rounded-2xl bg-white')
-
-@variant([
-    'flat' => 'border',
-    'elevated' => 'shadow-xl',
-])
-
-@option('padding', [
-    'sm' => 'p-3',
-    'md' => 'p-6',
-    'lg' => 'p-10',
-])
-
-@defaults(['variant' => 'flat', 'padding' => 'md'])
-
-<div @attributes>{{ $slot }}</div>
-```
-
-```blade
-<x-card>...</x-card>                                 {{-- border p-6 (the defaults) --}}
-<x-card preset="featured">...</x-card>               {{-- shadow-xl p-10 --}}
-<x-card preset="featured" padding="sm">...</x-card>  {{-- shadow-xl p-3 --}}
-```
-
-How it works:
-
-- The preset is chosen by the `preset` attribute on the tag (or a `preset` prop).
-- A preset only provides **fallback values**. Any value the user passes explicitly wins - that's why `padding="sm"` beats the preset's `lg`.
-- A preset wins over [`@defaults`](#defaults---default-values) - that's why `preset="featured"` is elevated, not flat.
-
-> [!IMPORTANT]
-> Put the defaults of a component with presets in [`@defaults`](#defaults---default-values), **not** in `@props`. A `@props` default is a template variable, so it counts as "explicitly set" and always wins over a preset: with `@props(['variant' => 'flat'])`, `preset="featured"` would stay flat. If you need an option in `@props` (to use `$variant` in the markup), give it a `null` default.
-
-A preset can hold values for inner elements too. Use target names as keys (`default` is the main element):
-
-```blade
-@preset('danger', [
-    'default' => ['color' => 'red'],
-    'icon' => ['color' => 'red', 'size' => 'lg'],
-])
-```
-
-**When to use presets:** a few combinations repeat all over your app ("the danger button", "the featured card"). For one-off looks, just pass the props.
-
-## `@defaults` - default values
-
-`@defaults` says which value an option takes when nobody picked one - the same idea as `defaultVariants` in CVA:
-
-```blade
-@variant([
-    'primary' => 'bg-black text-white',
-    'ghost' => 'hover:bg-gray-100',
-])
-
-@size([
-    'sm' => 'h-8 px-3 text-sm',
-    'md' => 'h-10 px-4',
-])
-
-@defaults(['variant' => 'primary', 'size' => 'md'])
-
-<button @attributes>{{ $slot }}</button>
-```
-
-```blade
-<x-button>Save</x-button>                {{-- primary, md --}}
-<x-button size="sm">Save</x-button>      {{-- primary, sm --}}
-```
-
-A default is the **last** fallback: a value on the tag, in your `@props` or in a [preset](#preset---saved-combinations) always wins over it (see [Where values come from](#where-values-come-from)). That is what makes it different from a `@props` default, which beats presets.
-
-- A default applies to **every element** of the component, just like an attribute on the tag. `size="md"` by default styles the main element and its `@size('icon', [...])` alike.
-- Give an inner element its own default with a target name first: `@defaults('icon', ['size' => 'sm'])`. It wins over the shared one for that element only. A per-target array works too: `@defaults(['size' => ['default' => 'md', 'icon' => 'sm']])`.
-- Defaults take part in [`@compound`](#compound---classes-for-a-combination) conditions like any other value.
-- You can write `@defaults` several times; later values replace earlier ones.
-- Defaults are not props: the option still doesn't exist as `$variant` in the template. If the markup needs it (`@if ($variant === 'ghost')`), declare it in `@props` with a `null` default - `@attributes` will still fall back to `@defaults`.
-
-`@defaults` is a fixed name, like `@base` and `@preset`.
-
 ## `@cases` - one declaration per value
 
 `@variant('title', [...])` groups classes **by element**. When a component has many elements and every option value changes most of them ("teal" and "graphite" stat cards), the same classes read better grouped **by value**:
@@ -610,10 +521,10 @@ A default is the **last** fallback: a value on the tag, in your `@props` or in a
 </div>
 ```
 
-`@cases('variant', [...])` fills exactly the same slots as one `@variant('target', [...])` per element: `variant="teal"` styles the main element, `icon` and `title`, each with its own classes. Everything else (`@attributes`, presets, `@compound`, [named slots](#named-slots)) works as before.
+`@cases('variant', [...])` fills exactly the same slots as one `@variant('target', [...])` per element: `variant="teal"` styles the main element, `icon` and `title`, each with its own classes. Everything else (`@attributes`, `@compound`, [named slots](#named-slots)) works as before.
 
 - The first argument is the option name: `@cases('size', [...])`, `@cases('color', [...])`, any [`@option`](#option---the-universal-form) name.
-- Keys of the inner array are targets. `default` is the main element, like in presets and per-target values.
+- Keys of the inner array are targets. `default` is the main element, like in per-target values.
 - A value can also be plain classes (a string or a list) - they style the main element: `'teal' => 'bg-teal-600'`.
 - Several `@cases` calls for one option add up. A `@variant([...])` written **after** `@cases('variant', ...)` for the same element replaces it, so keep one style per option.
 
@@ -633,8 +544,7 @@ The name `@cases` can be changed with the `cases_directive` [config option](#con
 | Render an element only in some variants | [`@has`](#parts-that-exist-only-in-some-variants-has) |
 | Add classes when two props have certain values | [`@compound`](#compound---classes-for-a-combination) |
 | React to a boolean flag (`loading`, `active`) | [`@compound(['loading' => true], ...)`](#compound---classes-for-a-combination) or a [`true`/`false` class map](#booleans-and-enums) |
-| Give a name to a common set of props | [`@preset`](#preset---saved-combinations) |
-| Pick a value when the user didn't | [`@defaults`](#defaults---default-values) |
+| Pick a value when the user didn't | a default in `@props` |
 | Style an inner element (icon, title, spinner) | a [target](#inner-elements-targets): `@size('icon', [...])` + `@attributes('icon')` |
 | Let users add classes to a slot | [`@attributes('title')` + `<x-slot:title class="...">`](#named-slots) |
 | Add default attributes (`type`, `role`, `aria-*`) | [`@attributes(merge: [...])`](#attributes---full-reference) |
@@ -707,7 +617,7 @@ For the **main element** (`@attributes`, `@attributes(merge: ...)`):
 2. All other attributes from the tag: `id`, `wire:click`, `x-data`, `data-*`, `aria-*`, ...
 3. Attributes from `merge:` that the tag didn't set.
 
-**Not** printed: option names (`variant`, `color`, `size`, any `@option` name) and `preset`. They were consumed by Malevich, so you won't get `<button variant="outline">` - even if you forgot to list them in `@props`.
+**Not** printed: option names (`variant`, `color`, `size`, any `@option` name). They were consumed by Malevich, so you won't get `<button variant="outline">` - even if you forgot to list them in `@props`.
 
 For an **inner element** (`@attributes('icon')`): only its own classes, plus `merge:` attributes and the attributes of its [slot](#named-slots). Attributes from the component tag never go to inner elements.
 
@@ -734,14 +644,11 @@ For every option, Malevich takes the **first** value it finds:
 | 1 | An explicit call in the [`$attributes` API](#the-attributes-api) | `$attributes->size('sm')` |
 | 2 | A variable with the same name in the template - normally your `@props` | `@props(['size' => 'md'])` |
 | 3 | An attribute with the same name on the component tag (when it's not in `@props`) | `<x-button size="sm">` |
-| 4 | The active [preset](#preset---saved-combinations) | `preset="featured"` |
-| 5 | [`@defaults`](#defaults---default-values) | `@defaults(['size' => 'md'])` |
 
 What that means in practice:
 
-- Put the **default** of an option in `@defaults`. It is used only when nothing else picked a value, so presets keep working.
-- An option doesn't need to be in `@props` at all - the attribute is read directly. Add it to `@props` only when the markup needs `$size`, and then with a `null` default.
-- A non-null `@props` default is a template variable (row 2): it beats the tag's preset. That is the one reason to prefer `@defaults`.
+- The **default** of an option is simply its `@props` default.
+- An option doesn't need to be in `@props` at all - the attribute is read directly. Add it to `@props` to give it a default, or when the markup needs `$size`.
 - `null` means "not set" and falls through to the next source.
 - A value that matches no key of the class map adds nothing. Turn on [strict mode](#strict-mode) to get an exception instead.
 
@@ -812,7 +719,7 @@ One `size="sm"` styled **both** elements, each with its own classes.
 
 **Things to know:**
 
-- Any directive takes a target: `@color('icon', ...)`, `@base('title', ...)`, `@compound('icon', [...], ...)`, and presets can be keyed by target.
+- Any directive takes a target: `@color('icon', ...)`, `@base('title', ...)`, `@compound('icon', [...], ...)`.
 - Targets only get **their own** classes. `class="..."` and other attributes from the component tag always go to the main element.
 - To let the user style an inner element from outside, use a [named slot](#named-slots).
 
@@ -1098,7 +1005,7 @@ Not every name is allowed. Malevich throws an exception on boot if a name:
 
 - is a built-in Blade directive (`if`, `class`, `foreach`, `props`, ...) - it would replace that directive in your whole app;
 - is already registered as a Blade directive by your application or another package (a Blade directive is global, the last one wins and silently breaks the other);
-- is a Malevich directive (`base`, `compound`, `preset`, `defaults`, `option`, or your `render_directive`, `cases_directive`, `has_directive`);
+- is a Malevich directive (`base`, `compound`, `option`, or your `render_directive`, `cases_directive`, `has_directive`);
 - is already a method of `$attributes` (`merge`, `get`, `only`, ...) - the fluent call `$attributes->merge(...)` could never reach it;
 - contains anything but letters, digits and `_`.
 
@@ -1107,7 +1014,7 @@ Not every name is allowed. Malevich throws an exception on boot if a name:
 The names of Malevich's own directives are rarely a problem, but they are all configurable or checked:
 
 - `@attributes`, `@cases` and `@has` can be renamed with `render_directive`, `cases_directive` and `has_directive`.
-- `@base`, `@compound`, `@preset`, `@defaults` and `@option` are fixed. On boot Malevich checks that Blade or another package has not taken them and throws a clear exception if so.
+- `@base`, `@compound` and `@option` are fixed. On boot Malevich checks that Blade or another package has not taken them and throws a clear exception if so.
 - A directive that needs an expression (`@variant([...])`, `@cases('x', [...])`, `@base('...')`) and is written **without parentheses** is left alone. So CSS inside a template survives: Tailwind's `@variant dark (...)` is not touched.
 
 ## Sharing styles between components
@@ -1218,7 +1125,7 @@ For `<x-button size="lg">` Alpine gets:
 { primary: 'bg-zinc-900 text-white h-12 px-6', danger: 'bg-red-600 text-white h-12 px-6 shadow-lg' }
 ```
 
-Every value is resolved by the same engine as `@attributes`: `@base`, the other options, `@compound`, presets, the `class` from the tag and tailwind-merge all apply. All the classes are literals in your Blade file, so Tailwind finds them.
+Every value is resolved by the same engine as `@attributes`: `@base`, the other options, `@compound`, the `class` from the tag and tailwind-merge all apply. All the classes are literals in your Blade file, so Tailwind finds them.
 
 - `classesFor('variant')` uses every value the component knows for the option; `classesFor('variant', ['primary', 'danger'])` only those.
 - For an inner element: `$attributes->for('icon')->classesFor('size')`.
@@ -1235,7 +1142,7 @@ php artisan make:malevich button --force    # overwrite an existing file
 
 - Without `--force` it never overwrites an existing component.
 - The `.blade.php` suffix is optional; `forms.input` and `forms/input` are the same.
-- The file gets an empty `@base`, an empty class map for **every option in your config** (including your own) and a `@defaults` block with a commented-out line for each. Delete what you don't need.
+- The file gets a `@props` entry with a `null` default and an empty class map for **every option in your config** (including your own), plus an empty `@base`. Delete what you don't need.
 - The folder is `components.path` from the [config](#configuration). After creating, the command tells you the tag to use.
 
 Which tag? It depends on `components.prefix`:
@@ -1275,7 +1182,6 @@ Now `resources/views/ui/button.blade.php` is `<x-ui::button>` and nothing else.
 | `->use(['size' => 'lg', 'color' => 'red'])` | Set several values at once. |
 | `->use('icon', ['size' => 'lg'])` | Switch to a target and set values. |
 | `->for('icon')` | Switch to a target. |
-| `->preset('name')` | Apply a preset. Can be called several times, the last one wins. |
 | `->slot($slot)` | Add the attributes of a named slot. |
 | `->merge([...])` | Default attributes, same as `@attributes(merge: ...)`. |
 | `->toClasses()` | Return only the class string. |
@@ -1333,7 +1239,7 @@ php artisan malevich:lint
    ERROR  1 problem in 212 tags of 9 components.
 ```
 
-It reads your components without rendering them, collects the values every option accepts (keys of the class maps, values tested by `@compound`, maps in `@include`d partials) and the preset names, then checks every `<x-...>` tag in your views. The exit code is `1` when something is wrong, so it can fail a build:
+It reads your components without rendering them, collects the values every option accepts (keys of the class maps, values tested by `@compound`, maps in `@include`d partials), then checks every `<x-...>` tag in your views. The exit code is `1` when something is wrong, so it can fail a build:
 
 ```yaml
 # .github/workflows/ci.yml
@@ -1363,7 +1269,7 @@ So a clean run doesn't prove there are no typos at all - it proves there are non
 | `render_directive` | `'attributes'` | The name of `@attributes`. Change it if it clashes with another package. |
 | `cases_directive` | `'cases'` | The name of [`@cases`](#cases---one-declaration-per-value). |
 | `has_directive` | `'has'` | The name of [`@has`](#parts-that-exist-only-in-some-variants-has). |
-| `default_target` | `'default'` | Name of the main element in per-target arrays and presets. |
+| `default_target` | `'default'` | Name of the main element in per-target arrays and `@cases`. |
 | `components.path` | `resource_path('views/components')` | Where `make:malevich` creates components. |
 | `components.prefix` | `null` | Tag prefix for that folder: `null` -> `<x-button>`, `'ui'` -> `<x-ui::button>`. |
 | `data_attributes` | `false` | Put `data-variant="..."` & co. on the main element. See [Data attributes](#data-attributes). |
@@ -1388,7 +1294,7 @@ Now an unknown value throws `Malevich\Exceptions\UnknownValueException`:
 Malevich: size [xl] is not defined; expected one of: sm, md, lg.
 ```
 
-It checks the value wherever it came from - the tag, `@props`, a preset or `@defaults` - so a typo in a preset is caught too. It stays quiet when:
+It checks the value wherever it came from - the tag or a `@props` default - so a typo in a default is caught too. It stays quiet when:
 
 - the value is `null` (not set) or `'*'`;
 - the element has no class map for that option, or a map with only a `'*'` key;
@@ -1486,11 +1392,8 @@ More examples (badge, alert, card, switch) live in [`workbench/resources/views/c
 Check, in this order:
 1. The directive is written **before** `@attributes`.
 2. The value really matches a key: `size="lg"` needs a `'lg'` key. Keys are case-sensitive. Turn on [strict mode](#strict-mode) and Malevich tells you which value is wrong and which ones exist.
-3. The option has a value at all: give it one in [`@defaults`](#defaults---default-values). A `null` `@props` default means "not set", so only `@base` classes apply.
+3. The option has a value at all: give it a default in `@props`. A `null` default means "not set", so only `@base` classes apply.
 4. After changing `config/malevich.php`, run `php artisan view:clear`.
-
-**My preset is ignored.**
-The option has a non-null `@props` default, which wins over presets. Move the default to [`@defaults`](#defaults---default-values) and drop the option from `@props` (or give it a `null` default).
 
 **I see `variant="..."` in my HTML.**
 The directive for that option is missing or written after `@attributes`. Malevich only removes option names it knows about.
@@ -1522,16 +1425,13 @@ Yes. `wire:*`, `x-*` and `@click`-style attributes on the tag are passed through
 **Is it fast? Is it safe with Octane?**
 Directives compile to plain PHP once, like any Blade directive. At render time it's a few array lookups: a button with variants, sizes, a combination and an icon costs about 12 µs more than the same button written by hand with `$attributes->class([...])` (25 µs instead of 13 µs) - around 12 ms for a page with a thousand such buttons. Run `composer bench` to measure on your machine. Class maps belong to the component instance and are freed with it, so nothing leaks between requests or Octane workers. `Malevich` is a facade for the `Malevich\MalevichManager` singleton, so settings like `Malevich::strict()` live with the application and tests start fresh.
 
-**Can two components use the same preset name?**
-Yes. Presets, like class maps, belong to the component that declares them.
-
 **Can I use `@attributes` in a regular view or layout?**
 No, only in Blade components - it needs the component's `$attributes`.
 
 ## Cheat sheet
 
 ```blade
-@props(['loading' => false, 'title' => null])   {{-- only what the markup itself uses --}}
+@props(['variant' => 'primary', 'size' => 'md', 'loading' => false, 'title' => null])   {{-- defaults --}}
 
 {{-- always-on classes --}}
 @base('inline-flex items-center')
@@ -1559,13 +1459,6 @@ No, only in Blade components - it needs the component's `$attributes`.
 @compound(['variant' => 'primary', 'size' => 'lg'], 'shadow-lg')
 @compound(['variant' => ['outline', 'ghost']], 'bg-transparent')
 @compound(['loading' => true], 'cursor-wait')
-
-{{-- named set of values, used as preset="big" --}}
-@preset('big', ['size' => 'lg'])
-
-{{-- value when nothing else picked one (below tag, @props and presets) --}}
-@defaults(['variant' => 'primary', 'size' => 'md'])
-@defaults('icon', ['size' => 'sm'])
 
 <button @attributes(merge: ['type' => 'button'])>
     <svg @attributes('icon')></svg>

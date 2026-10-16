@@ -10,11 +10,10 @@ it('compiles option directives into recipe declarations', function (string $opti
         ->toContain("Malevich::recipe(\$attributes ?? null))->option('{$option}', ['a' => 'b'])");
 })->with(['variant', 'color', 'size']);
 
-it('compiles @option, @compound and @preset', function () {
+it('compiles @option, @base and @compound', function () {
     expect(Blade::compileString("@option('tone', ['a' => 'b'])"))->toContain("->option('tone', ['a' => 'b'])")
         ->and(Blade::compileString("@base('title', 'x')"))->toContain("->base('title', 'x')")
-        ->and(Blade::compileString("@compound(['size' => 'sm'], 'x')"))->toContain("->compound(['size' => 'sm'], 'x')")
-        ->and(Blade::compileString("@preset('p', [])"))->toContain("->preset('p', [])");
+        ->and(Blade::compileString("@compound(['size' => 'sm'], 'x')"))->toContain("->compound(['size' => 'sm'], 'x')");
 });
 
 it('compiles @attributes with and without arguments', function () {

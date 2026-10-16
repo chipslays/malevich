@@ -12,9 +12,6 @@ All directives must be declared **before** `@attributes`.
 | `@cases('option', [value => [target => classes]])` | The same class maps as `@variant('target', [...])` per element, grouped by value. |
 | `@compound([conds], 'classes')` | Classes when ALL conditions match. A list value means "any of". Added after all class maps. |
 | `@compound('target', [conds], 'classes')` | Same for an inner element. |
-| `@preset('name', [...])` | Named bundle of values, chosen with `preset="name"`. |
-| `@defaults([...])` | Value of each option when nothing else picked one. Ranks below presets. |
-| `@defaults('target', [...])` | Same, for one inner element; wins over the shared defaults there. |
 
 ## Class maps
 
@@ -65,56 +62,26 @@ Use it when one prop changes the classes of several elements and you want to rea
 - Works with props that have no class map.
 - If the class depends on one option only, use that option's map instead.
 
-## `@preset`
-
-```blade
-@preset('featured', ['variant' => 'elevated', 'padding' => 'lg'])
-@preset('danger', [
-    'default' => ['color' => 'red'],
-    'icon' => ['color' => 'red', 'size' => 'lg'],
-])
-
-@defaults(['variant' => 'flat', 'padding' => 'md'])
-```
-
-- Chosen by the `preset` attribute (or prop).
-- A preset only provides **fallback** values; explicit values win (`<x-card preset="featured" padding="sm">`).
-- A preset wins over `@defaults`.
-- A prop with a non-null `@props` default counts as explicit and beats the preset. Put defaults in `@defaults`; if an option must be in `@props` (markup uses `$variant`), give it a `null` default.
-- Presets can be keyed by target (`default` = main element).
-
-## `@defaults`
-
-```blade
-@defaults(['variant' => 'primary', 'size' => 'md'])   {{-- every element --}}
-@defaults('icon', ['size' => 'sm'])                   {{-- inner element "icon" only --}}
-```
-
-- The CVA `defaultVariants` equivalent: the last fallback, used only when the tag, `@props` and the preset give nothing.
-- Applies to every element like a tag attribute; a target form or a per-target array (`['size' => ['default' => 'md', 'icon' => 'sm']]`) overrides one element.
-- Takes part in `@compound` conditions. Later `@defaults` calls replace earlier values.
-- Does not create `$variant` in the template; add `'variant' => null` to `@props` if the markup needs it.
-
 ## Where values come from (first non-null wins)
 
 1. Explicit call: `$attributes->size('sm')`.
 2. Template variable with the same name (normally `@props`).
 3. Attribute with the same name on the component tag (if not in `@props`).
-4. Active preset.
-5. `@defaults`.
+
+The default of an option is its `@props` default.
 
 Per-target values: pass an array keyed by target, main element is `default`:
 `<x-button :size="['default' => 'lg', 'spinner' => 'sm']" />`.
 
 ## Directive names and collisions
 
-- `@attributes`, `@cases`, `@has` are renamable: `render_directive`, `cases_directive`, `has_directive` in `config/malevich.php`. `@base`, `@compound`, `@preset`, `@defaults`, `@option` are fixed.
+- `@attributes`, `@cases`, `@has` are renamable: `render_directive`, `cases_directive`, `has_directive` in `config/malevich.php`. `@base`, `@compound`, `@option` are fixed.
 - Boot throws if a configured name is a Blade built-in, is already registered by the app or another package, is a Malevich name, is a method of `$attributes`, or is invalid.
 - A directive written without parentheses is left as text, so Tailwind's `@variant dark` inside a template stay intact.
 
 ## Strict mode
 
-`Malevich::strict(! app()->isProduction());` in `AppServiceProvider::boot()` (like `Model::shouldBeStrict()`). An option value that is not a key of its class map then throws `Malevich\Exceptions\UnknownValueException`: `Malevich: size [xl] is not defined; expected one of: sm, md, lg.` Checked whatever the source (tag, `@props`, preset, `@defaults`). Not an error: `null`, `'*'`, an element without a map for that option (or only a `'*'` key), a value that is a key on another element's map or tested by a `@compound`, and `false` on a `['true' => ...]` map. Reset by `Malevich::flush()`.
+`Malevich::strict(! app()->isProduction());` in `AppServiceProvider::boot()` (like `Model::shouldBeStrict()`). An option value that is not a key of its class map then throws `Malevich\Exceptions\UnknownValueException`: `Malevich: size [xl] is not defined; expected one of: sm, md, lg.` Checked whatever the source (tag or `@props` default). Not an error: `null`, `'*'`, an element without a map for that option (or only a `'*'` key), a value that is a key on another element's map or tested by a `@compound`, and `false` on a `['true' => ...]` map. Reset by `Malevich::flush()`.
 
 ## Custom option directives
 
@@ -123,7 +90,7 @@ Per-target values: pass an array keyed by target, main element is `default`:
 'options' => ['variant', 'size', 'color', 'radius'],
 ```
 
-Gives `@radius([...])` and `$attributes->radius()`; `make:malevich` will scaffold it too. Run `php artisan view:clear` afterwards. Boot throws if the name is a built-in Blade directive (`if`, `class`, `props`, ...), a Malevich directive (`base`, `compound`, `preset`, `defaults`, `option`, the render directive), a method of `$attributes` (`merge`, `get`, `only`, ...), or contains anything but letters, digits, `_`. For one or two components use `@option('name', [...])` instead of registering.
+Gives `@radius([...])` and `$attributes->radius()`; `make:malevich` will scaffold it too. Run `php artisan view:clear` afterwards. Boot throws if the name is a built-in Blade directive (`if`, `class`, `props`, ...), a Malevich directive (`base`, `compound`, `option`, the render directive), a method of `$attributes` (`merge`, `get`, `only`, ...), or contains anything but letters, digits, `_`. For one or two components use `@option('name', [...])` instead of registering.
 
 ## Sharing class maps
 

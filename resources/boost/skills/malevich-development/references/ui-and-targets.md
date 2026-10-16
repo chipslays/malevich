@@ -31,7 +31,7 @@ On a plain HTML tag a `class` next to `@attributes` is merged into one `class` a
 - `class` order: `@base` -> class maps (file order) -> `@compound` -> `class` from `merge:` -> `class` from the tag. Duplicates removed. No empty `class=""`.
 - All other tag attributes pass through (`id`, `wire:*`, `x-*`, `data-*`, `aria-*`).
 - `merge:` attributes appear unless the tag sets them. `class` in `merge:` is added, not replaced. Values may be dynamic: `merge: ['aria-checked' => $checked ? 'true' : 'false']`.
-- Option names (`variant`, `color`, `size`, custom) and `preset` are never printed. If `variant="..."` shows up in HTML, the directive is missing or declared after `@attributes`.
+- Option names (`variant`, `color`, `size`, custom) are never printed. If `variant="..."` shows up in HTML, the directive is missing or declared after `@attributes`.
 - `@attributes` may be used many times in one component, also for the same target.
 - Only valid inside a component file (needs `$attributes`).
 - On `<x-...>` tags use **single quotes** inside arguments.
@@ -52,7 +52,7 @@ Declare per-target maps with a target name as the first argument, render with `@
 ```
 
 - One `size="sm"` styles main element and spinner, each with its own classes.
-- Any directive accepts a target: `@color('icon', ...)`, `@base('title', ...)`, `@compound('icon', ...)`, presets keyed by target.
+- Any directive accepts a target: `@color('icon', ...)`, `@base('title', ...)`, `@compound('icon', ...)`.
 - Targets get only their own classes. `class` and other tag attributes go to the main element.
 - To let users style an inner element, use a named slot with the same name.
 
@@ -90,4 +90,4 @@ Same engine as methods. They **cannot see template variables**, pass values your
 <div x-bind:class="'{{ $attributes->for('panel')->toClasses() }}'">
 ```
 
-`->variant()/->color()/->size()/custom()`, `->option('name', 'x')`, `->use([...])`, `->use('target', [...])`, `->for('target')`, `->preset('name')`, `->slot($slot)`, `->merge([...])`, `->toClasses()`, plus regular `$attributes` methods. Each call returns a new object. Explicit values win over `@props`. Call option methods **before** `->merge()` (merge returns a bag that doesn't know your class maps).
+`->variant()/->color()/->size()/custom()`, `->option('name', 'x')`, `->use([...])`, `->use('target', [...])`, `->for('target')`, `->slot($slot)`, `->merge([...])`, `->toClasses()`, plus regular `$attributes` methods. Each call returns a new object. Explicit values win over `@props`. Call option methods **before** `->merge()` (merge returns a bag that doesn't know your class maps).

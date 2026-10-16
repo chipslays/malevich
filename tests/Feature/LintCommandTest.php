@@ -13,7 +13,6 @@ beforeEach(function () {
             @size(['sm' => 'c', 'md' => 'd'])
             @size('icon', ['lg' => 'e'])
             @compound(['variant' => 'ghost', 'loading' => true], $dynamic)
-            @preset('danger', ['variant' => $variant])
             {{-- @variant(['commented' => 'x']) --}}
             <button @attributes>{{ $slot }}</button>
             BLADE,
@@ -53,7 +52,7 @@ it('reports values a component does not define, with the line and a suggestion',
         <x-lint::button variant="primary" size="sm">ok</x-lint::button>
         <x-lint::button variant="primay">typo</x-lint::button>
         <x-lint::button
-            size="xl" preset="dangr" />
+            size="xl" />
         BLADE);
 
     $this->artisan('malevich:lint', ['paths' => [$views]])
@@ -61,8 +60,7 @@ it('reports values a component does not define, with the line and a suggestion',
         ->expectsOutputToContain('variant [primay] is not defined; expected one of: primary, outline, ghost. Did you mean [primary]?')
         ->expectsOutputToContain('page.blade.php:3')
         ->expectsOutputToContain('size [xl] is not defined; expected one of: sm, md, lg.')
-        ->expectsOutputToContain('preset [dangr] is not defined; expected one of: danger. Did you mean [danger]?')
-        ->expectsOutputToContain('3 problems in 3 tags of')
+        ->expectsOutputToContain('2 problems in 3 tags of')
         ->assertFailed();
 });
 

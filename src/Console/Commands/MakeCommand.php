@@ -64,7 +64,7 @@ class MakeCommand extends Command
         )) ?: '<fg=gray>none</>');
 
         $this->newLine();
-        $this->line('  <fg=gray>Next:</> fill in the <comment>@base</comment> classes, the maps for each option and their <comment>@defaults</comment>.');
+        $this->line('  <fg=gray>Next:</> set the defaults in <comment>@props</comment>, fill in the <comment>@base</comment> classes and the map of each option.');
         $this->newLine();
 
         return self::SUCCESS;
@@ -82,16 +82,14 @@ class MakeCommand extends Command
     }
 
     /**
-     * Fill the stub with one empty class map and one commented-out default
-     * per configured option, so custom options show up in new
-     * components too. Defaults go to @defaults, not @props, so they never
-     * shadow a preset.
+     * Fill the stub with one prop and one empty class map per configured
+     * option, so custom options show up in new components too.
      */
     protected function render(string $stub): string
     {
         $options = Malevich::options();
 
-        $defaults = array_map(fn (string $option) => "    // '{$option}' => 'name',", $options);
+        $props = array_map(fn (string $option) => "    '{$option}' => null,", $options);
 
         $maps = array_map(fn (string $option) => implode("\n", [
             "@{$option}([",
@@ -100,8 +98,8 @@ class MakeCommand extends Command
         ]), $options);
 
         return str_replace(
-            ['{{ options }}', '{{ defaults }}', '{{ render }}'],
-            [implode("\n\n", $maps), implode("\n", $defaults), Malevich::renderDirective()],
+            ['{{ props }}', '{{ options }}', '{{ render }}'],
+            [implode("\n", $props), implode("\n\n", $maps), Malevich::renderDirective()],
             $stub,
         );
     }

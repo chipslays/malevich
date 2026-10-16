@@ -24,14 +24,6 @@ it('adds an option() macro backed by Element::option()', function () {
     expect($bag->option('color', 'red')->toClasses())->toBe('text-red-500');
 });
 
-it('adds a preset() macro backed by Element::preset()', function () {
-    $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->option('color', ['red' => 'text-red-500']);
-    Malevich::recipe($bag)->preset('danger', ['color' => 'red']);
-
-    expect($bag->preset('danger')->toClasses())->toBe('text-red-500');
-});
-
 it('registers one macro per option configured in malevich.options', function () {
     foreach (config('malevich.options') as $option) {
         expect(ComponentAttributeBag::hasMacro($option))->toBeTrue();

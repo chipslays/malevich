@@ -20,7 +20,7 @@ it('refuses option names that would replace built-in Blade directives', function
 })->with(['if', 'class', 'foreach', 'props'])->throws(InvalidArgumentException::class, 'is a built-in Blade directive');
 
 it('refuses option names that clash with Malevich directives', function () {
-    bootWith(['malevich.options' => ['preset']]);
+    bootWith(['malevich.options' => ['compound']]);
 })->throws(InvalidArgumentException::class, 'is already a Malevich directive');
 
 it('refuses option names that are methods of $attributes', function () {

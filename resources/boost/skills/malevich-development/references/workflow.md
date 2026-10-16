@@ -17,7 +17,7 @@ php artisan make:malevich forms/input     # forms/input.blade.php (forms.input a
 php artisan make:malevich button --force  # overwrite
 ```
 
-Scaffolds empty `@base`, an empty map for every option in config (including custom) and a `@defaults` block with a commented-out line per option (no `@props`). Never overwrites without `--force`. Tag depends on `components.prefix`:
+Scaffolds a `@props` entry (default `null`) and an empty map for every option in config (including custom), plus an empty `@base`. Never overwrites without `--force`. Tag depends on `components.prefix`:
 
 | prefix | file in `components.path` | tag |
 |---|---|---|
@@ -48,16 +48,17 @@ Before:
 After:
 
 ```blade
+@props(['variant' => 'primary', 'size' => 'md'])
+
 @base('inline-flex items-center rounded-lg font-medium')
 @variant(['primary' => 'bg-black text-white', 'outline' => 'border border-gray-300'])
 @size(['sm' => 'h-8 px-3 text-sm', 'md' => 'h-10 px-4'])
 @compound(['variant' => 'primary', 'size' => 'lg'], 'shadow-lg')
-@defaults(['variant' => 'primary', 'size' => 'md'])
 
 <button @attributes(merge: ['type' => 'button'])>{{ $slot }}</button>
 ```
 
-Mapping: unconditional classes -> `@base`; classes conditioned on one variable -> that option's map; `&&` conditions -> `@compound`; `$attributes->merge([...])` defaults -> `@attributes(merge: [...])`; classes of nested elements -> targets; `@props` defaults of options -> `@defaults` (drop them from `@props` unless the markup uses the variable). Keep public prop names and values unchanged.
+Mapping: unconditional classes -> `@base`; classes conditioned on one variable -> that option's map; `&&` conditions -> `@compound`; `$attributes->merge([...])` defaults -> `@attributes(merge: [...])`; classes of nested elements -> targets; `@props` defaults stay in `@props`. Keep public prop names and values unchanged.
 
 ## Tailwind conflicts
 
@@ -106,7 +107,7 @@ Add custom option names to the first pattern.
 ## Verification checklist
 
 - [ ] Every directive is above `@attributes`.
-- [ ] Option defaults are in `@defaults` and exist as keys in their maps; options in `@props` default to `null`.
+- [ ] Option defaults in `@props` exist as keys in their maps.
 - [ ] No dynamic class-name concatenation.
 - [ ] Each `@attributes('x')` has matching `@base('x', ...)` / option maps if it needs styling.
 - [ ] No leaked option attributes in the output (`variant="..."`).
@@ -118,10 +119,9 @@ Add custom option names to the first pattern.
 
 ## Troubleshooting
 
-- Classes missing: directive after `@attributes`; value doesn't match a key (`Malevich::strict()` names it); no default (add `@defaults`); stale cache -> `php artisan view:clear`.
+- Classes missing: directive after `@attributes`; value doesn't match a key (`Malevich::strict()` names it); no default (add one in `@props`); stale cache -> `php artisan view:clear`.
 - `variant="..."` visible in HTML: directive missing or after `@attributes`.
 - `class` not on an inner element: by design; use a named slot or a prop.
-- Preset ignored: option has a non-null `@props` default. Move it to `@defaults`.
 - Nested component got no classes: the child doesn't print `$attributes`.
 - Works with Livewire/Alpine (`wire:*`, `x-*`, `@click` pass through) and without Tailwind (any CSS). Octane-safe.
 - `@attributes` outside components fails: it needs the component's `$attributes`.

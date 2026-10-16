@@ -48,21 +48,15 @@ it('styles named targets without leaking root attributes into them', function ()
     expect($html)->toBe('<button class="btn mt-2" id="b" type="button"> <svg class="w-6"></svg> Go </button>');
 });
 
-it('applies a preset passed as a prop and merges slot attributes', function () {
+it('merges slot attributes into a named element', function () {
     $html = $this->render(<<<'BLADE'
-        <x-card preset="danger">
+        <x-card variant="filled" tone="red">
             <x-slot:title class="text-xl">Hi</x-slot:title>
             Body
         </x-card>
     BLADE);
 
     expect($html)->toBe('<div class="shadow bg-red-50"> <h2 class="font-bold text-xl">Hi</h2> Body </div>');
-});
-
-it('lets explicit props win over a preset', function () {
-    $html = $this->render('<x-card preset="danger" tone="blue"><x-slot:title>Hi</x-slot:title></x-card>');
-
-    expect($html)->toContain('<div class="shadow bg-blue-50">');
 });
 
 it('maps booleans to "true" / "false" keys', function () {

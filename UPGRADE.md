@@ -44,14 +44,26 @@ Tailwind IntelliSense: in `.vscode/settings.json` replace `directive` with `opti
 | `Element::directive()` | `Element::option()` |
 | `new Recipe` | `new Recipe($defaultTarget = 'default')` |
 
+### `@preset` is removed
+
+`@preset(...)`, the `preset="..."` attribute and `$attributes->preset()` are gone. Give options their defaults in `@props` and pass the values you need on the tag. A combination you repeat a lot is better off as a component of its own:
+
+```blade
+{{-- 1.x --}}
+@preset('featured', ['variant' => 'elevated', 'padding' => 'lg'])
+<x-card preset="featured">
+
+{{-- 2.0 --}}
+<x-card variant="elevated" padding="lg">
+```
+
 ### Behaviour changes
 
 - **tailwind-merge is used automatically** when `gehrisandro/tailwind-merge-laravel` (or `-php`) is installed. Set `'merge_classes' => false` to keep de-duplication only. `Malevich::mergeClassesUsing()` still wins.
 - **`<x-malevich::primitive>` refuses** `script`, `style`, `iframe`, `object`, `embed`, `link`, `meta`, `base`, `frame`, `frameset` and `applet` as `as`.
 - **Classes are escaped**: a `"` in a class map or from a class merger becomes `&quot;` instead of breaking out of the attribute.
 - **`@attributes` outside a component** throws a `LogicException` that says so, instead of "Undefined variable $attributes".
-- **`make:malevich`** writes a `@defaults([...])` block instead of `@props` for the options.
 
 ### New in 2.0
 
-`@defaults`, `Malevich::strict()`, `php artisan malevich:install`, `php artisan malevich:lint`, data attributes, `classesFor()` for Alpine, `->assertSeeClasses()` / `toHaveClasses()`. See the README.
+`Malevich::strict()`, `php artisan malevich:install`, `php artisan malevich:lint`, data attributes, `classesFor()` for Alpine, `->assertSeeClasses()` / `toHaveClasses()`. See the README.
