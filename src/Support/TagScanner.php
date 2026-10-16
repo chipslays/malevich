@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Malevich\Support;
 
 use Closure;
+use Malevich\Malevich;
+use Malevich\MalevichManager;
 
 /**
  * The regex building blocks shared by the tag compilers: finding the tags
@@ -99,6 +101,18 @@ final class TagScanner
             )
             \/?>
         /xs';
+    }
+
+    /**
+     * PHP that resolves the element of `@attributes(...)` into a variable and,
+     * in debug mode, prints its explanation - to be put right before the tag.
+     */
+    public static function resolveBefore(string $arguments): string
+    {
+        $variable = '$'.MalevichManager::ATTRIBUTES_VARIABLE;
+        $arguments = $arguments === '' ? '' : ", {$arguments}";
+
+        return "<?php {$variable} = \\".Malevich::class."::attributes(\$attributes ?? null, get_defined_vars(){$arguments}); echo {$variable}->debugComment(); ?>";
     }
 
     /**

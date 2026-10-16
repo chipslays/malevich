@@ -17,7 +17,7 @@ it('compiles @option, @base and @compound', function () {
 });
 
 it('compiles @attributes with and without arguments', function () {
-    expect(Blade::compileString('<b @attributes>'))->toContain('Malevich::attributes($attributes ?? null, get_defined_vars()); ?>>')
+    expect(Blade::compileString('<b @attributes>'))->toContain('Malevich::attributes($attributes ?? null, get_defined_vars()); echo $__malevichAttributes->debugComment(); ?><b <?php echo $__malevichAttributes; ?>>')
         ->and(Blade::compileString("<b @attributes('icon')>"))->toContain("Malevich::attributes(\$attributes ?? null, get_defined_vars(), 'icon')");
 });
 

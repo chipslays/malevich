@@ -6,9 +6,12 @@ namespace Malevich;
 
 use Closure;
 use Illuminate\Contracts\Config\Repository;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ComponentAttributeBag;
 use Illuminate\View\ComponentSlot;
+use Illuminate\View\FileViewFinder;
 use LogicException;
+use Malevich\Support\ComponentScanner;
 use WeakMap;
 
 /**
@@ -46,12 +49,17 @@ class MalevichManager
      */
     private ?Closure $classMerger = null;
 
-    private bool $strict = false;
+    /**
+     * Set from code (a service provider); null falls back to the config.
+     */
+    private ?bool $strict = null;
+
+    private ?bool $debug = null;
 
     /**
      * Config values read on every render, resolved once.
      *
-     * @var array{default_target: string, directives: array<string, string>, options: list<string>, data_attributes: bool, merger: (Closure(string): string)|null}|null
+     * @var array{default_target: string, directives: array<string, string>, options: list<string>, data_attributes: bool, strict: bool, debug: bool, merger: (Closure(string): string)|null}|null
      */
     private ?array $config = null;
 
@@ -63,6 +71,13 @@ class MalevichManager
      * @var WeakMap<ComponentAttributeBag, Recipe>
      */
     private WeakMap $recipes;
+
+    /**
+     * Component names by compiled view path.
+     *
+     * @var array<string, string|null>
+     */
+    private array $componentNames = [];
 
     public function __construct(private readonly Repository $repository)
     {
@@ -98,6 +113,8 @@ class MalevichManager
      * development and tests, in a service provider's boot():
      *
      *     Malevich::strict(! app()->isProduction());
+     *
+     * A call here wins over the `strict` config option.
      */
     public function strict(bool $strict = true): void
     {
@@ -106,7 +123,26 @@ class MalevichManager
 
     public function isStrict(): bool
     {
-        return $this->strict;
+        return $this->strict ?? $this->config()['strict'];
+    }
+
+    /**
+     * Print an HTML comment in front of every element that explains its
+     * classes: the component, the value of each option and where it came
+     * from, and which declaration added which classes. For development:
+     *
+     *     Malevich::debug(app()->isLocal());
+     *
+     * A call here wins over the `debug` config option.
+     */
+    public function debug(bool $debug = true): void
+    {
+        $this->debug = $debug;
+    }
+
+    public function isDebugging(): bool
+    {
+        return $this->debug ?? $this->config()['debug'];
     }
 
     /**
@@ -222,6 +258,35 @@ class MalevichManager
     }
 
     /**
+     * The tag name of the component whose template the scope belongs to
+     * (e.g. "button", "ui::badge"), or null when it can't be told. Read from
+     * the source path Blade records at the end of every compiled view, so it
+     * costs a file read once per view - only debug mode and data attributes
+     * ask for it.
+     *
+     * @param  array<string, mixed>  $scope  The template's get_defined_vars().
+     */
+    public function componentName(array $scope): ?string
+    {
+        $compiled = $scope['__path'] ?? null;
+
+        if (! is_string($compiled)) {
+            return null;
+        }
+
+        if (! array_key_exists($compiled, $this->componentNames)) {
+            $finder = app('view')->getFinder();
+            $tail = is_file($compiled) ? (string) file_get_contents($compiled, offset: max(0, (int) filesize($compiled) - 2048)) : '';
+
+            $this->componentNames[$compiled] = $finder instanceof FileViewFinder && preg_match('/\/\*\*PATH (.+?) ENDPATH\*\*\//', $tail, $match)
+                ? (new ComponentScanner(new Filesystem, $finder))->nameOf($match[1])
+                : null;
+        }
+
+        return $this->componentNames[$compiled];
+    }
+
+    /**
      * Forget the config values read so far, so changes made with config()
      * at runtime are picked up. The service provider calls it on boot.
      */
@@ -236,13 +301,15 @@ class MalevichManager
     public function flush(): void
     {
         $this->classMerger = null;
-        $this->strict = false;
+        $this->strict = null;
+        $this->debug = null;
         $this->recipes = new WeakMap;
+        $this->componentNames = [];
         $this->flushConfig();
     }
 
     /**
-     * @return array{default_target: string, directives: array<string, string>, options: list<string>, data_attributes: bool, merger: (Closure(string): string)|null}
+     * @return array{default_target: string, directives: array<string, string>, options: list<string>, data_attributes: bool, strict: bool, debug: bool, merger: (Closure(string): string)|null}
      */
     private function config(): array
     {
@@ -254,6 +321,8 @@ class MalevichManager
             ),
             'options' => array_values(array_filter((array) $this->repository->get('malevich.options', []), is_string(...))),
             'data_attributes' => (bool) $this->repository->get('malevich.data_attributes', false),
+            'strict' => (bool) $this->repository->get('malevich.strict', false),
+            'debug' => (bool) $this->repository->get('malevich.debug', false),
             'merger' => $this->repository->get('malevich.merge_classes', 'auto') === 'auto' ? $this->tailwindMerger() : null,
         ];
     }

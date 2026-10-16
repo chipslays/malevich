@@ -17,20 +17,35 @@ it('escapes interpolated values', function () {
     expect($this->render('<x-plain-tags extra="a&quot;b" />'))->not->toContain('class="base-chip from-tag a"b"');
 });
 
+/**
+ * What a plain tag compiles to: the element resolved in front of the tag
+ * (with its debug comment), then printed inside it.
+ */
+function resolved(string $arguments, string $tag): string
+{
+    $arguments = $arguments === '' ? '' : ", {$arguments}";
+
+    return "<?php \$__malevichAttributes = \\Malevich\\Malevich::attributes(\$attributes ?? null, get_defined_vars(){$arguments}); echo \$__malevichAttributes->debugComment(); ?>"
+        .str_replace('@@', '<?php echo $__malevichAttributes; ?>', $tag);
+}
+
+it('resolves the element in front of the tag', function () {
+    expect(HtmlTagCompiler::compile("<div @attributes('x')></div>"))->toBe(resolved("'x'", '<div @@></div>'))
+        ->and(HtmlTagCompiler::compile('<div :class="a" data-class="b" @attributes></div>'))->toBe(resolved('', '<div :class="a" data-class="b" @@></div>'));
+});
+
 it('moves the class into merge: and keeps existing arguments', function () {
     expect(HtmlTagCompiler::compile("<span @attributes('chip') class=\"a {{ \$b }}\">"))
-        ->toBe("<span @attributes('chip', merge: ['class' => 'a '.(string) (\$b)])>")
+        ->toBe(resolved("'chip', merge: ['class' => 'a '.(string) (\$b)]", '<span @@>'))
         ->and(HtmlTagCompiler::compile('<b class="x" @attributes>'))
-        ->toBe("<b @attributes(merge: ['class' => 'x'])>");
+        ->toBe(resolved("merge: ['class' => 'x']", '<b @@>'));
 });
 
 it('leaves everything else alone', function (string $template) {
     expect(HtmlTagCompiler::compile($template))->toBe($template);
 })->with([
     'no @attributes' => ['<div class="a"></div>'],
-    'no class' => ["<div @attributes('x')></div>"],
     '<x-...> tags' => ['<x-foo class="a" @attributes />'],
-    'other attributes' => ['<div :class="a" data-class="b" @attributes></div>'],
     'quoted @attributes' => ['<div title="press @attributes" class="a"></div>'],
     'blade comment' => ['{{-- <div class="{!! $a !!}" @attributes> --}}'],
     'verbatim' => ['@verbatim <div class="a" @attributes></div> @endverbatim'],
@@ -57,5 +72,5 @@ it('compiles the rewritten tag into one @attributes call', function () {
 });
 
 it('moves an unquoted class into merge:', function () {
-    expect(HtmlTagCompiler::compile('<b class=x @attributes>'))->toBe("<b @attributes(merge: ['class' => 'x'])>");
+    expect(HtmlTagCompiler::compile('<b class=x @attributes>'))->toBe(resolved("merge: ['class' => 'x']", '<b @@>'));
 });

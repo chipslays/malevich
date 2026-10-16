@@ -50,7 +50,7 @@ it('does not rewrite @attributes inside quoted attribute values or echoes', func
         ->toContain('title="press @attributes now"')
         ->toContain(":label=\"'@attributes'\"")
         ->toContain("data-x='a @attributes b'")
-        ->toContain('<?php $__malevichAttributes = \Malevich\Malevich::attributes($attributes ?? null, get_defined_vars()); ?><x-foo')
+        ->toContain('<?php $__malevichAttributes = \Malevich\Malevich::attributes($attributes ?? null, get_defined_vars()); echo $__malevichAttributes->debugComment(); ?><x-foo')
         ->toContain(':attributes="$__malevichAttributes->toAttributeBag()"');
 });
 
@@ -83,7 +83,7 @@ it('finds @attributes on a component tag with ">" inside a quoted attribute', fu
 
 it('keeps double quotes and parentheses in @attributes arguments on component tags', function () {
     expect(ComponentTagCompiler::compile('<x-foo @attributes("icon", merge: [\'title\' => "a)b"]) />'))
-        ->toBe('<?php $__malevichAttributes = \Malevich\Malevich::attributes($attributes ?? null, get_defined_vars(), "icon", merge: [\'title\' => "a)b"]); ?><x-foo :attributes="$__malevichAttributes->toAttributeBag()" />');
+        ->toBe('<?php $__malevichAttributes = \Malevich\Malevich::attributes($attributes ?? null, get_defined_vars(), "icon", merge: [\'title\' => "a)b"]); echo $__malevichAttributes->debugComment(); ?><x-foo :attributes="$__malevichAttributes->toAttributeBag()" />');
 });
 
 it('leaves the template untouched when the regex gives up', function () {

@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\View\FileViewFinder;
 use InvalidArgumentException;
 use Malevich\Malevich;
-use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * Reads the options of every anonymous Blade component from its source,
@@ -52,7 +51,7 @@ final class ComponentScanner
                     continue;
                 }
 
-                foreach ($this->tags($file, $prefix) as $tag) {
+                foreach ($this->tags($file->getRelativePathname(), $prefix) as $tag) {
                     $components[$tag] ??= $component;
                 }
             }
@@ -61,6 +60,31 @@ final class ComponentScanner
         ksort($components);
 
         return $components;
+    }
+
+    /**
+     * The tag name a component file is used by, without the `x-`
+     * (e.g. "button", "forms.input", "ui::badge"), or null when the file is
+     * not in a components folder.
+     */
+    public function nameOf(string $path): ?string
+    {
+        $path = realpath($path);
+
+        if ($path === false) {
+            return null;
+        }
+
+        foreach ($this->directories() as [$directory, $prefix]) {
+            if (str_starts_with($path, $directory.DIRECTORY_SEPARATOR) && str_ends_with($path, '.blade.php')) {
+                $tags = $this->tags(substr($path, strlen($directory) + 1), $prefix);
+
+                // `card/index.blade.php` is used as <x-card>: the shortest name is the tag.
+                return end($tags) ?: null;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -251,15 +275,16 @@ final class ComponentScanner
     }
 
     /**
-     * The tags a file is available as: `forms/input.blade.php` is
+     * The tags a file (path relative to its components folder) is
+     * available as: `forms/input.blade.php` is
      * "forms.input", `card/index.blade.php` and `card/card.blade.php` are
      * "card" as well.
      *
      * @return list<string>
      */
-    private function tags(SplFileInfo $file, ?string $prefix): array
+    private function tags(string $relativePath, ?string $prefix): array
     {
-        $name = str_replace(['/', '\\'], '.', substr($file->getRelativePathname(), 0, -strlen('.blade.php')));
+        $name = str_replace(['/', '\\'], '.', substr($relativePath, 0, -strlen('.blade.php')));
         $names = [$name];
 
         $segments = explode('.', $name);

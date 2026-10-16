@@ -7,3 +7,6 @@ parameters:
         - src
         - config
     tmpDir: build/phpstan
+    # The package's config/ is not the application's config directory, so the
+    # rule would flag the usual env() defaults of a published config file.
+    noEnvCallsOutsideOfConfig: false

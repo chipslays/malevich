@@ -13,6 +13,8 @@ use Illuminate\View\ComponentAttributeBag;
  * @method static string mergeClasses(string $classes)
  * @method static void strict(bool $strict = true)
  * @method static bool isStrict()
+ * @method static void debug(bool $debug = true)
+ * @method static bool isDebugging()
  * @method static Recipe recipe(?ComponentAttributeBag $attributes)
  * @method static Element attributes(?ComponentAttributeBag $attributes, array<string, mixed> $scope, ?string $target = null, mixed $slot = null, array<string, mixed> $merge = [])
  * @method static bool has(?ComponentAttributeBag $attributes, array<string, mixed> $scope, ?string $target = null, mixed $slot = null, array<string, mixed> $merge = [])
@@ -22,6 +24,7 @@ use Illuminate\View\ComponentAttributeBag;
  * @method static list<string> options()
  * @method static bool dataAttributes()
  * @method static string componentTag(string $name)
+ * @method static string|null componentName(array<string, mixed> $scope)
  * @method static void flushConfig()
  * @method static void flush()
  *

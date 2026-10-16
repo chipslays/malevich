@@ -105,4 +105,32 @@ return [
 
     'merge_classes' => 'auto',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Strict Mode
+    |--------------------------------------------------------------------------
+    |
+    | Throw when an option gets a value its class maps don't define
+    | (size="xl"), instead of silently rendering no classes. Meant for
+    | development and tests. Malevich::strict(...) in a service provider
+    | wins over this value.
+    |
+    */
+
+    'strict' => env('MALEVICH_STRICT', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Debug Mode
+    |--------------------------------------------------------------------------
+    |
+    | Print an HTML comment in front of every element that explains its
+    | classes: the component, each option's value and where it came from,
+    | and which declaration added which classes. Never in production.
+    | Malevich::debug(...) in a service provider wins over this value.
+    |
+    */
+
+    'debug' => env('MALEVICH_DEBUG', false),
+
 ];

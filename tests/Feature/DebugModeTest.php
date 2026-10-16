@@ -1,0 +1,86 @@
+<?php
+
+use Illuminate\Support\Facades\Blade;
+use Illuminate\View\ViewException;
+use Malevich\Malevich;
+
+function renderRaw(string $template): string
+{
+    return Blade::render($template, deleteCachedView: true);
+}
+
+it('prints nothing by default', function () {
+    expect(Malevich::isDebugging())->toBeFalse()
+        ->and(renderRaw('<x-button variant="ghost">Hi</x-button>'))->not->toContain('<!--');
+});
+
+it('explains every element in a comment in front of it', function () {
+    Malevich::debug();
+
+    $html = renderRaw('<x-button variant="ghost" :size="[\'icon\' => \'lg\']" icon class="mt-2">Hi</x-button>');
+
+    expect($html)
+        ->toContain("<!-- malevich: <x-button>\n     options: variant=ghost (tag)\n     variant=*: btn\n     variant=ghost: btn-ghost\n     class: mt-2")
+        ->toContain("class: mt-2\n     result: btn btn-ghost mt-2 -->\n<button class=\"btn btn-ghost mt-2\"")
+        ->toContain("<!-- malevich: <x-button> > icon\n     options: size=lg (tag)\n     size=lg: w-6\n     result: w-6 -->\n<svg class=\"w-6\">");
+});
+
+it('tells a value from the tag apart from a @props default', function () {
+    Malevich::debug();
+
+    expect(renderRaw('<x-strict-button size="sm">Go</x-strict-button>'))
+        ->toContain('options: variant=primary (@props default), size=sm (tag)');
+});
+
+it('lists the matching @compound and values without classes', function () {
+    Malevich::debug();
+
+    $html = renderRaw('<x-strict-button size="xl">Go</x-strict-button>');
+
+    expect($html)->toContain('size=xl: (no classes for this value)')
+        ->and(renderRaw('<x-strict-button>Go</x-strict-button>'))->toContain('@compound(variant=primary, size=md): shadow');
+});
+
+it('explains elements resolved for component tags', function () {
+    Malevich::debug();
+
+    expect(renderRaw('<x-ui-button>Go</x-ui-button>'))->toContain("<!-- malevich: <x-ui-button>\n     options: variant=primary (@props default)");
+});
+
+it('never breaks out of the comment', function () {
+    Malevich::debug();
+
+    $comment = str(renderRaw('<x-unsafe-classes classes="bg-(--brand) -->" />'))->between('<!--', '-->');
+
+    expect((string) $comment)->toContain('@base: bg-(- -brand) - ->')->toContain('result:');
+});
+
+it('is switched on and off in config, and a call in code wins', function () {
+    config(['malevich.debug' => true]);
+    Malevich::flushConfig();
+
+    expect(Malevich::isDebugging())->toBeTrue()
+        ->and(renderRaw('<x-toggle />'))->toContain('<!-- malevich: <x-toggle>');
+
+    Malevich::debug(false);
+
+    expect(Malevich::isDebugging())->toBeFalse()
+        ->and(renderRaw('<x-toggle />'))->not->toContain('<!--');
+
+    config(['malevich.debug' => false]);
+    Malevich::flushConfig();
+    Malevich::debug();
+
+    expect(Malevich::isDebugging())->toBeTrue();
+});
+
+it('switches strict mode in config too, and a call in code wins', function () {
+    config(['malevich.strict' => true]);
+    Malevich::flushConfig();
+
+    expect(fn () => renderRaw('<x-strict-button size="xl">Go</x-strict-button>'))->toThrow(ViewException::class, 'size [xl] is not defined');
+
+    Malevich::strict(false);
+
+    expect(renderRaw('<x-strict-button size="xl">Go</x-strict-button>'))->toContain('<button');
+});

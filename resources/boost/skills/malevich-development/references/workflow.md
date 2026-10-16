@@ -119,6 +119,7 @@ Add custom option names to the first pattern.
 
 ## Troubleshooting
 
+- Turn on `MALEVICH_DEBUG=true`: an HTML comment in front of every element lists each option's value, its source and the classes every declaration added.
 - Classes missing: directive after `@attributes`; value doesn't match a key (`Malevich::strict()` names it); no default (add one in `@props`); stale cache -> `php artisan view:clear`.
 - `variant="..."` visible in HTML: directive missing or after `@attributes`.
 - `class` not on an inner element: by design; use a named slot or a prop.

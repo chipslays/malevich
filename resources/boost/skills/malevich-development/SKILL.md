@@ -76,7 +76,8 @@ php artisan view:clear     # after config changes or package upgrade
 | An element exists only in some variants | `@has('target') ... @endhas`, all its classes in the variants (no `@base`) |
 | Classes depend on 2+ props or a flag | `@compound` |
 | Default value of an option | its `@props` default |
-| Catch value typos in dev | `Malevich::strict(! app()->isProduction())` |
+| Catch value typos in dev | `MALEVICH_STRICT=true` or `Malevich::strict(! app()->isProduction())` |
+| See why an element has its classes | `MALEVICH_DEBUG=true` or `Malevich::debug()`: an HTML comment in front of every element |
 | Set up a project (config, Tailwind IntelliSense) | `php artisan malevich:install` |
 | Children react to the parent's option | `'data_attributes' => true` + `group-data-[variant=x]:` |
 | Switch an option in the browser (Alpine) | `data-*` variants in the maps + `x-bind:data-x`, or `{{ Js::from($attributes->classesFor('variant')) }}` + `x-bind:class="classes[variant]"` |

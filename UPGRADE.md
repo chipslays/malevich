@@ -83,4 +83,4 @@ If you published the config, move your custom names there. `Malevich::renderDire
 
 ### New in 2.0
 
-`Malevich::strict()`, `php artisan malevich:install`, `php artisan malevich:lint`, data attributes, `classesFor()` for Alpine, `->assertSeeClasses()` / `toHaveClasses()`. See the README.
+`Malevich::strict()` / `MALEVICH_STRICT`, `Malevich::debug()` / `MALEVICH_DEBUG`, `php artisan malevich:install`, `php artisan malevich:lint`, data attributes (with `data-component`), `@compound(..., targets: [...])`, `classesFor()` for Alpine, `->assertSeeClasses()` / `toHaveClasses()`. See the README.

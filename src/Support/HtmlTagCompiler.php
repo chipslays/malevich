@@ -6,19 +6,24 @@ namespace Malevich\Support;
 
 use InvalidArgumentException;
 use Malevich\Malevich;
+use Malevich\MalevichManager;
 
 /**
- * Keeps `class="..."` and `@attributes` on the same plain HTML tag from producing
- * two `class` attributes (the browser would silently drop the second one):
+ * Compiles `@attributes` on plain HTML tags.
+ *
+ * The element is resolved right before the tag, so debug mode can print an
+ * explanation in front of it, and printed inside the tag:
+ *
+ *     <?php $__malevichAttributes = ...; echo $__malevichAttributes->debugComment(); ?><span <?php echo $__malevichAttributes; ?>>
+ *
+ * A `class="..."` next to `@attributes` is moved into the `merge:` argument
+ * first, so the tag never gets two `class` attributes (the browser would
+ * silently drop the second one):
  *
  *     <span @attributes('chip') class="size-4 {{ $extra }}">
+ *     -> @attributes('chip', merge: ['class' => 'size-4 '.(string) ($extra)])
  *
- * The class value is moved into the `merge:` argument of `@attributes`, which adds
- * it after the element's own classes, exactly like a class on a component tag:
- *
- *     <span @attributes('chip', merge: ['class' => 'size-4 '.(string) ($extra)])>
- *
- * `<x-...>` tags are not touched: Blade already merges their attributes.
+ * `<x-...>` tags are handled by ComponentTagCompiler.
  */
 final class HtmlTagCompiler
 {
@@ -26,14 +31,21 @@ final class HtmlTagCompiler
     {
         $directive = Malevich::directive('attributes');
 
-        if (! str_contains($template, '@'.$directive) || ! str_contains($template, 'class')) {
+        if (! str_contains($template, '@'.$directive)) {
             return $template;
         }
 
         return TagScanner::replaceTags($template, '(?!x[-:])[a-zA-Z][\w\-:.]*', function (array $tag) use ($directive): string {
             $attributes = self::rewrite($tag['name'], $tag['attributes'], $directive);
+            $found = TagScanner::findDirective($attributes, $directive);
 
-            return $attributes === $tag['attributes'] ? $tag[0] : TagScanner::rebuild($tag, $attributes);
+            if ($found === null) {
+                return $attributes === $tag['attributes'] ? $tag[0] : TagScanner::rebuild($tag, $attributes);
+            }
+
+            $attributes = substr_replace($attributes, '<?php echo $'.MalevichManager::ATTRIBUTES_VARIABLE.'; ?>', $found['offset'], $found['length']);
+
+            return TagScanner::resolveBefore($found['arguments']).TagScanner::rebuild($tag, $attributes);
         });
     }
 

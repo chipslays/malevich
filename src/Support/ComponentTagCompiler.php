@@ -16,7 +16,7 @@ use Malevich\MalevichManager;
  * template is compiled the element is resolved right in front of the tag
  * and passed to the child component as its attributes:
  *
- *     <?php $__malevichAttributes = \Malevich\Malevich::attributes($attributes ?? null, get_defined_vars(), 'icon'); ?>
+ *     <?php $__malevichAttributes = \Malevich\Malevich::attributes($attributes ?? null, get_defined_vars(), 'icon'); echo $__malevichAttributes->debugComment(); ?>
  *     <x-malevich::primitive as="button" :attributes="$__malevichAttributes->toAttributeBag()">
  *
  * Resolving it in plain PHP keeps any quotes in the arguments out of the
@@ -40,11 +40,9 @@ final class ComponentTagCompiler
             }
 
             $variable = '$'.MalevichManager::ATTRIBUTES_VARIABLE;
-            $arguments = $found['arguments'] === '' ? '' : ", {$found['arguments']}";
             $attributes = substr_replace($tag['attributes'], ":attributes=\"{$variable}->toAttributeBag()\"", $found['offset'], $found['length']);
 
-            return "<?php {$variable} = \\".Malevich::class."::attributes(\$attributes ?? null, get_defined_vars(){$arguments}); ?>"
-                .TagScanner::rebuild($tag, $attributes);
+            return TagScanner::resolveBefore($found['arguments']).TagScanner::rebuild($tag, $attributes);
         });
     }
 }

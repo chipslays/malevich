@@ -68,7 +68,7 @@ it('rewrites @attributes only inside component tags', function () {
     BLADE);
 
     expect($compiled)
-        ->toContain("<?php \$__malevichAttributes = \Malevich\Malevich::attributes(\$attributes ?? null, get_defined_vars(), 'icon', merge: ['x' => 'y']); ?><x-foo a=\"b\" :attributes=\"\$__malevichAttributes->toAttributeBag()\" />")
+        ->toContain("<?php \$__malevichAttributes = \Malevich\Malevich::attributes(\$attributes ?? null, get_defined_vars(), 'icon', merge: ['x' => 'y']); echo \$__malevichAttributes->debugComment(); ?><x-foo a=\"b\" :attributes=\"\$__malevichAttributes->toAttributeBag()\" />")
         ->toContain('<span @attributes></span>')
         ->toContain('title="mail@attributes.com"')
         ->toContain('<x-baz @attributes />');

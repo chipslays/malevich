@@ -6,6 +6,7 @@ namespace Malevich;
 
 use BackedEnum;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\View\ComponentAttributeBag;
 use Illuminate\View\ComponentSlot;
@@ -206,12 +207,32 @@ final class Element implements Htmlable, Stringable
     {
         $classes = new ClassList;
 
+        foreach ($this->fragments() as [, $fragment]) {
+            $classes = $classes->add($fragment);
+        }
+
+        return $this->malevich->mergeClasses((string) $classes);
+    }
+
+    /**
+     * Every piece of the class string, in order, with where it comes from:
+     * `@base`, each option's map, the matching `@compound`s, `merge:` and
+     * the `class` of the tag or slot.
+     *
+     * @return list<array{0: string, 1: mixed}> [label, classes]
+     */
+    private function fragments(): array
+    {
+        $fragments = [];
+
         foreach ($this->recipe()->baseFor($this->target) as $base) {
-            $classes = $classes->add($base);
+            $fragments[] = ['@'.$this->malevich->directive('base'), $base];
         }
 
         foreach ($this->recipe()->optionsFor($this->target) as $option => $map) {
-            $classes = $classes->add($map['*'] ?? null);
+            if (isset($map['*'])) {
+                $fragments[] = ["{$option}=*", $map['*']];
+            }
 
             $choice = $this->choice($option);
 
@@ -220,21 +241,114 @@ final class Element implements Htmlable, Stringable
                     $this->ensureKnown($option, $choice, $map);
                 }
 
-                $classes = $classes->add($map[$choice] ?? null);
+                $fragments[] = ["{$option}={$choice}", $map[$choice] ?? null];
             }
         }
 
         foreach ($this->recipe()->compoundsFor($this->target) as [$conditions, $compoundClasses]) {
             if ($this->matches($conditions)) {
-                $classes = $classes->add($compoundClasses);
+                $fragments[] = ['@'.$this->malevich->directive('compound').'('.self::describeConditions($conditions).')', $compoundClasses];
             }
         }
 
-        $classes = $classes
-            ->add($this->escapedExtra()['class'] ?? null)
-            ->add($this->ownAttributes()?->get('class'));
+        $fragments[] = ['merge:', $this->escapedExtra()['class'] ?? null];
+        $fragments[] = ['class', $this->ownAttributes()?->get('class')];
 
-        return $this->malevich->mergeClasses((string) $classes);
+        return $fragments;
+    }
+
+    /**
+     * The debug comment for this element: empty unless debug mode is on.
+     */
+    public function debugComment(): string
+    {
+        if (! $this->malevich->isDebugging()) {
+            return '';
+        }
+
+        $component = $this->malevich->componentName($this->scope) ?? 'component';
+        $element = $this->target === $this->malevich->defaultTarget() ? '' : " > {$this->target}";
+
+        $lines = ["malevich: <x-{$component}>{$element}"];
+
+        $options = [];
+
+        foreach ($this->debugOptionNames() as $option) {
+            $options[] = "{$option}=".($this->choice($option) ?? 'null').' ('.$this->choiceSource($option).')';
+        }
+
+        if ($options !== []) {
+            $lines[] = 'options: '.implode(', ', $options);
+        }
+
+        foreach ($this->fragments() as [$label, $fragment]) {
+            $classes = Arr::toCssClasses($fragment);
+
+            if ($classes !== '') {
+                $lines[] = "{$label}: {$classes}";
+            } elseif (str_contains($label, '=') && ! str_ends_with($label, '=*')) {
+                $lines[] = "{$label}: (no classes for this value)";
+            }
+        }
+
+        $deduplicated = (string) array_reduce($this->fragments(), fn (ClassList $list, array $fragment) => $list->add($fragment[1]), new ClassList);
+        $result = $this->toClasses();
+
+        if ($result !== $deduplicated) {
+            $lines[] = "before merging: {$deduplicated}";
+        }
+
+        $lines[] = 'result: '.($result === '' ? '(no classes)' : $result);
+
+        // A comment can't contain "--"; tag values are already escaped.
+        $body = str_replace('--', '- -', implode("\n     ", $lines));
+
+        return "<!-- {$body} -->\n";
+    }
+
+    /**
+     * Options that matter for this element: those with a class map here and
+     * those its matching or non-matching @compound conditions test.
+     *
+     * @return list<string>
+     */
+    private function debugOptionNames(): array
+    {
+        $names = array_keys($this->recipe()->optionsFor($this->target));
+
+        foreach ($this->recipe()->compoundsFor($this->target) as [$conditions]) {
+            $names = [...$names, ...array_keys($conditions)];
+        }
+
+        return array_values(array_unique(array_map(strval(...), $names)));
+    }
+
+    private function choiceSource(string $option): string
+    {
+        return match (true) {
+            $this->normalize($this->choices[$option] ?? null) !== null => '->'.$option.'()',
+            // The data Blade passed to the template: what the tag set, before @props defaults.
+            $this->normalize($this->scope[$option] ?? null) !== null => is_array($this->scope['__data'] ?? null) && array_key_exists($option, $this->scope['__data'])
+                ? 'tag'
+                : '@props default',
+            $this->normalize($this->attributes->get($option)) !== null => 'tag',
+            default => 'not set',
+        };
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $conditions
+     */
+    private static function describeConditions(array $conditions): string
+    {
+        return implode(', ', array_map(
+            fn (mixed $expected, int|string $option) => $option.'='.implode('|', array_map(
+                fn (mixed $value) => is_bool($value) ? ($value ? 'true' : 'false') : (is_scalar($value) ? (string) $value : '?'),
+                (array) $expected,
+            )),
+            $conditions,
+            array_keys($conditions),
+        ));
     }
 
     public function toAttributeBag(): ComponentAttributeBag
@@ -275,6 +389,10 @@ final class Element implements Htmlable, Stringable
         }
 
         $attributes = [];
+
+        if (($component = $this->malevich->componentName($this->scope)) !== null) {
+            $attributes['data-component'] = $component;
+        }
 
         foreach ($this->recipe()->optionNames() as $option) {
             $value = $this->choice($option);

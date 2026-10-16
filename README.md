@@ -1102,11 +1102,12 @@ Turn on `data_attributes` in the [config](#configuration) and the main element t
 ```
 
 ```html
-<button class="..." data-variant="danger" data-size="lg" data-loading>Save</button>
+<button class="..." data-component="button" data-variant="danger" data-size="lg" data-loading>Save</button>
 ```
 
 - Inner elements can react to the parent without props: `<svg class="group-data-[variant=danger]:text-white">` (with `group` on the button), or CSS like `[data-variant=danger] .icon`.
 - Tests and Dusk get stable selectors: `button[data-variant=danger]`.
+- `data-component` is the component's tag name without `x-` (`button`, `forms.input`, `ui::badge`), so `[data-component=button]` finds every button on a page.
 - Only options the component declares a class map for are written, and only on the main element.
 - A boolean is written as `data-loading` when true and left out when false, so Tailwind's `data-loading:` variant matches exactly when the flag is on.
 - An attribute you pass yourself (`data-variant="custom"`) wins.
@@ -1291,11 +1292,19 @@ So a clean run doesn't prove there are no typos at all - it proves there are non
 | `components.path` | `resource_path('views/components')` | Where `make:malevich` creates components. |
 | `components.prefix` | `null` | Tag prefix for that folder: `null` -> `<x-button>`, `'ui'` -> `<x-ui::button>`. |
 | `data_attributes` | `false` | Put `data-variant="..."` & co. on the main element. See [Data attributes](#data-attributes). |
+| `strict` | `env('MALEVICH_STRICT', false)` | Throw on option values a component doesn't define. See [Strict mode](#strict-mode). |
+| `debug` | `env('MALEVICH_DEBUG', false)` | An HTML comment in front of every element explaining its classes. See [Debug mode](#debug-mode). |
 | `merge_classes` | `'auto'` | `'auto'`: resolve Tailwind conflicts with tailwind-merge when it's installed. `false`: only remove duplicates. See [Fixing Tailwind conflicts](#fixing-tailwind-conflicts). |
 
 ### Strict mode
 
-By default a value with no matching key renders nothing, silently: a typo like `size="lg "` or `variant="primay"` just leaves the element unstyled. In development you usually want to hear about it. Turn on strict mode in `AppServiceProvider::boot()`, the same way as Eloquent's `Model::shouldBeStrict()`:
+By default a value with no matching key renders nothing, silently: a typo like `size="lg "` or `variant="primay"` just leaves the element unstyled. In development you usually want to hear about it. Turn on strict mode in `.env`:
+
+```dotenv
+MALEVICH_STRICT=true
+```
+
+or in `AppServiceProvider::boot()`, the same way as Eloquent's `Model::shouldBeStrict()`. A call in code always wins over the config:
 
 ```php
 use Malevich\Malevich;
@@ -1321,6 +1330,36 @@ It checks the value wherever it came from - the tag or a `@props` default - so a
 
 Keep it off in production: there an unstyled element is better than an error page.
 
+### Debug mode
+
+"Why does this button have these classes?" Turn on debug mode and every element tells you, in an HTML comment right in front of it:
+
+```dotenv
+MALEVICH_DEBUG=true
+```
+
+```php
+Malevich::debug(app()->isLocal());   // or in code - a call wins over the config
+```
+
+```html
+<!-- malevich: <x-button>
+     options: variant=outline (tag), size=md (@props default)
+     @base: inline-flex items-center rounded-lg font-medium
+     variant=outline: border border-zinc-300 bg-white
+     size=md: h-10 px-4
+     @compound(variant=outline, size=md): shadow-sm
+     class: mt-2
+     result: inline-flex items-center rounded-lg font-medium border border-zinc-300 bg-white h-10 px-4 shadow-sm mt-2 -->
+<button class="inline-flex items-center ...">
+```
+
+- **options** - the value of every option that matters for this element and where it came from: the tag, a `@props` default, or an explicit `->size()` call.
+- One line per piece of the class string, in the order it is built: `@base`, each option's map, every matching `@compound`, `merge:` and the `class` from the tag. A value that matches no key says so: `size=xl: (no classes for this value)`.
+- **before merging** shows up when [tailwind-merge](#fixing-tailwind-conflicts) changed the result, so you can see what it removed.
+- Inner elements get their own comment: `<x-button> > icon`.
+
+Open the page source or the browser's DevTools to read it. Never turn it on in production: it makes the HTML larger and shows how your components are built.
 ## Editor support (Tailwind IntelliSense)
 
 The [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss) extension only looks for classes in `class="..."` and a few known places. To get autocomplete, hover previews and color swatches inside `@base`, `@variant` & co., tell it where the classes are. `php artisan malevich:install` does it for you (with your own options included), or add this to `.vscode/settings.json` by hand:
