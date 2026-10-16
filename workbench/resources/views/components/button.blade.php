@@ -9,7 +9,7 @@
     'loading' => false,
 ])
 
-{{-- @base('') --}}
+@base('inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 data-disabled:pointer-events-none data-disabled:opacity-50')
 
 @variant([
     'primary' => 'bg-zinc-900 text-white hover:bg-zinc-700',
@@ -34,7 +34,7 @@
     'lg' => 'size-5',
 ])
 
-<x-malevich::primitive :as="$as" @attributes class="inline-flex justify-center items-center gap-2 data-disabled:opacity-50 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 font-medium transition-colors data-disabled:pointer-events-none">
+<x-malevich::primitive :as="$as" @attributes>
     @if ($loading)
         <svg @attributes('spinner') viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25" />
