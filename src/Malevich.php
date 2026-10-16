@@ -16,7 +16,7 @@ use Illuminate\View\ComponentAttributeBag;
  * @method static void debug(bool $debug = true)
  * @method static bool isDebugging()
  * @method static Recipe recipe(?ComponentAttributeBag $attributes)
- * @method static Element attributes(?ComponentAttributeBag $attributes, array<string, mixed> $scope, ?string $target = null, mixed $slot = null, array<string, mixed> $merge = [])
+ * @method static Element attributes(?ComponentAttributeBag $attributes, array<string, mixed> $scope, ?string $target = null, mixed $slot = null, array<string, mixed> $merge = [], string $class = '')
  * @method static bool has(?ComponentAttributeBag $attributes, array<string, mixed> $scope, ?string $target = null, mixed $slot = null, array<string, mixed> $merge = [])
  * @method static string defaultTarget()
  * @method static string directive(string $role)

@@ -51,6 +51,8 @@ final class Element implements Htmlable, Stringable
 
     private ?ComponentAttributeBag $slotAttributes = null;
 
+    private string $ownClasses = '';
+
     /**
      * @var array<string, mixed>
      */
@@ -141,6 +143,16 @@ final class Element implements Htmlable, Stringable
     }
 
     /**
+     * The element's own classes: the `class="..."` written next to
+     * `@attributes` inside the component. They work like `@base`: they come
+     * first, and the option maps go on top of them.
+     */
+    public function classes(string $classes): self
+    {
+        return $this->with(fn (self $s) => $s->ownClasses = trim($s->ownClasses.' '.$classes));
+    }
+
+    /**
      * Default attributes for this element. Like ComponentAttributeBag::merge(),
      * attributes passed to the component win and classes are appended.
      *
@@ -216,7 +228,7 @@ final class Element implements Htmlable, Stringable
 
     /**
      * Every piece of the class string, in order, with where it comes from:
-     * `@base`, each option's map, the matching `@compound`s, `merge:` and
+     * `@base`, the element's own `class=""`, each option's map, the matching `@compound`s, `merge:` and
      * the `class` of the tag or slot.
      *
      * @return list<array{0: string, 1: mixed}> [label, classes]
@@ -227,6 +239,10 @@ final class Element implements Htmlable, Stringable
 
         foreach ($this->recipe()->baseFor($this->target) as $base) {
             $fragments[] = ['@'.$this->malevich->directive('base'), $base];
+        }
+
+        if ($this->ownClasses !== '') {
+            $fragments[] = ['class=""', $this->ownClasses];
         }
 
         foreach ($this->recipe()->optionsFor($this->target) as $option => $map) {
@@ -289,6 +305,8 @@ final class Element implements Htmlable, Stringable
             $sections[] = self::debugSection('🔧 options', $options);
         }
 
+        $classes = [];
+
         foreach ($this->fragments() as [$label, $fragment]) {
             $list = Arr::toCssClasses($fragment);
 
@@ -305,12 +323,11 @@ final class Element implements Htmlable, Stringable
 
         $before = (string) array_reduce($this->fragments(), fn (ClassList $list, array $fragment) => $list->add($fragment[1]), new ClassList);
         $result = $this->toClasses();
+        $removed = array_diff(explode(' ', $before), explode(' ', $result));
 
         if ($removed !== []) {
             $sections[] = self::debugSection('🧹 removed by tailwind-merge', [['', implode(' ', $removed)]]);
         }
-        $classes = [];
-
 
         $sections[] = self::debugSection('✅ result', [['', $result === '' ? '(no classes)' : $result]]);
 
@@ -366,7 +383,6 @@ final class Element implements Htmlable, Stringable
     /**
      * Options that matter for this element: those with a class map here and
      * those its matching or non-matching @compound conditions test.
-        $removed = array_diff(explode(' ', $before), explode(' ', $result));
      *
      * @return list<string>
      */

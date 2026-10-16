@@ -79,6 +79,7 @@ If you published the config, move your custom names there. `Malevich::renderDire
 - **tailwind-merge is used automatically** when `gehrisandro/tailwind-merge-laravel` (or `-php`) is installed. Set `'merge_classes' => false` to keep de-duplication only. `Malevich::mergeClassesUsing()` still wins.
 - **`<x-malevich::primitive>` refuses** `script`, `style`, `iframe`, `object`, `embed`, `link`, `meta`, `base`, `frame`, `frameset` and `applet` as `as`.
 - **Classes are escaped**: a `"` in a class map or from a class merger becomes `&quot;` instead of breaking out of the attribute.
+- **A `class="..."` next to `@attributes`** inside a component now works like `@base`: it comes before the option classes instead of after the `@compound` ones. It can also be combined with `merge:` now. If you relied on such a class overriding an option's classes, move it to `@attributes(merge: ['class' => ...])`.
 - **`@attributes` outside a component** throws a `LogicException` that says so, instead of "Undefined variable $attributes".
 
 ### New in 2.0

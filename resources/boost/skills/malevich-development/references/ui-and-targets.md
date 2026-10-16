@@ -24,11 +24,11 @@ Arguments: target (1st, positional), `slot:`, `merge:` (named).
 
 ## `class="..."` next to `@attributes`
 
-On a plain HTML tag a `class` next to `@attributes` is merged into one `class` attribute, after the element's own classes: `<span @attributes('chip') class="size-4 {{ $extra }}">`. Only static text and `{{ }}` are supported; with `{!! !!}`, a Blade directive inside the class, or an existing `merge:`, compilation throws and you pass `merge: ['class' => ...]` yourself. `<x-...>` tags always merge their `class`.
+On a plain HTML tag a `class` next to `@attributes` is the element's own classes and works like `@base`: it comes first, the option classes go on top: `<span class="size-4 {{ $extra }}" @attributes('chip')>`. Only static text and `{{ }}` are supported; with `{!! !!}` or a Blade directive inside the class, compilation throws and you pass `@attributes(class: $classes)` yourself.
 
 ## Output rules (main element)
 
-- `class` order: `@base` -> class maps (file order) -> `@compound` -> `class` from `merge:` -> `class` from the tag. Duplicates removed. No empty `class=""`.
+- `class` order: `@base` -> the element's own `class=""` -> class maps (file order) -> `@compound` -> `class` from `merge:` -> `class` passed to the component. Duplicates removed. No empty `class=""`.
 - All other tag attributes pass through (`id`, `wire:*`, `x-*`, `data-*`, `aria-*`).
 - `merge:` attributes appear unless the tag sets them. `class` in `merge:` is added, not replaced. Values may be dynamic: `merge: ['aria-checked' => $checked ? 'true' : 'false']`.
 - Option names (`variant`, `color`, `size`, custom) are never printed. If `variant="..."` shows up in HTML, the directive is missing or declared after `@attributes`.

@@ -34,11 +34,18 @@ it('resolves the element in front of the tag', function () {
         ->and(HtmlTagCompiler::compile('<div :class="a" data-class="b" @attributes></div>'))->toBe(resolved('', '<div :class="a" data-class="b" @@></div>'));
 });
 
-it('moves the class into merge: and keeps existing arguments', function () {
+it('moves the class into class: and keeps existing arguments', function () {
     expect(HtmlTagCompiler::compile("<span @attributes('chip') class=\"a {{ \$b }}\">"))
-        ->toBe(resolved("'chip', merge: ['class' => 'a '.(string) (\$b)]", '<span @@>'))
+        ->toBe(resolved("'chip', class: 'a '.e(\$b)", '<span @@>'))
         ->and(HtmlTagCompiler::compile('<b class="x" @attributes>'))
-        ->toBe(resolved("merge: ['class' => 'x']", '<b @@>'));
+        ->toBe(resolved("class: 'x'", '<b @@>'))
+        ->and(HtmlTagCompiler::compile("<div @attributes('a', merge: ['id' => 'x']) class=\"b\">"))
+        ->toBe(resolved("'a', merge: ['id' => 'x'], class: 'b'", '<div @@>'));
+});
+
+it('treats the class inside the component like @base: the options go on top', function () {
+    expect($this->render('<x-inline-base />'))->toBe('<div class="px-2 rounded px-4 m-1"></div>')
+        ->and($this->render('<x-inline-base size="sm" class="mt-2" />'))->toBe('<div class="px-2 rounded px-1 m-1 mt-2"></div>');
 });
 
 it('leaves everything else alone', function (string $template) {
@@ -51,9 +58,9 @@ it('leaves everything else alone', function (string $template) {
     'verbatim' => ['@verbatim <div class="a" @attributes></div> @endverbatim'],
 ]);
 
-it('refuses a class next to @attributes that already has merge:', function () {
-    HtmlTagCompiler::compile("<div @attributes('a', merge: ['id' => 'x']) class=\"b\">");
-})->throws(InvalidArgumentException::class, 'merge:');
+it('refuses a class next to @attributes that already has class:', function () {
+    HtmlTagCompiler::compile("<div @attributes(class: 'a') class=\"b\">");
+})->throws(InvalidArgumentException::class, 'class:');
 
 it('refuses {!! !!} inside the class', function () {
     HtmlTagCompiler::compile('<div @attributes class="{!! $a !!}">');
@@ -68,9 +75,9 @@ it('refuses two class attributes', function () {
 })->throws(InvalidArgumentException::class, 'more than one class');
 
 it('compiles the rewritten tag into one @attributes call', function () {
-    expect(Blade::compileString('<b class="x" @attributes>'))->toContain("Malevich::attributes(\$attributes ?? null, get_defined_vars(), merge: ['class' => 'x'])");
+    expect(Blade::compileString('<b class="x" @attributes>'))->toContain("Malevich::attributes(\$attributes ?? null, get_defined_vars(), class: 'x')");
 });
 
-it('moves an unquoted class into merge:', function () {
-    expect(HtmlTagCompiler::compile('<b class=x @attributes>'))->toBe(resolved("merge: ['class' => 'x']", '<b @@>'));
+it('moves an unquoted class into class:', function () {
+    expect(HtmlTagCompiler::compile('<b class=x @attributes>'))->toBe(resolved("class: 'x'", '<b @@>'));
 });

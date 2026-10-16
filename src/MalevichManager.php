@@ -173,6 +173,7 @@ class MalevichManager
         ?string $target = null,
         mixed $slot = null,
         array $merge = [],
+        string $class = '',
     ): Element {
         $attributes ??= $this->outsideComponent();
 
@@ -184,6 +185,7 @@ class MalevichManager
 
         return (new Element($attributes, $target, $scope, $recipe, $this))
             ->slot($slot)
+            ->classes($class)
             ->merge($merge);
     }
 

@@ -15,7 +15,7 @@ Use it for reusable Blade components with options (variant, color, size, flags).
 2. `@attributes` reads each option's value (from `@props` with its default, or the tag attribute), picks the classes, prints them.
 3. **Directives MUST come before `@attributes`**, right after `@props`.
 
-Class order: `@base` -> class maps (file order) -> `@compound` -> `merge: ['class']` -> `class` from the tag. Duplicates removed.
+Class order: `@base` -> the element's own `class=""` -> class maps (file order) -> `@compound` -> `merge: ['class']` -> `class` passed to the component. Duplicates removed.
 
 ## Minimal component
 
@@ -33,7 +33,7 @@ Class order: `@base` -> class maps (file order) -> `@compound` -> `merge: ['clas
 <span @attributes>{{ $slot }}</span>
 ```
 
-Never write `$color` in the markup: `@attributes` reads the option from `@props` (its default) or the tag. Static classes go in `@base`, not in a `class="..."` on the `@attributes` element (on a plain tag such a class is merged after the element's own classes, but `@base` is the place for it).
+Never write `$color` in the markup: `@attributes` reads the option from `@props` (its default) or the tag. Always-on classes go in `@base` or in a `class="..."` on the `@attributes` element: inside a component both mean the same (the option classes go on top). Follow the project's convention.
 
 ## Cheat sheet
 
@@ -91,7 +91,7 @@ php artisan view:clear     # after config changes or package upgrade
 
 ## Essential rules
 
-- Directives before `@attributes`; always-on classes in `@base`, not `class=""`.
+- Directives before `@attributes`; always-on classes in `@base` or the element's own `class=""`.
 - Full literal class names only; never `'bg-'.$color.'-500'`.
 - Every `@props` default of an option must exist as a key in its map.
 - With the primitive: pass `:as="$as"`; do not put `href`, `target`, `disabled`, `type` in `@props`.

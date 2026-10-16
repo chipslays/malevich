@@ -280,7 +280,13 @@ Read it as: *"the element `@attributes('title')` always has `text-lg font-semibo
 - You can write `@base` several times for the same element; the classes add up.
 - Classes can also be a list or a conditional array: `@base(['flex', 'flex-col' => $vertical])`.
 
-**Why not just write `class="..."` on the tag?** Because the element also gets `class` from `@attributes`, and a tag can't have two `class` attributes. With `@base`, all classes of the component live in one place at the top, and the element can still receive classes from a [named slot](#named-slots) or [`merge:`](#attributes---full-reference).
+**Can I just write `class="..."` on the tag?** Yes. Inside a component, a `class` next to `@attributes` is the element's own classes and works exactly like `@base`: it comes first, and the option classes go on top of it.
+
+```blade
+<button class="inline-flex rounded-lg" @attributes>   {{-- the same as @base('inline-flex rounded-lg') --}}
+```
+
+Use whichever reads better. `@base` keeps every class of the component at the top of the file and also works for components you pass `@attributes` to (`<x-icon @attributes('icon') />`); `class=""` keeps the classes on the element they belong to. You can use both: `@base` classes come first, then the tag's `class`.
 
 ## Class maps
 
@@ -620,7 +626,7 @@ This is the same thing as `$attributes->merge([...])` in plain Blade.
 
 For the **main element** (`@attributes`, `@attributes(merge: ...)`):
 
-1. `class` - in this order: `@base` -> class maps (in file order) -> `@compound` classes -> `class` from `merge:` -> `class` from the tag. Duplicates removed.
+1. `class` - in this order: `@base` -> the element's own `class="..."` -> class maps (in file order) -> `@compound` classes -> `class` from `merge:` -> `class` passed to the component. Duplicates removed.
 2. All other attributes from the tag: `id`, `wire:click`, `x-data`, `data-*`, `aria-*`, ...
 3. Attributes from `merge:` that the tag didn't set.
 
@@ -637,7 +643,7 @@ If there are no classes at all, no empty `class=""` is printed.
 - `@attributes` works on HTML tags **and on other components**: `<x-icon @attributes('icon') />`. The classes and attributes are passed to that component as its `$attributes`. See [Building on other components](#building-on-other-components).
 - Inside `<x-...>` tags, write arguments with single quotes: `@attributes(merge: ['type' => 'submit'])`. A double quote would end the generated attribute.
 - You can use `@attributes` as many times as you want in one component, including several times for the same target.
-- A `class="..."` on the same tag is **added after** the element's own classes, as on a component tag: `<span @attributes('chip') class="size-4 {{ $extra }}">`. Static text and `{{ }}` are supported. For anything else (`{!! !!}`, `@if` inside the class, or `merge:` already in use) Malevich throws on compile - pass the classes through `merge: ['class' => ...]` instead.
+- A `class="..."` on the same plain tag works **like `@base`**: those classes come first and the option classes go on top: `<span class="size-4 {{ $extra }}" @attributes('chip')>`. Static text and `{{ }}` are supported. For anything else (`{!! !!}` or `@if` inside the class) Malevich throws on compile - pass the classes through `@attributes(class: $classes)` instead.
 
 > [!NOTE]
 > The name `@attributes` can be changed in the [config](#configuration): `directives.attributes`.
@@ -1369,13 +1375,13 @@ Malevich::debug(app()->isLocal());   // or in code - a call wins over the config
 - Inner elements get their own comment: `<x-button> › icon`. Long class lists wrap.
 
 Open the page source or the browser's DevTools to read it. Never turn it on in production: it makes the HTML larger and shows how your components are built.
+
 ## Editor support (Tailwind IntelliSense)
 
 The [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss) extension only looks for classes in `class="..."` and a few known places. To get autocomplete, hover previews and color swatches inside `@base`, `@variant` & co., tell it where the classes are. `php artisan malevich:install` does it for you (with your own options included), or add this to `.vscode/settings.json` by hand:
 
 ```json
 {
-
     "tailwindCSS.includeLanguages": {
         "blade": "html"
     },
@@ -1466,7 +1472,7 @@ Check, in this order:
 The directive for that option is missing or written after `@attributes`. Malevich only removes option names it knows about.
 
 **I wrote `class="..."` next to `@attributes` and got an exception.**
-On a plain tag it is merged into `@attributes` for you, but only for static text and `{{ }}`. With `{!! !!}`, a Blade directive inside the class, or an existing `merge:`, use `@attributes('x', merge: ['class' => $classes])`.
+On a plain tag it is passed to `@attributes` for you, but only for static text and `{{ }}`. With `{!! !!}` or a Blade directive inside the class, use `@attributes('x', class: $classes)`.
 
 **An optional element renders as an empty `<div>`.**
 It has a `@base`, which makes it non-empty in every variant. Move its classes into the variants and wrap it in [`@has`](#parts-that-exist-only-in-some-variants-has).

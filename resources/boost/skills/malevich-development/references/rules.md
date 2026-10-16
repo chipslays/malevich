@@ -3,7 +3,7 @@
 ## Hard rules
 
 1. Declare every directive **before** `@attributes`, right after `@props`.
-2. Always-on classes go in `@base`, not in a `class="..."` on the element that has `@attributes` (it would be merged after, but `@base` is the right place). Never combine `@attributes` with `$attributes->class(...)`, `{{ $attributes }}` or `@class` on the same element.
+2. Always-on classes go in `@base` or in a `class="..."` on the element that has `@attributes` - inside a component both come before the option classes. Never combine `@attributes` with `$attributes->class(...)`, `{{ $attributes }}` or `@class` on the same element.
 3. Write full literal class names in maps. Never build them: `'bg-'.$color.'-500'`, `bg-{{ $color }}-500`. Tailwind cannot see them.
 4. Option defaults go in `@props([...])`, and each must be an existing key of that option's map (case-sensitive).
 5. Primitive-based components: `as` is a prop forwarded with `:as="$as"`; do not declare `href`, `target`, `disabled`, `type` in `@props` unless forwarding them.

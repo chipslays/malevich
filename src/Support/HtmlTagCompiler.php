@@ -16,12 +16,13 @@ use Malevich\MalevichManager;
  *
  *     <?php $__malevichAttributes = ...; echo $__malevichAttributes->debugComment(); ?><span <?php echo $__malevichAttributes; ?>>
  *
- * A `class="..."` next to `@attributes` is moved into the `merge:` argument
- * first, so the tag never gets two `class` attributes (the browser would
- * silently drop the second one):
+ * A `class="..."` next to `@attributes` is the element's own classes: it
+ * works like `@base`, so the option maps go on top of it. It is moved into
+ * the `class:` argument first, so the tag never gets two `class` attributes
+ * (the browser would silently drop the second one):
  *
  *     <span @attributes('chip') class="size-4 {{ $extra }}">
- *     -> @attributes('chip', merge: ['class' => 'size-4 '.(string) ($extra)])
+ *     -> @attributes('chip', class: 'size-4 '.e($extra))
  *
  * `<x-...>` tags are handled by ComponentTagCompiler.
  */
@@ -70,13 +71,11 @@ final class HtmlTagCompiler
         [$class] = $classes;
         $arguments = $found['arguments'];
 
-        if (preg_match('/\bmerge\s*:/', $arguments)) {
-            throw new InvalidArgumentException(
-                "Malevich: <{$tag}> has class=\"{$class['value']}\" next to @{$directive}(... merge: ...). Put the classes into merge: ['class' => ...] instead.",
-            );
+        if (preg_match('/\bclass\s*:/', $arguments)) {
+            throw new InvalidArgumentException("Malevich: <{$tag}> has both class=\"...\" and @{$directive}(class: ...). Keep one of them.");
         }
 
-        $replacement = "@{$directive}(".($arguments === '' ? '' : "{$arguments}, ")."merge: ['class' => ".self::expression($tag, $class['value'], $directive).'])';
+        $replacement = "@{$directive}(".($arguments === '' ? '' : "{$arguments}, ").'class: '.self::expression($tag, $class['value'], $directive).')';
 
         // The class attribute goes together with the whitespace in front of it.
         $start = $class['offset'];
@@ -100,7 +99,7 @@ final class HtmlTagCompiler
     }
 
     /**
-     * Turn `size-4 {{ $extra }}` into the PHP expression `'size-4 '.(string) ($extra)`.
+     * Turn `size-4 {{ $extra }}` into the PHP expression `'size-4 '.e($extra)`.
      */
     private static function expression(string $tag, string $value, string $directive): string
     {
@@ -109,17 +108,17 @@ final class HtmlTagCompiler
 
         foreach ($parts as $part) {
             if (str_starts_with($part, '{!!')) {
-                throw new InvalidArgumentException("Malevich: <{$tag}> uses {!! !!} inside class=\"...\" next to @{$directive}. Use {{ }} or merge: ['class' => ...].");
+                throw new InvalidArgumentException("Malevich: <{$tag}> uses {!! !!} inside class=\"...\" next to @{$directive}. Use {{ }} or @{$directive}(class: ...).");
             }
 
             if (str_starts_with($part, '{{')) {
-                $expressions[] = '(string) ('.trim(substr($part, 2, -2)).')';
+                $expressions[] = 'e('.trim(substr($part, 2, -2)).')';
 
                 continue;
             }
 
             if (preg_match('/@\w|<\?/', $part)) {
-                throw new InvalidArgumentException("Malevich: <{$tag}> has a Blade directive inside class=\"...\" next to @{$directive}. Use merge: ['class' => ...] instead.");
+                throw new InvalidArgumentException("Malevich: <{$tag}> has a Blade directive inside class=\"...\" next to @{$directive}. Use @{$directive}(class: ...) instead.");
             }
 
             $expressions[] = var_export($part, true);
