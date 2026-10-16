@@ -6,6 +6,7 @@ namespace Malevich\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Str;
 use Malevich\Malevich;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Formatter\OutputFormatter;
@@ -51,7 +52,7 @@ class MakeCommand extends Command
         }
 
         $files->ensureDirectoryExists(dirname($path));
-        $files->put($path, $this->render($files->get(__DIR__.'/../Stubs/component.stub')));
+        $files->put($path, $this->render($files->get(__DIR__.'/../Stubs/component.stub'), $name));
 
         $tag = OutputFormatter::escape('<'.Malevich::componentTag($name).'>');
 
@@ -83,9 +84,10 @@ class MakeCommand extends Command
 
     /**
      * Fill the stub with one prop and one empty class map per configured
-     * option, so custom options show up in new components too.
+     * option, so custom options show up in new components too. The usage
+     * example on top is what the component catalog renders.
      */
-    protected function render(string $stub): string
+    protected function render(string $stub, string $name): string
     {
         $options = Malevich::options();
 
@@ -96,8 +98,8 @@ class MakeCommand extends Command
         ]), $options);
 
         return str_replace(
-            ['{{ props }}', '{{ base }}', '{{ options }}', '{{ render }}'],
-            [implode("\n", $props), Malevich::directive('base'), implode("\n\n", $maps), Malevich::directive('attributes')],
+            ['{{ tag }}', '{{ label }}', '{{ props }}', '{{ base }}', '{{ options }}', '{{ render }}'],
+            [Malevich::componentTag($name), Str::headline(basename($name)), implode("\n", $props), Malevich::directive('base'), implode("\n\n", $maps), Malevich::directive('attributes')],
             $stub,
         );
     }
