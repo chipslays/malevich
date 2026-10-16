@@ -45,10 +45,26 @@ You need Laravel 12 (PHP 8.2+) or Laravel 13 (PHP 8.3+).
 
 ```bash
 composer require malevich/malevich
+```
+
+That's it - Malevich works right away, without any configuration.
+
+Optionally, set up the project in one go:
+
+```bash
 php artisan malevich:install
 ```
 
-The second command is optional. It publishes `config/malevich.php`, sets up [Tailwind autocomplete in VS Code](07-tailwind.md#autocomplete-in-your-editor) and tells you whether [Tailwind conflicts](07-tailwind.md#class-conflicts) are handled. It creates no components - those are yours. More in [Artisan commands](12-commands.md).
+It publishes `config/malevich.php`, sets up [Tailwind autocomplete in VS Code](07-tailwind.md#autocomplete-in-your-editor) and tells you whether [Tailwind conflicts](07-tailwind.md#class-conflicts) are handled. It creates no components - those are yours.
+
+Or publish only what you need:
+
+```bash
+php artisan vendor:publish --tag malevich:config       # config/malevich.php
+php artisan vendor:publish --tag malevich:components   # the unstyled primitive, to change it
+```
+
+More in [Artisan commands](12-commands.md).
 
 ## Your first component
 
