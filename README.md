@@ -65,6 +65,13 @@ Optionally, publish the config and set up Tailwind autocomplete in VS Code:
 php artisan malevich:install
 ```
 
+Or publish only what you need:
+
+```bash
+php artisan vendor:publish --tag malevich:config       # config/malevich.php
+php artisan vendor:publish --tag malevich:components   # the unstyled primitive, to change it
+```
+
 Create your first component and open the [Getting started](docs/01-getting-started.md) guide:
 
 ```bash
