@@ -1467,6 +1467,9 @@ Check, in this order:
 3. The option has a value at all: give it a default in `@props`. A `null` default means "not set", so only `@base` classes apply.
 4. After changing `config/malevich.php`, run `php artisan view:clear`.
 
+**`<x-input size="20">` doesn't reach the `<input>`.**
+`size` is an option of that component (it has `@size`), and option names are never printed - the value only picks classes. The same goes for any option named like an HTML attribute (`type`, `width`, `rows`, ...). Give the option another name (`@option('scale', [...])`) to keep the HTML attribute. Strict mode points this out when such a value is unknown.
+
 **I see `variant="..."` in my HTML.**
 The directive for that option is missing or written after `@attributes`. Malevich only removes option names it knows about.
 

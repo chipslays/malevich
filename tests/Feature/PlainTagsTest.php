@@ -26,8 +26,14 @@ function resolved(string $arguments, string $tag): string
     $arguments = $arguments === '' ? '' : ", {$arguments}";
 
     return "<?php \$__malevichAttributes = \\Malevich\\Malevich::attributes(\$attributes ?? null, get_defined_vars(){$arguments}); echo \$__malevichAttributes->debugComment(); ?>"
-        .str_replace('@@', '<?php echo $__malevichAttributes; ?>', $tag);
+        .str_replace(' @@', '<?php echo $__malevichAttributes->inTag(); ?>', $tag);
 }
+
+it('prints no stray space when the element has no attributes', function () {
+    expect(Blade::render('<x-compound-targets size="lg">Go</x-compound-targets>', deleteCachedView: true))
+        ->not->toContain('<span >')
+        ->and(HtmlTagCompiler::compile("<div\n    @attributes('x')>"))->toBe(resolved("'x'", '<div @@>'));
+});
 
 it('resolves the element in front of the tag', function () {
     expect(HtmlTagCompiler::compile("<div @attributes('x')></div>"))->toBe(resolved("'x'", '<div @@></div>'))

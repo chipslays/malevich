@@ -470,6 +470,17 @@ final class Element implements Htmlable, Stringable
         return $this->toAttributeBag()->toHtml();
     }
 
+    /**
+     * The attributes as printed inside a plain tag: with a leading space,
+     * or nothing at all when there is nothing to print.
+     */
+    public function inTag(): string
+    {
+        $html = $this->toHtml();
+
+        return $html === '' ? '' : ' '.$html;
+    }
+
     public function __toString(): string
     {
         return $this->toHtml();

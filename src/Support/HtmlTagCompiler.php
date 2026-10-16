@@ -14,7 +14,7 @@ use Malevich\MalevichManager;
  * The element is resolved right before the tag, so debug mode can print an
  * explanation in front of it, and printed inside the tag:
  *
- *     <?php $__malevichAttributes = ...; echo $__malevichAttributes->debugComment(); ?><span <?php echo $__malevichAttributes; ?>>
+ *     <?php $__malevichAttributes = ...; echo $__malevichAttributes->debugComment(); ?><span<?php echo $__malevichAttributes->inTag(); ?>>
  *
  * A `class="..."` next to `@attributes` is the element's own classes: it
  * works like `@base`, so the option maps go on top of it. It is moved into
@@ -44,7 +44,15 @@ final class HtmlTagCompiler
                 return $attributes === $tag['attributes'] ? $tag[0] : TagScanner::rebuild($tag, $attributes);
             }
 
-            $attributes = substr_replace($attributes, '<?php echo $'.MalevichManager::ATTRIBUTES_VARIABLE.'; ?>', $found['offset'], $found['length']);
+            // The whitespace in front goes too: inTag() adds a space only when
+            // there is something to print, so an empty element gives `<svg>`.
+            $start = $found['offset'];
+
+            while ($start > 0 && ctype_space($attributes[$start - 1])) {
+                $start--;
+            }
+
+            $attributes = substr_replace($attributes, '<?php echo $'.MalevichManager::ATTRIBUTES_VARIABLE.'->inTag(); ?>', $start, $found['offset'] + $found['length'] - $start);
 
             return TagScanner::resolveBefore($found['arguments']).TagScanner::rebuild($tag, $attributes);
         });

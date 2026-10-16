@@ -16,7 +16,7 @@ it('accepts conditional classes for an element', function () {
 
 it('adds nothing when the combination does not match', function () {
     expect($this->render('<x-compound-targets size="sm">Go</x-compound-targets>'))
-        ->toBe('<button class="btn h-8 bg-black"><i class="icon"></i><span >Go</span></button>');
+        ->toBe('<button class="btn h-8 bg-black"><i class="icon"></i><span>Go</span></button>');
 });
 
 it('compiles to a call with the named argument', function () {

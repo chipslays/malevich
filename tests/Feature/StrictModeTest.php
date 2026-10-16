@@ -21,7 +21,7 @@ function strictElement(Recipe $recipe): Element
 it('is off by default: an unknown value renders no classes', function () {
     expect(Malevich::isStrict())->toBeFalse()
         ->and($this->render('<x-strict-button size="xl">Go</x-strict-button>'))
-        ->toBe('<button class="bg-black"><svg ></svg>Go</button>');
+        ->toBe('<button class="bg-black"><svg></svg>Go</button>');
 });
 
 it('throws on an unknown value, listing the valid ones', function () {
@@ -46,6 +46,17 @@ it('names the element when it is not the root', function () {
 
     strictElement($recipe)->for('icon')->size('xl')->toClasses();
 })->throws(UnknownValueException::class, 'size [xl] is not defined (element [icon]); expected one of: sm.');
+
+it('explains when an option takes over an HTML attribute of the same name', function () {
+    Malevich::strict();
+
+    $recipe = (new Recipe)->option('size', ['sm' => 'h-8']);
+
+    expect(fn () => strictElement($recipe)->size('20')->toClasses())
+        ->toThrow(UnknownValueException::class, 'size [20] is not defined; expected one of: sm. [size] is also an HTML attribute')
+        ->and(UnknownValueException::make('tone', 'x', null, ['sm'])->getMessage())
+        ->toBe('Malevich: tone [x] is not defined; expected one of: sm.');
+});
 
 it('accepts every known value', function () {
     Malevich::strict();
