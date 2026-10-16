@@ -57,7 +57,12 @@ Laravel 12 (PHP 8.2+) or Laravel 13 (PHP 8.3+):
 
 ```bash
 composer require malevich/malevich
-php artisan malevich:install   # optional: config + Tailwind autocomplete in VS Code
+```
+
+Optionally, publish the config and set up Tailwind autocomplete in VS Code:
+
+```bash
+php artisan malevich:install
 ```
 
 Create your first component and open the [Getting started](docs/01-getting-started.md) guide:
