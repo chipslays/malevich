@@ -5,6 +5,7 @@ laravel: '@testbench'
 
 providers:
   - Malevich\MalevichServiceProvider
+  - Workbench\App\Providers\WorkbenchServiceProvider
 
 env:
   - APP_DEBUG=true
