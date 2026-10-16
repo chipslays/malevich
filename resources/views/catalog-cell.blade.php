@@ -1,12 +1,12 @@
-<div class="mlv-card">
-    <div class="mlv-stage">
+<article class="mlv-card" data-mlv-theme-target data-mlv-label="{{ $cell->label() }}">
+    <div class="mlv-stage" data-mlv-canvas>
         @if ($cell->error !== null)
             <span class="mlv-error">{!! $icon('alert') !!}<span>{{ $cell->error }}</span></span>
         @else
             {!! $cell->html !!}
         @endif
     </div>
-    <div class="mlv-foot">
+    <footer class="mlv-foot">
         <span class="mlv-value mono" title="{{ $cell->tag }}">
             @forelse ($cell->values as $option => $value)
                 @if ($value === 'true')
@@ -21,13 +21,12 @@
             @endforelse
         </span>
         <span class="mlv-actions">
+            <button class="mlv-icon" type="button" data-mlv-card-theme title="Dark / light for this preview">{!! $icon('moon', 'i-moon') !!}{!! $icon('sun', 'i-sun') !!}</button>
             @if ($cell->html !== null)
-                <button class="mlv-icon" type="button" data-mlv-html aria-expanded="false" title="Show the HTML">{!! $icon('code') !!}</button>
+                <button class="mlv-icon" type="button" data-mlv-code title="View the code">{!! $icon('code') !!}</button>
             @endif
-            <button class="mlv-icon" type="button" data-mlv-copy="{{ $cell->tag }}" title="Copy the tag">{!! $icon('copy') !!}</button>
+            <button class="mlv-icon" type="button" data-mlv-copy="{{ $cell->tag }}" title="Copy the tag">{!! $icon('copy', 'i-copy') !!}{!! $icon('check', 'i-done') !!}</button>
         </span>
-    </div>
-    @if ($cell->html !== null)
-        <div class="mlv-code"><pre class="mono">{{ $cell->html }}</pre></div>
-    @endif
-</div>
+    </footer>
+    <textarea hidden data-mlv-source>{{ $cell->html }}</textarea>
+</article>

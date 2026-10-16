@@ -126,6 +126,114 @@ it('never writes a component tag into its own views', function (string $view) {
     expect(file_get_contents(__DIR__."/../../resources/views/{$view}.blade.php"))->not->toMatch('/<\s*x[-:]/');
 })->with(['catalog', 'catalog-cell']);
 
+it('renders the playground with the picked values and the usage example', function () {
+    config(['malevich.catalog.enabled' => true]);
+    Catalog::routes();
+
+    $this->postJson('/malevich/preview', ['component' => 'cat::chip', 'values' => ['variant' => 'outline', 'size' => 'bogus']])
+        ->assertOk()
+        ->assertExactJson([
+            'tag' => '<x-cat::chip variant="outline">New</x-cat::chip>',
+            'html' => '<span class="chip-outline chip-md">New</span>',
+            'error' => null,
+        ]);
+
+    $this->postJson('/malevich/preview', ['component' => 'cat::chip', 'class' => 'mt-4'])
+        ->assertJsonPath('html', '<span class="chip-solid chip-md mt-4">New</span>')
+        ->assertJsonPath('tag', '<x-cat::chip class="mt-4">New</x-cat::chip>');
+
+    $this->postJson('/malevich/preview', ['component' => 'nope'])->assertNotFound();
+});
+
+it('fills default and named slots from the slot fields, as plain text', function () {
+    config(['malevich.catalog.enabled' => true]);
+    Catalog::routes();
+
+    $this->postJson('/malevich/preview', [
+        'component' => 'cat::card',
+        'mode' => 'slots',
+        'slots' => ['default' => '{{ 6 * 7 }} <b>', 'title' => 'Billing', 'bad name' => 'x'],
+        'class' => 'w-64',
+    ])
+        ->assertJsonPath('html', '<div class="card w-64"><h3>Billing</h3>{{ 6 * 7 }} &lt;b&gt;</div>')
+        ->assertJsonPath('tag', "<x-cat::card class=\"w-64\">\n    <x-slot:title>Billing</x-slot:title>\n    {{ 6 * 7 }} <b>\n</x-cat::card>");
+});
+
+it('passes attributes and slot classes from the fields, never as code', function () {
+    config(['malevich.catalog.enabled' => true]);
+    Catalog::routes();
+
+    $this->postJson('/malevich/preview', [
+        'component' => 'cat::card',
+        'mode' => 'slots',
+        'slots' => ['default' => 'Body', 'title' => 'Billing'],
+        'slotClasses' => ['title' => 'text-2xl'],
+        'attributes' => [
+            'class' => 'w-64',
+            'id' => '{{ 6 * 7 }}"',
+            'hidden' => 'true',
+            ':title' => 'phpinfo()',
+            '@click' => 'x',
+        ],
+    ])
+        ->assertJsonPath('html', '<div class="card w-64" id="{{ 6 * 7 }}&quot;" hidden="hidden"><h3>Billing</h3>Body</div>')
+        ->assertJsonPath('tag', "<x-cat::card class=\"w-64\" id=\"{{ 6 * 7 }}&quot;\" hidden>\n    <x-slot:title class=\"text-2xl\">Billing</x-slot:title>\n    Body\n</x-cat::card>");
+});
+
+it('offers the declared props as buttons in the playground', function () {
+    config(['malevich.catalog.enabled' => true]);
+    Catalog::routes();
+
+    $this->get('/malevich?component=cat::card')
+        ->assertOk()
+        ->assertSee('data-mlv-prop="title"', false)
+        ->assertDontSee('{{ $prop }}', false);
+});
+
+it('finds the props a component declares, without its options', function () {
+    $catalog = Catalog::make();
+
+    expect($catalog->props($catalog->components()['cat::card']))->toBe(['title' => ''])
+        ->and($catalog->props($catalog->components()['cat::chip']))->toBe([])
+        ->and($catalog->slotClassesOf('<x-slot:title class="a b">T</x-slot:title><x-slot:footer>F</x-slot:footer>'))->toBe(['title' => 'a b']);
+});
+
+it('splits a usage example into slot fields', function () {
+    expect(Catalog::make()->slotsOf("<x-slot:title class=\"a\">Payment failed</x-slot:title>\nYour card\nwas declined.<x-slot name=\"footer\">Retry</x-slot>"))
+        ->toBe(['default' => 'Your card was declined.', 'title' => 'Payment failed', 'footer' => 'Retry']);
+});
+
+it('runs Blade content only in the local environment', function () {
+    config(['malevich.catalog.enabled' => true]);
+    Catalog::routes();
+    $blade = '<x-slot:title>{{ 6 * 7 }}</x-slot:title><x-cat::chip size="sm">Inner</x-cat::chip>';
+
+    $this->postJson('/malevich/preview', ['component' => 'cat::card', 'mode' => 'blade', 'blade' => $blade])
+        ->assertJsonPath('html', null)
+        ->assertJsonPath('error', 'Blade content runs only in the local environment. Use the slot fields instead.');
+
+    // Outside tests the web middleware checks the CSRF token, so the page sends it.
+    app()->detectEnvironment(fn () => 'local');
+
+    $this->withSession(['_token' => 'secret'])
+        ->withHeader('X-CSRF-TOKEN', 'secret')
+        ->postJson('/malevich/preview', ['component' => 'cat::card', 'mode' => 'blade', 'blade' => $blade])
+        ->assertJsonPath('html', '<div class="card"><h3>42</h3><span class="chip-solid chip-sm">Inner</span></div>');
+});
+
+it('protects the playground with a POST and a CSRF token', function () {
+    config(['malevich.catalog.enabled' => true]);
+    Catalog::routes();
+
+    // Another site could make the browser send a GET or a POST - but never with the token.
+    $this->get('/malevich/preview?component=cat::chip&mode=blade&blade=x')->assertStatus(405);
+
+    app()->detectEnvironment(fn () => 'local');
+    $this->withSession(['_token' => 'secret'])
+        ->postJson('/malevich/preview', ['component' => 'cat::chip', 'mode' => 'blade', 'blade' => 'x'])
+        ->assertStatus(419);
+});
+
 it('is a 404 when disabled', function () {
     Catalog::routes();
 
