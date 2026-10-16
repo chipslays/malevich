@@ -19,13 +19,15 @@ php artisan make:malevich button --force  # overwrite
 
 Scaffolds empty `@base`, an empty map for every option in config (including custom) and a `@defaults` block with a commented-out line per option (no `@props`). Never overwrites without `--force`. Tag depends on `components.prefix`:
 
-| prefix | file | tag |
+| prefix | file in `components.path` | tag |
 |---|---|---|
 | `null` | `button.blade.php` | `<x-button>` |
 | `null` | `forms/input.blade.php` | `<x-forms.input>` |
-| `'ui'` | `ui/button.blade.php` | `<x-ui::button>` or `<x-ui.button>` |
+| `'ui'` | `button.blade.php` | `<x-ui::button>` |
 
-Config defaults: `components.path` = `resource_path('views/components/ui')`, `prefix` = `null`, `directives` = `['variant','size','color']`, `render_directive` = `'ui'`, `default_target` = `'default'`. Publish with `php artisan vendor:publish --tag malevich:config`.
+A prefix adds a tag, it doesn't remove the plain one: while `components.path` is `resources/views/components`, Laravel still serves the file as `<x-button>` too. For prefix-only tags use a folder of their own, e.g. `'path' => resource_path('views/ui'), 'prefix' => 'ui'`.
+
+Config defaults: `options` = `['variant','size','color']`, `render_directive` = `'attributes'`, `cases_directive` = `'cases'`, `has_directive` = `'has'`, `components.path` = `resource_path('views/components')`, `components.prefix` = `null`, `default_target` = `'default'`, `data_attributes` = `false`, `merge_classes` = `'auto'`. Publish with `php artisan vendor:publish --tag malevich:config`.
 
 ## Converting an existing component
 
@@ -52,10 +54,10 @@ After:
 @compound(['variant' => 'primary', 'size' => 'lg'], 'shadow-lg')
 @defaults(['variant' => 'primary', 'size' => 'md'])
 
-<button @ui(merge: ['type' => 'button'])>{{ $slot }}</button>
+<button @attributes(merge: ['type' => 'button'])>{{ $slot }}</button>
 ```
 
-Mapping: unconditional classes -> `@base`; classes conditioned on one variable -> that option's map; `&&` conditions -> `@compound`; `$attributes->merge([...])` defaults -> `@ui(merge: [...])`; classes of nested elements -> targets; `@props` defaults of options -> `@defaults` (drop them from `@props` unless the markup uses the variable). Keep public prop names and values unchanged.
+Mapping: unconditional classes -> `@base`; classes conditioned on one variable -> that option's map; `&&` conditions -> `@compound`; `$attributes->merge([...])` defaults -> `@attributes(merge: [...])`; classes of nested elements -> targets; `@props` defaults of options -> `@defaults` (drop them from `@props` unless the markup uses the variable). Keep public prop names and values unchanged.
 
 ## Tailwind conflicts
 
@@ -103,10 +105,10 @@ Add custom option names to the first pattern.
 
 ## Verification checklist
 
-- [ ] Every directive is above `@ui`.
+- [ ] Every directive is above `@attributes`.
 - [ ] Option defaults are in `@defaults` and exist as keys in their maps; options in `@props` default to `null`.
 - [ ] No dynamic class-name concatenation.
-- [ ] Each `@ui('x')` has matching `@base('x', ...)` / option maps if it needs styling.
+- [ ] Each `@attributes('x')` has matching `@base('x', ...)` / option maps if it needs styling.
 - [ ] No leaked option attributes in the output (`variant="..."`).
 - [ ] Accessibility defaults in `merge:`; `data-disabled:` used with the primitive.
 - [ ] Usage comment at the top of the file.
@@ -116,10 +118,10 @@ Add custom option names to the first pattern.
 
 ## Troubleshooting
 
-- Classes missing: directive after `@ui`; value doesn't match a key (`Malevich::strict()` names it); no default (add `@defaults`); stale cache -> `php artisan view:clear`.
-- `variant="..."` visible in HTML: directive missing or after `@ui`.
+- Classes missing: directive after `@attributes`; value doesn't match a key (`Malevich::strict()` names it); no default (add `@defaults`); stale cache -> `php artisan view:clear`.
+- `variant="..."` visible in HTML: directive missing or after `@attributes`.
 - `class` not on an inner element: by design; use a named slot or a prop.
 - Preset ignored: option has a non-null `@props` default. Move it to `@defaults`.
 - Nested component got no classes: the child doesn't print `$attributes`.
 - Works with Livewire/Alpine (`wire:*`, `x-*`, `@click` pass through) and without Tailwind (any CSS). Octane-safe.
-- `@ui` outside components fails: it needs the component's `$attributes`.
+- `@attributes` outside components fails: it needs the component's `$attributes`.

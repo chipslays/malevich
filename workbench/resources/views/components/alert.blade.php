@@ -28,14 +28,14 @@
 
 @base('title', 'mb-1 font-semibold')
 
-<div @ui(merge: ['role' => 'alert'])>
-    <svg @ui('icon') viewBox="0 0 20 20" fill="currentColor">
+<div @attributes(merge: ['role' => 'alert'])>
+    <svg @attributes('icon') viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a1 1 0 0 0 0 2v3a1 1 0 0 0 1 1h1a1 1 0 1 0 0-2v-3a1 1 0 0 0-1-1H9Z" clip-rule="evenodd" />
     </svg>
 
     <div>
         @if ($title)
-            <p @ui('title')>{{ $title }}</p>
+            <p @attributes('title')>{{ $title }}</p>
         @endif
 
         {{ $slot }}

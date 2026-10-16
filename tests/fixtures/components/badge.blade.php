@@ -18,4 +18,4 @@
 
 @compound(['variant' => 'solid', 'color' => 'danger'], 'bg-red-500 text-white')
 
-<span @ui>{{ $slot }}</span>
+<span @attributes>{{ $slot }}</span>

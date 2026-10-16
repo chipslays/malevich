@@ -95,7 +95,7 @@ it('supports string maps, compounds on plain props and directives from partials'
         ->and($this->render('<x-doc loading size="sm" />'))->toBe('<div class="p-1 cursor-wait gap-1"><b class="font-semibold"></b></div>');
 });
 
-it('only knows directives declared before @ui', function () {
+it('only knows directives declared before @attributes', function () {
     expect($this->render('<x-late size="md" />'))->toBe('<div size="md"></div>');
 });
 

@@ -24,9 +24,9 @@ class MalevichManager
     public const SCOPE_VARIABLE = '__malevichRecipe';
 
     /**
-     * Template variable that holds the element `@ui` resolved for a component tag.
+     * Template variable that holds the element `@attributes` resolved for a component tag.
      */
-    public const UI_VARIABLE = '__malevichUi';
+    public const ATTRIBUTES_VARIABLE = '__malevichAttributes';
 
     /**
      * @var (Closure(string): string)|null
@@ -107,18 +107,18 @@ class MalevichManager
     }
 
     /**
-     * Runtime of the `@ui` directive. Option values are picked up from the
+     * Runtime of the `@attributes` directive. Option values are picked up from the
      * template scope (your @props) and from the attribute bag, so the
      * template never has to repeat them.
      *
-     * A named slot with the same name as the target (`@ui('title')` and
+     * A named slot with the same name as the target (`@attributes('title')` and
      * `<x-slot:title>`) is picked up automatically. Pass `slot:` to use a
      * differently named slot, or `slot: false` to opt out.
      *
      * @param  array<string, mixed>  $scope  The template's get_defined_vars().
      * @param  array<string, mixed>  $merge  Extra attributes, as with $attributes->merge().
      */
-    public function ui(
+    public function attributes(
         ?ComponentAttributeBag $attributes,
         array $scope,
         ?string $target = null,
@@ -143,7 +143,7 @@ class MalevichManager
      * classes. Lets a template skip a part that exists only in some variants.
      *
      * @param  array<string, mixed>  $scope  The template's get_defined_vars().
-     * @param  array<string, mixed>  $merge  Extra attributes, as with @ui.
+     * @param  array<string, mixed>  $merge  Extra attributes, as with @attributes.
      */
     public function has(
         ?ComponentAttributeBag $attributes,
@@ -152,7 +152,7 @@ class MalevichManager
         mixed $slot = null,
         array $merge = [],
     ): bool {
-        return $this->ui($attributes, $scope, $target, $slot, $merge)->toClasses() !== '';
+        return $this->attributes($attributes, $scope, $target, $slot, $merge)->toClasses() !== '';
     }
 
     public function defaultTarget(): string
@@ -231,7 +231,7 @@ class MalevichManager
     {
         return $this->config ??= [
             'default_target' => $this->string('malevich.default_target', 'default'),
-            'render_directive' => $this->string('malevich.render_directive', 'ui'),
+            'render_directive' => $this->string('malevich.render_directive', 'attributes'),
             'cases_directive' => $this->string('malevich.cases_directive', 'cases'),
             'has_directive' => $this->string('malevich.has_directive', 'has'),
             'options' => array_values(array_filter((array) $this->repository->get('malevich.options', []), is_string(...))),

@@ -8,7 +8,7 @@
     'graphite' => ['default' => 'bg-graphite', 'title' => 'text-white'],
 ])
 
-<div @ui>
-    <span @ui('title')>{{ $slot }}</span>
-    @has('glow')<i @ui('glow')></i>@else<b>no glow</b>@endhas
+<div @attributes>
+    <span @attributes('title')>{{ $slot }}</span>
+    @has('glow')<i @attributes('glow')></i>@else<b>no glow</b>@endhas
 </div>

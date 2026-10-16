@@ -4,6 +4,6 @@
 @base('footer', 'text-xs')
 
 <div>
-    <h2 @ui('title')>{{ $title }}</h2>
-    <p @ui('footer', slot: false)>{{ $footer }}</p>
+    <h2 @attributes('title')>{{ $title }}</h2>
+    <p @attributes('footer', slot: false)>{{ $footer }}</p>
 </div>

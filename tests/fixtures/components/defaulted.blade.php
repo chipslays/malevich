@@ -10,4 +10,4 @@
 
 @compound(['variant' => 'primary', 'size' => 'md'], 'shadow')
 
-<button @ui><svg @ui('icon')></svg>{{ $slot }}</button>
+<button @attributes><svg @attributes('icon')></svg>{{ $slot }}</button>

@@ -14,7 +14,7 @@ use Illuminate\View\ComponentAttributeBag;
  * @method static void strict(bool $strict = true)
  * @method static bool isStrict()
  * @method static Recipe recipe(?ComponentAttributeBag $attributes)
- * @method static Element ui(?ComponentAttributeBag $attributes, array<string, mixed> $scope, ?string $target = null, mixed $slot = null, array<string, mixed> $merge = [])
+ * @method static Element attributes(?ComponentAttributeBag $attributes, array<string, mixed> $scope, ?string $target = null, mixed $slot = null, array<string, mixed> $merge = [])
  * @method static bool has(?ComponentAttributeBag $attributes, array<string, mixed> $scope, ?string $target = null, mixed $slot = null, array<string, mixed> $merge = [])
  * @method static string defaultTarget()
  * @method static string renderDirective()

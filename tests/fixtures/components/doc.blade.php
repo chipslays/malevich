@@ -7,4 +7,4 @@
 @compound(['loading' => true], 'cursor-wait')
 @compound(['loading' => true, 'size' => 'sm'], 'gap-1')
 
-<div @ui><b @ui('title')></b></div>
+<div @attributes><b @attributes('title')></b></div>

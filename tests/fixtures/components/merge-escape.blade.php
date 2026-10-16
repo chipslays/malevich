@@ -1,3 +1,3 @@
 @props(['value'])
 
-<div @ui(merge: ['data-v' => $value])></div>
+<div @attributes(merge: ['data-v' => $value])></div>

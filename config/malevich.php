@@ -28,12 +28,12 @@ return [
     |--------------------------------------------------------------------------
     |
     | Name of the directive that prints an element's resolved attributes:
-    | <button @ui> ... </button>, <svg @ui('icon')>. Change it if 'ui'
+    | <button @attributes> ... </button>, <svg @attributes('icon')>. Change it if 'attributes'
     | collides with a directive of your own.
     |
     */
 
-    'render_directive' => 'ui',
+    'render_directive' => 'attributes',
 
     /*
     |--------------------------------------------------------------------------
@@ -54,7 +54,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Name of the conditional that renders its body only when an element has
-    | classes: @has('glow') <div @ui('glow')></div> @endif. Change it if
+    | classes: @has('glow') <div @attributes('glow')></div> @endif. Change it if
     | 'has' collides with a directive of your own.
     |
     */

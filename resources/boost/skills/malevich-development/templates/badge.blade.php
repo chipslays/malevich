@@ -39,4 +39,4 @@
 @compound(['variant' => 'outline', 'color' => 'red'], 'border-red-300')
 @compound(['variant' => 'outline', 'color' => 'blue'], 'border-blue-300')
 
-<span @ui>{{ $slot }}</span>
+<span @attributes>{{ $slot }}</span>

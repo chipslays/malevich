@@ -8,15 +8,15 @@ use InvalidArgumentException;
 use Malevich\Malevich;
 
 /**
- * Keeps `class="..."` and `@ui` on the same plain HTML tag from producing
+ * Keeps `class="..."` and `@attributes` on the same plain HTML tag from producing
  * two `class` attributes (the browser would silently drop the second one):
  *
- *     <span @ui('chip') class="size-4 {{ $extra }}">
+ *     <span @attributes('chip') class="size-4 {{ $extra }}">
  *
- * The class value is moved into the `merge:` argument of `@ui`, which adds
+ * The class value is moved into the `merge:` argument of `@attributes`, which adds
  * it after the element's own classes, exactly like a class on a component tag:
  *
- *     <span @ui('chip', merge: ['class' => 'size-4 '.(string) ($extra)])>
+ *     <span @attributes('chip', merge: ['class' => 'size-4 '.(string) ($extra)])>
  *
  * `<x-...>` tags are not touched: Blade already merges their attributes.
  */

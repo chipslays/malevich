@@ -1,19 +1,19 @@
 ---
 name: malevich-development
-description: Build and edit variant-driven Blade components with Malevich (@base, @variant, @color, @size, @option, @compound, @preset, @defaults, @ui). Activate when creating or changing Blade components in resources/views/components, building UI kit components (button, badge, alert, card, input, modal), adding variants/sizes/colors to a component, converting $attributes->class([...]) ternaries, using <x-malevich::primitive>, running make:malevich, or when a Blade file contains @ui or @variant.
+description: Build and edit variant-driven Blade components with Malevich (@base, @variant, @color, @size, @option, @compound, @preset, @defaults, @attributes). Activate when creating or changing Blade components in resources/views/components, building UI kit components (button, badge, alert, card, input, modal), adding variants/sizes/colors to a component, converting $attributes->class([...]) ternaries, using <x-malevich::primitive>, running make:malevich, or when a Blade file contains @attributes or @variant.
 ---
 
 # Malevich Development
 
-Malevich (`malevich/malevich`) replaces `$attributes->class([... => $variant === 'x'])` ternaries with flat class maps. You declare which classes belong to which option value; `@ui` prints the final `class` and attributes on an element. Works with Tailwind or any CSS, no JS, no build step.
+Malevich (`malevich/malevich`) replaces `$attributes->class([... => $variant === 'x'])` ternaries with flat class maps. You declare which classes belong to which option value; `@attributes` prints the final `class` and attributes on an element. Works with Tailwind or any CSS, no JS, no build step.
 
-Use it for reusable Blade components with options (variant, color, size, flags). `@ui` works only inside component files, never in pages or layouts.
+Use it for reusable Blade components with options (variant, color, size, flags). `@attributes` works only inside component files, never in pages or layouts.
 
 ## How it works
 
 1. Directives (`@base`, `@variant`, `@color`, `@size`, `@option`, `@compound`, `@preset`, `@defaults`) only **remember** what you declare.
-2. `@ui` reads each option's value (from `@props`, then the tag attribute, then the preset, then `@defaults`), picks the classes, prints them.
-3. **Directives MUST come before `@ui`**, right after `@props`.
+2. `@attributes` reads each option's value (from `@props`, then the tag attribute, then the preset, then `@defaults`), picks the classes, prints them.
+3. **Directives MUST come before `@attributes`**, right after `@props`.
 
 Class order: `@base` -> class maps (file order) -> `@compound` -> `merge: ['class']` -> `class` from the tag. Duplicates removed.
 
@@ -30,10 +30,10 @@ Class order: `@base` -> class maps (file order) -> `@compound` -> `merge: ['clas
 
 @defaults(['color' => 'gray'])
 
-<span @ui>{{ $slot }}</span>
+<span @attributes>{{ $slot }}</span>
 ```
 
-Never write `$color` in the markup, and don't put options in `@props` just to give them a default: `@defaults` does that and still lets presets win. Static classes go in `@base`, not in a `class="..."` on the `@ui` element (on a plain tag such a class is merged after the element's own classes, but `@base` is the place for it).
+Never write `$color` in the markup, and don't put options in `@props` just to give them a default: `@defaults` does that and still lets presets win. Static classes go in `@base`, not in a `class="..."` on the `@attributes` element (on a plain tag such a class is merged after the element's own classes, but `@base` is the place for it).
 
 ## Cheat sheet
 
@@ -53,10 +53,10 @@ Never write `$color` in the markup, and don't put options in `@props` just to gi
 @defaults(['variant' => 'primary', 'size' => 'md'])       {{-- fallback, below tag/@props/preset --}}
 @defaults('icon', ['size' => 'sm'])                       {{-- per inner element --}}
 
-<button @ui(merge: ['type' => 'button'])>                 {{-- default attributes, user wins --}}
-    <svg @ui('icon')></svg>
-    <span @ui('title')>{{ $title }}</span>                {{-- picks up <x-slot:title class="..."> --}}
-    @has('badge')<i @ui('badge')></i>@endhas             {{-- only when that element has classes --}}
+<button @attributes(merge: ['type' => 'button'])>                 {{-- default attributes, user wins --}}
+    <svg @attributes('icon')></svg>
+    <span @attributes('title')>{{ $title }}</span>                {{-- picks up <x-slot:title class="..."> --}}
+    @has('badge')<i @attributes('badge')></i>@endhas             {{-- only when that element has classes --}}
     {{ $slot }}
 </button>
 ```
@@ -85,15 +85,15 @@ php artisan view:clear     # after config changes or package upgrade
 | Switch an option in the browser (Alpine) | `data-*` variants in the maps + `x-bind:data-x`, or `{{ Js::from($attributes->classesFor('variant')) }}` + `x-bind:class="classes[variant]"` |
 | Test a component's classes | `->assertSeeClasses('a b')` / `expect($html)->toHaveClasses(...)` |
 | Find unknown option values in all views (CI) | `php artisan malevich:lint` (`--format=github`) |
-| Style an inner element | target: `@size('icon', [...])` + `@ui('icon')` |
+| Style an inner element | target: `@size('icon', [...])` + `@attributes('icon')` |
 | Let users style an inner element | named slot with the same name as the target |
-| Default attributes / a11y | `@ui(merge: [...])` |
-| Link/button/disabled behaviour for free | `<x-malevich::primitive :as="$as" @ui>` |
-| Build on another component | `<x-other @ui />` |
+| Default attributes / a11y | `@attributes(merge: [...])` |
+| Link/button/disabled behaviour for free | `<x-malevich::primitive :as="$as" @attributes>` |
+| Build on another component | `<x-other @attributes />` |
 
 ## Essential rules
 
-- Directives before `@ui`; always-on classes in `@base`, not `class=""`.
+- Directives before `@attributes`; always-on classes in `@base`, not `class=""`.
 - Full literal class names only; never `'bg-'.$color.'-500'`.
 - Every default (`@defaults`, or `@props`) must exist as a key in its map.
 - Option defaults go in `@defaults`; a non-null `@props` default silently beats presets.
@@ -104,7 +104,7 @@ php artisan view:clear     # after config changes or package upgrade
 
 - [references/workflow.md](references/workflow.md): steps before writing, `make:malevich`, config, converting old components, tailwind-merge, verification checklist, troubleshooting.
 - [references/directives.md](references/directives.md): all directives, class map rules (booleans, enums, `null`), `@compound`, `@preset`, where values come from, custom options, shared partials.
-- [references/ui-and-targets.md](references/ui-and-targets.md): all `@ui` forms, `merge:`, inner elements, named slots, building on other components, `$attributes` API.
+- [references/ui-and-targets.md](references/ui-and-targets.md): all `@attributes` forms, `merge:`, inner elements, named slots, building on other components, `$attributes` API.
 - [references/primitive.md](references/primitive.md): `<x-malevich::primitive>` behaviour and building buttons/links on it.
 - [references/rules.md](references/rules.md): hard rules, anti-patterns, design principles, project rules advice. Read before finishing any component.
 

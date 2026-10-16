@@ -2,4 +2,4 @@
 
 @base($classes)
 
-<div @ui></div>
+<div @attributes></div>

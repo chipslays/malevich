@@ -22,4 +22,4 @@
     'lg' => 'size-5',
 ])
 
-<button @ui><i @ui('icon')></i>{{ $slot }}</button>
+<button @attributes><i @attributes('icon')></i>{{ $slot }}</button>

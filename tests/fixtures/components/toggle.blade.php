@@ -5,4 +5,4 @@
     'false' => 'bg-gray-200',
 ])
 
-<span @ui></span>
+<span @attributes></span>

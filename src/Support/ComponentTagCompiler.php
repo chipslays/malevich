@@ -8,16 +8,16 @@ use Malevich\Malevich;
 use Malevich\MalevichManager;
 
 /**
- * Makes `@ui` work inside component tags:
+ * Makes `@attributes` work inside component tags:
  *
- *     <x-malevich::primitive as="button" @ui('icon')>
+ *     <x-malevich::primitive as="button" @attributes('icon')>
  *
  * Blade never runs directives inside `<x-...>` tags, so before the
  * template is compiled the element is resolved right in front of the tag
  * and passed to the child component as its attributes:
  *
- *     <?php $__malevichUi = \Malevich\Malevich::ui($attributes ?? null, get_defined_vars(), 'icon'); ?>
- *     <x-malevich::primitive as="button" :attributes="$__malevichUi->toAttributeBag()">
+ *     <?php $__malevichAttributes = \Malevich\Malevich::attributes($attributes ?? null, get_defined_vars(), 'icon'); ?>
+ *     <x-malevich::primitive as="button" :attributes="$__malevichAttributes->toAttributeBag()">
  *
  * Resolving it in plain PHP keeps any quotes in the arguments out of the
  * attribute value, and resolves the element once instead of twice.
@@ -39,11 +39,11 @@ final class ComponentTagCompiler
                 return $tag[0];
             }
 
-            $variable = '$'.MalevichManager::UI_VARIABLE;
+            $variable = '$'.MalevichManager::ATTRIBUTES_VARIABLE;
             $arguments = $found['arguments'] === '' ? '' : ", {$found['arguments']}";
             $attributes = substr_replace($tag['attributes'], ":attributes=\"{$variable}->toAttributeBag()\"", $found['offset'], $found['length']);
 
-            return "<?php {$variable} = \\".Malevich::class."::ui(\$attributes ?? null, get_defined_vars(){$arguments}); ?>"
+            return "<?php {$variable} = \\".Malevich::class."::attributes(\$attributes ?? null, get_defined_vars(){$arguments}); ?>"
                 .TagScanner::rebuild($tag, $attributes);
         });
     }

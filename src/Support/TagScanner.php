@@ -8,13 +8,13 @@ use Closure;
 
 /**
  * The regex building blocks shared by the tag compilers: finding the tags
- * of a template and the `@ui(...)` / `class="..."` among their attributes.
+ * of a template and the `@attributes(...)` / `class="..."` among their attributes.
  */
 final class TagScanner
 {
     /**
      * Balanced parentheses. Quoted strings inside may hold any character,
-     * so `@ui(merge: ['title' => 'a)b'])` is read as a whole.
+     * so `@attributes(merge: ['title' => 'a)b'])` is read as a whole.
      */
     public const PARENS = '(?<parens>\((?:[^()\'"]++|\'(?:[^\'\\\\]|\\\\.)*+\'|"(?:[^"\\\\]|\\\\.)*+"|(?&parens))*+\))';
 
@@ -112,7 +112,7 @@ final class TagScanner
     }
 
     /**
-     * Find `@name` or `@name(...)` (e.g. `@ui`) among the attributes of a tag,
+     * Find `@name` or `@name(...)` (e.g. `@attributes`) among the attributes of a tag,
      * skipping quoted values and echoes.
      *
      * @return array{offset: int, length: int, arguments: string}|null

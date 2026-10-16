@@ -11,7 +11,7 @@
     'lg' => 'w-6',
 ])
 
-<button @ui(merge: ['type' => 'button'])>
-    @if ($icon)<svg @ui('icon')></svg>@endif
+<button @attributes(merge: ['type' => 'button'])>
+    @if ($icon)<svg @attributes('icon')></svg>@endif
     {{ $slot }}
 </button>

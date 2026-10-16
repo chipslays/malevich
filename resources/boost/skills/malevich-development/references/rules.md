@@ -2,22 +2,22 @@
 
 ## Hard rules
 
-1. Declare every directive **before** `@ui`, right after `@props`.
-2. Always-on classes go in `@base`, not in a `class="..."` on the element that has `@ui` (it would be merged after, but `@base` is the right place). Never combine `@ui` with `$attributes->class(...)`, `{{ $attributes }}` or `@class` on the same element.
+1. Declare every directive **before** `@attributes`, right after `@props`.
+2. Always-on classes go in `@base`, not in a `class="..."` on the element that has `@attributes` (it would be merged after, but `@base` is the right place). Never combine `@attributes` with `$attributes->class(...)`, `{{ $attributes }}` or `@class` on the same element.
 3. Write full literal class names in maps. Never build them: `'bg-'.$color.'-500'`, `bg-{{ $color }}-500`. Tailwind cannot see them.
 4. Option defaults go in `@defaults([...])`, and each must be an existing key of that option's map (case-sensitive).
 5. Never give an option a non-null `@props` default: it beats presets. Declare an option in `@props` only when the markup uses the variable, with a `null` default.
-6. Inside `<x-...>` tags use single quotes in `@ui(...)` arguments.
+6. Inside `<x-...>` tags use single quotes in `@attributes(...)` arguments.
 7. Primitive-based components: `as` is a prop forwarded with `:as="$as"`; do not declare `href`, `target`, `disabled`, `type` in `@props` unless forwarding them.
-8. Inner elements: each `@ui('x')` needs matching target declarations if it should be styled; tag `class` never reaches it.
+8. Inner elements: each `@attributes('x')` needs matching target declarations if it should be styled; tag `class` never reaches it.
 9. Match the project: option names, value names, size scale, palette, prefix (`components.prefix`), Tailwind version.
 10. Optional parts (drawn in some variants only): no `@base` for them, all classes in the variants, rendered in `@has('target') ... @endhas`. No `hidden` placeholders.
 11. Keep public prop names and values stable when refactoring; do not change rendered classes unless asked.
 
 ## Anti-patterns
 
-- `@ui` before the directives it depends on.
-- Hardcoded `class` next to `@ui` for always-on classes (use `@base`).
+- `@attributes` before the directives it depends on.
+- Hardcoded `class` next to `@attributes` for always-on classes (use `@base`).
 - Repeating the same variant keys in many `@variant('target', ...)` calls when `@cases` reads better.
 - An empty or `hidden` placeholder element for a part that a variant does not have (use `@has`).
 - Computing classes per variant in a PHP array inside the component instead of `@cases`.
@@ -27,7 +27,7 @@
 - Non-null `@props` defaults for options (they beat the preset; use `@defaults`).
 - Hardcoding `as="button"` on the primitive inside an overridable component.
 - Declaring `href`/`disabled` in `@props` of a primitive-based component without forwarding.
-- `@ui` in layouts/pages.
+- `@attributes` in layouts/pages.
 - Using `'*'` keys where `@base` is clearer.
 - Registering a global directive for an option used in one component (use `@option`).
 - Custom directive names that collide with Blade, Malevich or `$attributes` methods.
@@ -42,7 +42,7 @@
 - Accessibility defaults go to `merge:` so users can override: `role="alert"`, `role="switch"` + `aria-checked`, `type="button"`, `aria-hidden="true"` on decorative icons.
 - Use `data-disabled:` with the primitive for disabled styling.
 - Inner parts (icon, spinner, title, thumb) are targets with the same option names so one prop styles all of them.
-- Interactive element that can be link/button/disabled -> primitive; plain container -> normal tag with `@ui`.
+- Interactive element that can be link/button/disabled -> primitive; plain container -> normal tag with `@attributes`.
 - Prefer slots for rich content; same-named slot lets users restyle that part.
 - Add a usage comment at the top of each component: `{{-- <x-name variant="..."> --}}`.
 

@@ -24,4 +24,4 @@
     'lg' => 'p-10',
 ])
 
-<div @ui>{{ $slot }}</div>
+<div @attributes>{{ $slot }}</div>

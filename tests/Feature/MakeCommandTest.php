@@ -20,7 +20,7 @@ it('creates a component with every configured option', function () {
     $contents = file_get_contents($this->path.'/button.blade.php');
 
     expect($contents)
-        ->toContain("@base('')", '@color([', '@radius([', '@defaults([', "// 'variant' => 'name',", "// 'radius' => 'name',", '<div @ui>')
+        ->toContain("@base('')", '@color([', '@radius([', '@defaults([', "// 'variant' => 'name',", "// 'radius' => 'name',", '<div @attributes>')
         ->not->toContain('@props', '{{ options }}', '{{ defaults }}', '{{ render }}');
 });
 

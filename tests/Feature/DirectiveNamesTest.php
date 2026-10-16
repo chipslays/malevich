@@ -37,7 +37,7 @@ it('refuses invalid or doubled names', function (array $config, string $message)
     reboot($config);
 })->with([
     'cases invalid' => [['malevich.cases_directive' => 'my-theme'], 'is not a valid directive name'],
-    'cases = render' => [['malevich.cases_directive' => 'ui'], 'used both as render_directive and cases_directive'],
+    'cases = render' => [['malevich.cases_directive' => 'attributes'], 'used both as render_directive and cases_directive'],
     'has = cases' => [['malevich.has_directive' => 'cases'], 'used both as cases_directive and has_directive'],
     'cases as option' => [['malevich.options' => ['variant', 'cases']], 'used both as cases_directive and in options'],
     'has as option' => [['malevich.options' => ['has']], 'used both as has_directive and in options'],

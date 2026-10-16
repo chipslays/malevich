@@ -20,4 +20,4 @@
 
 @defaults(['variant' => 'flat', 'padding' => 'md'])
 
-<div @ui>{{ $slot }}</div>
+<div @attributes>{{ $slot }}</div>

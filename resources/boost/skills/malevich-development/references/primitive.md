@@ -25,12 +25,12 @@ Other attributes pass through; attributes you set always win over defaults. Disa
 @variant(['primary' => 'bg-black text-white', 'outline' => 'border border-gray-300'])
 @size(['sm' => 'h-8 px-3 text-sm', 'md' => 'h-10 px-4'])
 
-<x-malevich::primitive :as="$as" @ui>{{ $slot }}</x-malevich::primitive>
+<x-malevich::primitive :as="$as" @attributes>{{ $slot }}</x-malevich::primitive>
 ```
 
 - `as` is a prop of your component with a default, forwarded with `:as="$as"`. Hardcoding `as="button"` on the primitive makes it impossible to override.
-- `href`, `target`, `disabled`, `type` must **not** be in your `@props`; they travel through `@ui` to the primitive.
-- If you declare one in `@props` (e.g. `$disabled` for a `@compound`), forward it: `<x-malevich::primitive :as="$as" :disabled="$disabled" @ui>`.
+- `href`, `target`, `disabled`, `type` must **not** be in your `@props`; they travel through `@attributes` to the primitive.
+- If you declare one in `@props` (e.g. `$disabled` for a `@compound`), forward it: `<x-malevich::primitive :as="$as" :disabled="$disabled" @attributes>`.
 
 Usage then works for free: `<x-button href="/x">`, `<x-button href="/x" disabled>`, `<x-button as="span">`, `<x-button type="submit">`.
 

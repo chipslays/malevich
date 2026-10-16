@@ -38,18 +38,18 @@
     ],
 ])
 
-<div @ui>
-    <div @ui('glow')></div>
-    @has('halo')<div @ui('halo')></div>@endhas
+<div @attributes>
+    <div @attributes('glow')></div>
+    @has('halo')<div @attributes('halo')></div>@endhas
 
-    <div @ui('head')>
-        <span @ui('title')>{{ $title }}</span>
+    <div @attributes('head')>
+        <span @attributes('title')>{{ $title }}</span>
     </div>
 
     <div class="flex items-baseline gap-2">
-        <span @ui('value')>{{ $value }}</span>
+        <span @attributes('value')>{{ $value }}</span>
         @if ($unit)<span class="text-base opacity-70">{{ $unit }}</span>@endif
     </div>
 
-    <div @ui('footer')>{{ $slot }}</div>
+    <div @attributes('footer')>{{ $slot }}</div>
 </div>

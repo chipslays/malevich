@@ -69,7 +69,7 @@ class MalevichServiceProvider extends ServiceProvider
         Malevich::flushConfig();
         $this->ensureValidNames();
 
-        // The recipe is also kept in a template variable, so @ui still finds it
+        // The recipe is also kept in a template variable, so @attributes still finds it
         // after Blade swaps $attributes for a new bag (e.g. inside <x-...> tags).
         $recipe = '($'.MalevichManager::SCOPE_VARIABLE.' ??= \\'.Malevich::class.'::recipe($attributes ?? null))';
 
@@ -87,7 +87,7 @@ class MalevichServiceProvider extends ServiceProvider
         $this->registerDirective(Malevich::renderDirective(), function (string $expression) {
             $arguments = trim($expression) === '' ? '' : ", {$expression}";
 
-            return '<?php echo \\'.Malevich::class."::ui(\$attributes ?? null, get_defined_vars(){$arguments}); ?>";
+            return '<?php echo \\'.Malevich::class."::attributes(\$attributes ?? null, get_defined_vars(){$arguments}); ?>";
         });
 
         $this->registerDirective(Malevich::hasDirective(), function (string $expression) {
@@ -99,9 +99,9 @@ class MalevichServiceProvider extends ServiceProvider
         // `@end` + the name, like @endauth: the closing tag is a plain endif.
         $this->registerDirective('end'.Malevich::hasDirective(), fn () => '<?php endif; ?>');
 
-        // Blade ignores directives inside <x-...> tags, so @ui is rewritten there first.
+        // Blade ignores directives inside <x-...> tags, so @attributes is rewritten there first.
         Blade::prepareStringsForCompilationUsing(ComponentTagCompiler::compile(...));
-        // On plain tags a `class="..."` next to @ui would become a second class attribute.
+        // On plain tags a `class="..."` next to @attributes would become a second class attribute.
         Blade::prepareStringsForCompilationUsing(HtmlTagCompiler::compile(...));
     }
 

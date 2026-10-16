@@ -18,10 +18,10 @@ use UnitEnum;
  * Fluent, immutable resolver that turns a component's Recipe into the
  * final attributes of one of its elements (the root, or a named target).
  *
- * Usually created by the `@ui` directive:
+ * Usually created by the `@attributes` directive:
  *
- *     <button @ui>...</button>
- *     <svg @ui('icon')>...</svg>
+ *     <button @attributes>...</button>
+ *     <svg @attributes('icon')>...</svg>
  *
  * or explicitly, for full control, from the attribute bag:
  *

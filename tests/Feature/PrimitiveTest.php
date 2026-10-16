@@ -49,7 +49,7 @@ it('rejects tag names that are not tag names', function () {
     $this->render('<x-malevich::primitive as="div onclick=alert(1)" />');
 })->throws(ViewException::class);
 
-it('lets @ui style a primitive from a component built on top of it', function () {
+it('lets @attributes style a primitive from a component built on top of it', function () {
     expect($this->render('<x-ui-button variant="ghost" class="mt-2" disabled wire:click="go">Go</x-ui-button>'))
         ->toBe('<button class="btn btn-ghost mt-2" wire:click="go" type="button" data-disabled="" disabled="disabled"><span class="icon"></span> Go</button>');
 });
@@ -59,19 +59,19 @@ it('turns the built component into a link when it gets an href', function () {
         ->toBe('<a class="btn btn-primary" href="/home"><span class="icon"></span> Home</a>');
 });
 
-it('rewrites @ui only inside component tags', function () {
+it('rewrites @attributes only inside component tags', function () {
     $compiled = ComponentTagCompiler::compile(<<<'BLADE'
-        <x-foo a="b" @ui('icon', merge: ['x' => 'y']) />
-        <span @ui></span>
-        <x-bar title="mail@ui.com" />
-        @verbatim <x-baz @ui /> @endverbatim
+        <x-foo a="b" @attributes('icon', merge: ['x' => 'y']) />
+        <span @attributes></span>
+        <x-bar title="mail@attributes.com" />
+        @verbatim <x-baz @attributes /> @endverbatim
     BLADE);
 
     expect($compiled)
-        ->toContain("<?php \$__malevichUi = \Malevich\Malevich::ui(\$attributes ?? null, get_defined_vars(), 'icon', merge: ['x' => 'y']); ?><x-foo a=\"b\" :attributes=\"\$__malevichUi->toAttributeBag()\" />")
-        ->toContain('<span @ui></span>')
-        ->toContain('title="mail@ui.com"')
-        ->toContain('<x-baz @ui />');
+        ->toContain("<?php \$__malevichAttributes = \Malevich\Malevich::attributes(\$attributes ?? null, get_defined_vars(), 'icon', merge: ['x' => 'y']); ?><x-foo a=\"b\" :attributes=\"\$__malevichAttributes->toAttributeBag()\" />")
+        ->toContain('<span @attributes></span>')
+        ->toContain('title="mail@attributes.com"')
+        ->toContain('<x-baz @attributes />');
 });
 
 it('lets the user override the tag of a component built on a primitive', function () {

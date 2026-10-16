@@ -25,7 +25,7 @@ You write *which classes belong to which option*. Malevich picks the right ones 
     'outline' => 'border border-gray-300',
 ])
 
-<button @ui>{{ $slot }}</button>
+<button @attributes>{{ $slot }}</button>
 ```
 
 ```blade
@@ -63,7 +63,7 @@ No ternaries, no `{{ $attributes->merge(['class' => ...]) }}`, no JavaScript, no
 
 **Rendering**
 
-14. [`@ui` - full reference](#ui---full-reference)
+14. [`@attributes` - full reference](#attributes---full-reference)
 15. [Where values come from](#where-values-come-from)
 16. [Inner elements (targets)](#inner-elements-targets)
 17. [Named slots](#named-slots)
@@ -126,7 +126,7 @@ It works, but every new option makes it harder to read. Malevich splits it into 
 
 @compound(['variant' => 'primary', 'size' => 'lg'], 'shadow-lg')
 
-<button @ui>{{ $slot }}</button>
+<button @attributes>{{ $slot }}</button>
 ```
 
 ## Installation
@@ -196,7 +196,7 @@ This creates `resources/views/components/badge.blade.php` with an empty block fo
     // 'color' => 'name',
 ])
 
-<div @ui>
+<div @attributes>
     {{ $slot }}
 </div>
 ```
@@ -214,7 +214,7 @@ This creates `resources/views/components/badge.blade.php` with an empty block fo
 
 @defaults(['color' => 'gray'])
 
-<span @ui>
+<span @attributes>
     {{ $slot }}
 </span>
 ```
@@ -233,7 +233,7 @@ This creates `resources/views/components/badge.blade.php` with an empty block fo
 <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700 ml-2">Overdue</span>
 ```
 
-Notice that you never wrote `$color` in the markup, nor declared it in `@props`: `@ui` read it from the tag by itself and fell back to the [default](#defaults---default-values).
+Notice that you never wrote `$color` in the markup, nor declared it in `@props`: `@attributes` read it from the tag by itself and fell back to the [default](#defaults---default-values).
 
 > [!TIP]
 > Prefer to create files by hand? That works too - Malevich doesn't care how the file was made. The command just saves typing.
@@ -247,15 +247,15 @@ Notice that you never wrote `$color` in the markup, nor declared it in `@props`:
 | **Class map** | A table "value -> classes" for one option. Declared with a directive. | `@color(['green' => 'bg-green-100'])` |
 | **Base classes** | Classes an element always has, whatever the options. | `@base('rounded-lg')` |
 | **Target** | A named inner element of the component. The main element is called `default`. | the `icon` inside a button |
-| **`@ui`** | Puts the final classes and attributes on an element. | `<span @ui>` |
+| **`@attributes`** | Puts the final classes and attributes on an element. | `<span @attributes>` |
 
 What happens when the component renders:
 
 1. Directives (`@base`, `@variant`, `@color`, ...) run first and **remember** what you declared.
-2. `@ui` runs. For every remembered option it looks up the current value (on the tag, in your `@props`, in a preset, or in `@defaults`), finds the classes for that value, and adds them.
+2. `@attributes` runs. For every remembered option it looks up the current value (on the tag, in your `@props`, in a preset, or in `@defaults`), finds the classes for that value, and adds them.
 3. Then it adds `@compound` classes whose conditions match, then the `class` passed from outside, and prints all of it together with the other attributes.
 
-Because of step 1 -> 2, **directives must come before `@ui`** in the file. Put them at the top, right after `@props`.
+Because of step 1 -> 2, **directives must come before `@attributes`** in the file. Put them at the top, right after `@props`.
 
 ---
 
@@ -273,24 +273,24 @@ That's the main element. For an [inner element](#inner-elements-targets), pass i
 @base('title', 'text-lg font-semibold')
 @base('description', 'text-sm text-gray-500')
 
-<div @ui>
-    <h3 @ui('title')>{{ $title }}</h3>
-    <p @ui('description')>{{ $description }}</p>
+<div @attributes>
+    <h3 @attributes('title')>{{ $title }}</h3>
+    <p @attributes('description')>{{ $description }}</p>
 </div>
 ```
 
-Read it as: *"the element `@ui('title')` always has `text-lg font-semibold`"*.
+Read it as: *"the element `@attributes('title')` always has `text-lg font-semibold`"*.
 
 | Form | Meaning |
 |---|---|
-| `@base('classes')` | Always-on classes of the main element (`@ui`). |
-| `@base('title', 'classes')` | Always-on classes of the inner element `@ui('title')`. |
+| `@base('classes')` | Always-on classes of the main element (`@attributes`). |
+| `@base('title', 'classes')` | Always-on classes of the inner element `@attributes('title')`. |
 
 - `@base` classes come **first**, before any option classes.
 - You can write `@base` several times for the same element; the classes add up.
 - Classes can also be a list or a conditional array: `@base(['flex', 'flex-col' => $vertical])`.
 
-**Why not just write `class="..."` on the tag?** Because the element also gets `class` from `@ui`, and a tag can't have two `class` attributes. With `@base`, all classes of the component live in one place at the top, and the element can still receive classes from a [named slot](#named-slots) or [`merge:`](#ui---full-reference).
+**Why not just write `class="..."` on the tag?** Because the element also gets `class` from `@attributes`, and a tag can't have two `class` attributes. With `@base`, all classes of the component live in one place at the top, and the element can still receive classes from a [named slot](#named-slots) or [`merge:`](#attributes---full-reference).
 
 ## Class maps
 
@@ -355,7 +355,7 @@ Use as many as the component needs:
     'lg' => 'h-12 px-6 text-lg',
 ])
 
-<button @ui>{{ $slot }}</button>
+<button @attributes>{{ $slot }}</button>
 ```
 
 ```blade
@@ -450,7 +450,7 @@ You can't put `bg-red-100` into `@color` (it would apply to solid too) or into `
 @compound(['variant' => 'solid', 'color' => 'gray'], 'bg-gray-700')
 @compound(['variant' => 'solid', 'color' => 'red'], 'bg-red-600')
 
-<span @ui>{{ $slot }}</span>
+<span @attributes>{{ $slot }}</span>
 ```
 
 Read each line as a sentence: *"if variant is soft **and** color is red, add `bg-red-100`"*.
@@ -519,7 +519,7 @@ A preset gives a **name to a set of values**, so the user can write one word ins
 
 @defaults(['variant' => 'flat', 'padding' => 'md'])
 
-<div @ui>{{ $slot }}</div>
+<div @attributes>{{ $slot }}</div>
 ```
 
 ```blade
@@ -565,7 +565,7 @@ A preset can hold values for inner elements too. Use target names as keys (`defa
 
 @defaults(['variant' => 'primary', 'size' => 'md'])
 
-<button @ui>{{ $slot }}</button>
+<button @attributes>{{ $slot }}</button>
 ```
 
 ```blade
@@ -579,7 +579,7 @@ A default is the **last** fallback: a value on the tag, in your `@props` or in a
 - Give an inner element its own default with a target name first: `@defaults('icon', ['size' => 'sm'])`. It wins over the shared one for that element only. A per-target array works too: `@defaults(['size' => ['default' => 'md', 'icon' => 'sm']])`.
 - Defaults take part in [`@compound`](#compound---classes-for-a-combination) conditions like any other value.
 - You can write `@defaults` several times; later values replace earlier ones.
-- Defaults are not props: the option still doesn't exist as `$variant` in the template. If the markup needs it (`@if ($variant === 'ghost')`), declare it in `@props` with a `null` default - `@ui` will still fall back to `@defaults`.
+- Defaults are not props: the option still doesn't exist as `$variant` in the template. If the markup needs it (`@if ($variant === 'ghost')`), declare it in `@props` with a `null` default - `@attributes` will still fall back to `@defaults`.
 
 `@defaults` is a fixed name, like `@base` and `@preset`.
 
@@ -606,13 +606,13 @@ A default is the **last** fallback: a value on the tag, in your `@props` or in a
     ],
 ])
 
-<div @ui>
-    <svg @ui('icon')></svg>
-    <h2 @ui('title')>{{ $title }}</h2>
+<div @attributes>
+    <svg @attributes('icon')></svg>
+    <h2 @attributes('title')>{{ $title }}</h2>
 </div>
 ```
 
-`@cases('variant', [...])` fills exactly the same slots as one `@variant('target', [...])` per element: `variant="teal"` styles the main element, `icon` and `title`, each with its own classes. Everything else (`@ui`, presets, `@compound`, [named slots](#named-slots)) works as before.
+`@cases('variant', [...])` fills exactly the same slots as one `@variant('target', [...])` per element: `variant="teal"` styles the main element, `icon` and `title`, each with its own classes. Everything else (`@attributes`, presets, `@compound`, [named slots](#named-slots)) works as before.
 
 - The first argument is the option name: `@cases('size', [...])`, `@cases('color', [...])`, any [`@option`](#option---the-universal-form) name.
 - Keys of the inner array are targets. `default` is the main element, like in presets and per-target values.
@@ -637,39 +637,41 @@ The name `@cases` can be changed with the `cases_directive` [config option](#con
 | React to a boolean flag (`loading`, `active`) | [`@compound(['loading' => true], ...)`](#compound---classes-for-a-combination) or a [`true`/`false` class map](#booleans-and-enums) |
 | Give a name to a common set of props | [`@preset`](#preset---saved-combinations) |
 | Pick a value when the user didn't | [`@defaults`](#defaults---default-values) |
-| Style an inner element (icon, title, spinner) | a [target](#inner-elements-targets): `@size('icon', [...])` + `@ui('icon')` |
-| Let users add classes to a slot | [`@ui('title')` + `<x-slot:title class="...">`](#named-slots) |
-| Add default attributes (`type`, `role`, `aria-*`) | [`@ui(merge: [...])`](#ui---full-reference) |
-| Build a component on top of another one | [`<x-other @ui />`](#building-on-other-components) |
+| Style an inner element (icon, title, spinner) | a [target](#inner-elements-targets): `@size('icon', [...])` + `@attributes('icon')` |
+| Let users add classes to a slot | [`@attributes('title')` + `<x-slot:title class="...">`](#named-slots) |
+| Add default attributes (`type`, `role`, `aria-*`) | [`@attributes(merge: [...])`](#attributes---full-reference) |
+| Build a component on top of another one | [`<x-other @attributes />`](#building-on-other-components) |
 | Get correct button/link/disabled behaviour for free | [`<x-malevich::primitive>`](#unstyled-primitive) |
 | Use the same option in many components | [register it in the config](#your-own-options) |
 | Reuse the same class maps in many components | an [`@include` partial](#sharing-styles-between-components) |
 
 ---
 
-## `@ui` - full reference
+## `@attributes` - full reference
 
-`@ui` prints the attributes of one element: the final `class` plus everything else that belongs there. Put it inside an HTML tag, like Blade's own `@class`:
+`@attributes` prints the attributes of one element: the final `class` plus everything else that belongs there. Put it inside an HTML tag, like Blade's own `@class`:
 
 ```blade
-<button @ui>...</button>
+<button @attributes>...</button>
 ```
+
+`$attributes` and `@attributes` are two sides of the same thing: **`$attributes` is what the component received** (`variant="ghost"`, `class="mt-2"`, `wire:click`, ...), **`@attributes` is what the element gets** - the options turned into classes, the option names removed, everything else passed through.
 
 ### All forms
 
 | You write | What it does |
 |---|---|
-| `@ui` | Main element: classes + all attributes from the component tag. |
-| `@ui('icon')` | Inner element `icon`: only its classes. |
-| `@ui(merge: ['type' => 'button'])` | Main element + default attributes. |
-| `@ui('title')` + a `<x-slot:title>` | Inner element + attributes of the slot with the same name (automatic). |
-| `@ui('heading', slot: $title)` | Inner element + attributes of a differently named slot. |
-| `@ui('title', slot: false)` | Inner element, ignore the slot's attributes. |
-| `@ui('title', merge: ['id' => 'x'])` | Inner element + default attributes. |
+| `@attributes` | Main element: classes + all attributes from the component tag. |
+| `@attributes('icon')` | Inner element `icon`: only its classes. |
+| `@attributes(merge: ['type' => 'button'])` | Main element + default attributes. |
+| `@attributes('title')` + a `<x-slot:title>` | Inner element + attributes of the slot with the same name (automatic). |
+| `@attributes('heading', slot: $title)` | Inner element + attributes of a differently named slot. |
+| `@attributes('title', slot: false)` | Inner element, ignore the slot's attributes. |
+| `@attributes('title', merge: ['id' => 'x'])` | Inner element + default attributes. |
 
 ### Arguments
 
-`@ui` takes three optional arguments. The first one can be written without a name, the other two are named (PHP named arguments):
+`@attributes` takes three optional arguments. The first one can be written without a name, the other two are named (PHP named arguments):
 
 | Argument | Type | Default | Meaning |
 |---|---|---|---|
@@ -682,7 +684,7 @@ The name `@cases` can be changed with the `cases_directive` [config option](#con
 `merge:` sets attributes that the element should have **unless the user says otherwise**:
 
 ```blade
-<button @ui(merge: ['type' => 'button', 'data-component' => 'button'])>
+<button @attributes(merge: ['type' => 'button', 'data-component' => 'button'])>
 ```
 
 ```blade
@@ -701,7 +703,7 @@ This is the same thing as `$attributes->merge([...])` in plain Blade.
 
 ### What ends up in the HTML
 
-For the **main element** (`@ui`, `@ui(merge: ...)`):
+For the **main element** (`@attributes`, `@attributes(merge: ...)`):
 
 1. `class` - in this order: `@base` -> class maps (in file order) -> `@compound` classes -> `class` from `merge:` -> `class` from the tag. Duplicates removed.
 2. All other attributes from the tag: `id`, `wire:click`, `x-data`, `data-*`, `aria-*`, ...
@@ -709,21 +711,21 @@ For the **main element** (`@ui`, `@ui(merge: ...)`):
 
 **Not** printed: option names (`variant`, `color`, `size`, any `@option` name) and `preset`. They were consumed by Malevich, so you won't get `<button variant="outline">` - even if you forgot to list them in `@props`.
 
-For an **inner element** (`@ui('icon')`): only its own classes, plus `merge:` attributes and the attributes of its [slot](#named-slots). Attributes from the component tag never go to inner elements.
+For an **inner element** (`@attributes('icon')`): only its own classes, plus `merge:` attributes and the attributes of its [slot](#named-slots). Attributes from the component tag never go to inner elements.
 
 If there are no classes at all, no empty `class=""` is printed.
 
 ### Rules
 
-- `@ui` works only **inside a component file** (it needs `$attributes`).
-- **Declare directives before `@ui`.** A directive written after `@ui` is not known to it yet.
-- `@ui` works on HTML tags **and on other components**: `<x-icon @ui('icon') />`. The classes and attributes are passed to that component as its `$attributes`. See [Building on other components](#building-on-other-components).
-- Inside `<x-...>` tags, write arguments with single quotes: `@ui(merge: ['type' => 'submit'])`. A double quote would end the generated attribute.
-- You can use `@ui` as many times as you want in one component, including several times for the same target.
-- A `class="..."` on the same tag is **added after** the element's own classes, as on a component tag: `<span @ui('chip') class="size-4 {{ $extra }}">`. Static text and `{{ }}` are supported. For anything else (`{!! !!}`, `@if` inside the class, or `merge:` already in use) Malevich throws on compile - pass the classes through `merge: ['class' => ...]` instead.
+- `@attributes` works only **inside a component file** (it needs `$attributes`).
+- **Declare directives before `@attributes`.** A directive written after `@attributes` is not known to it yet.
+- `@attributes` works on HTML tags **and on other components**: `<x-icon @attributes('icon') />`. The classes and attributes are passed to that component as its `$attributes`. See [Building on other components](#building-on-other-components).
+- Inside `<x-...>` tags, write arguments with single quotes: `@attributes(merge: ['type' => 'submit'])`. A double quote would end the generated attribute.
+- You can use `@attributes` as many times as you want in one component, including several times for the same target.
+- A `class="..."` on the same tag is **added after** the element's own classes, as on a component tag: `<span @attributes('chip') class="size-4 {{ $extra }}">`. Static text and `{{ }}` are supported. For anything else (`{!! !!}`, `@if` inside the class, or `merge:` already in use) Malevich throws on compile - pass the classes through `merge: ['class' => ...]` instead.
 
 > [!NOTE]
-> The name `@ui` can be changed with the `render_directive` [config option](#configuration).
+> The name `@attributes` can be changed with the `render_directive` [config option](#configuration).
 
 ## Where values come from
 
@@ -760,7 +762,7 @@ Components often have more than one element: a button with a spinner, an alert w
 ])
 ```
 
-**2. Render the element with `@ui('spinner')`.**
+**2. Render the element with `@attributes('spinner')`.**
 
 Full example:
 
@@ -783,9 +785,9 @@ Full example:
     'md' => 'size-4',
 ])
 
-<button @ui>
+<button @attributes>
     @if ($loading)
-        <svg @ui('spinner') viewBox="0 0 24 24">...</svg>
+        <svg @attributes('spinner') viewBox="0 0 24 24">...</svg>
     @endif
     {{ $slot }}
 </button>
@@ -826,14 +828,14 @@ An element with no classes at all usually means "this part is not drawn in this 
     'graphite' => ['default' => 'bg-gray-900'],
 ])
 
-<div @ui>
+<div @attributes>
     @has('glow')
-        <div @ui('glow')></div>
+        <div @attributes('glow')></div>
     @endhas
 </div>
 ```
 
-It is a normal conditional: `@else` and `@endhas` work, and it takes the same arguments as `@ui` (`@has('glow', merge: [...])`).
+It is a normal conditional: `@else` and `@endhas` work, and it takes the same arguments as `@attributes` (`@has('glow', merge: [...])`).
 
 > [!IMPORTANT]
 > `@base('glow', ...)` is always there, so a part with a `@base` is never "empty". For an optional part put **all** of its classes into the variants, as above.
@@ -849,9 +851,9 @@ Blade lets users pass attributes to named slots: `<x-slot:title class="text-2xl"
 
 @base('title', 'text-lg font-semibold')
 
-<div @ui>
+<div @attributes>
     @if ($title)
-        <h3 @ui('title')>{{ $title }}</h3>
+        <h3 @attributes('title')>{{ $title }}</h3>
     @endif
 
     {{ $slot }}
@@ -869,7 +871,7 @@ Blade lets users pass attributes to named slots: `<x-slot:title class="text-2xl"
 <h3 class="text-lg font-semibold text-2xl" id="billing">Billing</h3>
 ```
 
-`@ui('title')` saw a slot called `$title` and took its attributes. The slot's `class` is added after the element's own classes, other attributes are passed through.
+`@attributes('title')` saw a slot called `$title` and took its attributes. The slot's `class` is added after the element's own classes, other attributes are passed through.
 
 How the matching works:
 
@@ -879,13 +881,13 @@ How the matching works:
 **The slot has a different name than the element?** Pass it explicitly with `slot:`:
 
 ```blade
-<h3 @ui('heading', slot: $title)>{{ $title }}</h3>
+<h3 @attributes('heading', slot: $title)>{{ $title }}</h3>
 ```
 
 **Don't want the slot's attributes on the element?** Turn it off with `slot: false`:
 
 ```blade
-<h3 @ui('title', slot: false)>{{ $title }}</h3>
+<h3 @attributes('title', slot: false)>{{ $title }}</h3>
 ```
 
 ## Booleans and enums
@@ -902,7 +904,7 @@ How the matching works:
     'false' => 'bg-gray-300',
 ])
 
-<span @ui></span>
+<span @attributes></span>
 ```
 
 ```blade
@@ -940,15 +942,15 @@ Numbers work too: `:level="2"` is looked up as `'2'`.
 
 ## Building on other components
 
-`@ui` also works on component tags. Everything it would print on an HTML tag - classes, the user's attributes, `merge:` - is handed to that component as its `$attributes` instead:
+`@attributes` also works on component tags. Everything it would print on an HTML tag - classes, the user's attributes, `merge:` - is handed to that component as its `$attributes` instead:
 
 ```blade
 {{-- resources/views/components/ui/alert.blade.php --}}
 @base('flex gap-3 rounded-xl border p-4')
 @base('icon', 'size-4 shrink-0')
 
-<div @ui>
-    <x-heroicon-o-information-circle @ui('icon') />
+<div @attributes>
+    <x-heroicon-o-information-circle @attributes('icon') />
     {{ $slot }}
 </div>
 ```
@@ -964,8 +966,8 @@ This is how you build components on top of each other - including on the unstyle
 
 Things to know:
 
-- The child component must print its `$attributes` (`<svg {{ $attributes }}>`, or `@ui` if it's a Malevich component too). Otherwise the classes have nowhere to go.
-- Inside a component tag, use **single quotes** in the arguments: `@ui(merge: ['type' => 'submit'])`.
+- The child component must print its `$attributes` (`<svg {{ $attributes }}>`, or `@attributes` if it's a Malevich component too). Otherwise the classes have nowhere to go.
+- Inside a component tag, use **single quotes** in the arguments: `@attributes(merge: ['type' => 'submit'])`.
 - Everything else works the same: targets, slots, `merge:`.
 
 ## Unstyled primitive
@@ -1025,7 +1027,7 @@ A disabled element always gets `data-disabled`, whatever the tag. Style that ins
     'md' => 'h-10 px-4',
 ])
 
-<x-malevich::primitive :as="$as" @ui>
+<x-malevich::primitive :as="$as" @attributes>
     {{ $slot }}
 </x-malevich::primitive>
 ```
@@ -1053,8 +1055,8 @@ Your button now gets all of the above for free:
 How the props travel:
 
 - **`as`** is a prop of the button with the default `'button'`, passed on with `:as="$as"`. That's what lets the user write `<x-button as="span">`. If you wrote `as="button"` directly on the primitive instead, it would always win and the user couldn't change it.
-- **`href`, `target`, `disabled`, `type`** and everything else are *not* in the button's `@props`. They travel through `@ui` to the primitive, which knows what to do with them.
-- If you declare one of them in `@props` yourself (e.g. to use `$disabled` in a `@compound`), it stops travelling - pass it on explicitly: `<x-malevich::primitive :as="$as" :disabled="$disabled" @ui>`.
+- **`href`, `target`, `disabled`, `type`** and everything else are *not* in the button's `@props`. They travel through `@attributes` to the primitive, which knows what to do with them.
+- If you declare one of them in `@props` yourself (e.g. to use `$disabled` in a `@compound`), it stops travelling - pass it on explicitly: `<x-malevich::primitive :as="$as" :disabled="$disabled" @attributes>`.
 
 ### Customizing the primitive
 
@@ -1106,7 +1108,7 @@ Not every name is allowed. Malevich throws an exception on boot if a name:
 
 The names of Malevich's own directives are rarely a problem, but they are all configurable or checked:
 
-- `@ui`, `@cases` and `@has` can be renamed with `render_directive`, `cases_directive` and `has_directive`.
+- `@attributes`, `@cases` and `@has` can be renamed with `render_directive`, `cases_directive` and `has_directive`.
 - `@base`, `@compound`, `@preset`, `@defaults` and `@option` are fixed. On boot Malevich checks that Blade or another package has not taken them and throws a clear exception if so.
 - A directive that needs an expression (`@variant([...])`, `@cases('x', [...])`, `@base('...')`) and is written **without parentheses** is left alone. So CSS inside a template survives: Tailwind's `@variant dark (...)` is not touched.
 
@@ -1129,7 +1131,7 @@ Class maps are plain Blade, so you can move them into a partial and `@include` i
 
 @include('components.ui.partials.sizes')
 
-<button @ui>{{ $slot }}</button>
+<button @attributes>{{ $slot }}</button>
 ```
 
 Now buttons, inputs and selects always have matching heights.
@@ -1193,7 +1195,7 @@ Options are resolved on the server. When an option has to change in the browser 
 ```blade
 @base('rounded-lg px-4 data-[tone=danger]:bg-red-600 data-[tone=info]:bg-blue-600')
 
-<div x-data="{ tone: 'info' }" x-bind:data-tone="tone" @ui>...</div>
+<div x-data="{ tone: 'info' }" x-bind:data-tone="tone" @attributes>...</div>
 ```
 
 **`classesFor()`** - let Malevich resolve the full class string of every value on the server and hand the map to Alpine:
@@ -1218,7 +1220,7 @@ For `<x-button size="lg">` Alpine gets:
 { primary: 'bg-zinc-900 text-white h-12 px-6', danger: 'bg-red-600 text-white h-12 px-6 shadow-lg' }
 ```
 
-Every value is resolved by the same engine as `@ui`: `@base`, the other options, `@compound`, presets, the `class` from the tag and tailwind-merge all apply. All the classes are literals in your Blade file, so Tailwind finds them.
+Every value is resolved by the same engine as `@attributes`: `@base`, the other options, `@compound`, presets, the `class` from the tag and tailwind-merge all apply. All the classes are literals in your Blade file, so Tailwind finds them.
 
 - `classesFor('variant')` uses every value the component knows for the option; `classesFor('variant', ['primary', 'danger'])` only those.
 - For an inner element: `$attributes->for('icon')->classesFor('size')`.
@@ -1260,7 +1262,7 @@ Now `resources/views/ui/button.blade.php` is `<x-ui::button>` and nothing else.
 
 ## The `$attributes` API
 
-`@ui` covers almost everything. If you need full control, the same engine is available as methods on `$attributes`:
+`@attributes` covers almost everything. If you need full control, the same engine is available as methods on `$attributes`:
 
 ```blade
 <div {{ $attributes->variant($variant)->size($size) }}>
@@ -1277,7 +1279,7 @@ Now `resources/views/ui/button.blade.php` is `<x-ui::button>` and nothing else.
 | `->for('icon')` | Switch to a target. |
 | `->preset('name')` | Apply a preset. Can be called several times, the last one wins. |
 | `->slot($slot)` | Add the attributes of a named slot. |
-| `->merge([...])` | Default attributes, same as `@ui(merge: ...)`. |
+| `->merge([...])` | Default attributes, same as `@attributes(merge: ...)`. |
 | `->toClasses()` | Return only the class string. |
 | `->classesFor('variant')` | The class string for every value of an option, for [Alpine](#switching-options-in-the-browser-alpine). |
 | `->only()`, `->except()`, `->has()`, `->get()`, `->whereStartsWith()`, ... | Regular `$attributes` methods, with the classes already applied. |
@@ -1292,7 +1294,7 @@ Every call returns a **new** object, so you can safely branch:
 </div>
 ```
 
-**Differences from `@ui`:**
+**Differences from `@attributes`:**
 
 - These methods **can't see your template variables**, so pass prop values yourself: `->size($size)`. (Attributes on the tag are still read automatically.)
 - Explicit values win over everything, including `@props`.
@@ -1360,7 +1362,7 @@ So a clean run doesn't prove there are no typos at all - it proves there are non
 | Key | Default | What it does |
 |---|---|---|
 | `options` | `['variant', 'size', 'color']` | Options with a directive of their own: `@variant`, `@size`, ... Add your own here. |
-| `render_directive` | `'ui'` | The name of `@ui`. Change it if it clashes with another package. |
+| `render_directive` | `'attributes'` | The name of `@attributes`. Change it if it clashes with another package. |
 | `cases_directive` | `'cases'` | The name of [`@cases`](#cases---one-declaration-per-value). |
 | `has_directive` | `'has'` | The name of [`@has`](#parts-that-exist-only-in-some-variants-has). |
 | `default_target` | `'default'` | Name of the main element in per-target arrays and presets. |
@@ -1459,9 +1461,9 @@ A button with variants, sizes, a combination, a loading spinner, a flag and defa
 @compound(['variant' => 'primary', 'size' => 'lg'], 'shadow-lg')
 @compound(['loading' => true], 'cursor-wait')
 
-<button @ui(merge: ['type' => 'button'])>
+<button @attributes(merge: ['type' => 'button'])>
     @if ($loading)
-        <svg @ui('spinner') viewBox="0 0 24 24" fill="none">
+        <svg @attributes('spinner') viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25" />
             <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" />
         </svg>
@@ -1484,7 +1486,7 @@ More examples (badge, alert, card, switch) live in [`workbench/resources/views/c
 
 **My classes don't show up.**
 Check, in this order:
-1. The directive is written **before** `@ui`.
+1. The directive is written **before** `@attributes`.
 2. The value really matches a key: `size="lg"` needs a `'lg'` key. Keys are case-sensitive. Turn on [strict mode](#strict-mode) and Malevich tells you which value is wrong and which ones exist.
 3. The option has a value at all: give it one in [`@defaults`](#defaults---default-values). A `null` `@props` default means "not set", so only `@base` classes apply.
 4. After changing `config/malevich.php`, run `php artisan view:clear`.
@@ -1493,10 +1495,10 @@ Check, in this order:
 The option has a non-null `@props` default, which wins over presets. Move the default to [`@defaults`](#defaults---default-values) and drop the option from `@props` (or give it a `null` default).
 
 **I see `variant="..."` in my HTML.**
-The directive for that option is missing or written after `@ui`. Malevich only removes option names it knows about.
+The directive for that option is missing or written after `@attributes`. Malevich only removes option names it knows about.
 
-**I wrote `class="..."` next to `@ui` and got an exception.**
-On a plain tag it is merged into `@ui` for you, but only for static text and `{{ }}`. With `{!! !!}`, a Blade directive inside the class, or an existing `merge:`, use `@ui('x', merge: ['class' => $classes])`.
+**I wrote `class="..."` next to `@attributes` and got an exception.**
+On a plain tag it is merged into `@attributes` for you, but only for static text and `{{ }}`. With `{!! !!}`, a Blade directive inside the class, or an existing `merge:`, use `@attributes('x', merge: ['class' => $classes])`.
 
 **An optional element renders as an empty `<div>`.**
 It has a `@base`, which makes it non-empty in every variant. Move its classes into the variants and wrap it in [`@has`](#parts-that-exist-only-in-some-variants-has).
@@ -1507,8 +1509,8 @@ Fine. Without parentheses it is left as it is.
 **`class` from the tag isn't applied to my icon.**
 By design: tag attributes go to the main element only. Use a [named slot](#named-slots) or a separate prop.
 
-**How do I use `@ui` on a nested Blade component?**
-Just put it there: `<x-heroicon-o-check @ui('icon') />`. The child component receives the classes as its `$attributes`, so it must print them (`{{ $attributes }}`) - every well-written component does. See [Building on other components](#building-on-other-components).
+**How do I use `@attributes` on a nested Blade component?**
+Just put it there: `<x-heroicon-o-check @attributes('icon') />`. The child component receives the classes as its `$attributes`, so it must print them (`{{ $attributes }}`) - every well-written component does. See [Building on other components](#building-on-other-components).
 
 **I changed something and the output didn't change.**
 Blade caches compiled views. Run `php artisan view:clear`, especially after updating Malevich or editing `config/malevich.php`.
@@ -1525,7 +1527,7 @@ Directives compile to plain PHP once, like any Blade directive. At render time i
 **Can two components use the same preset name?**
 Yes. Presets, like class maps, belong to the component that declares them.
 
-**Can I use `@ui` in a regular view or layout?**
+**Can I use `@attributes` in a regular view or layout?**
 No, only in Blade components - it needs the component's `$attributes`.
 
 ## Cheat sheet
@@ -1567,10 +1569,10 @@ No, only in Blade components - it needs the component's `$attributes`.
 @defaults(['variant' => 'primary', 'size' => 'md'])
 @defaults('icon', ['size' => 'sm'])
 
-<button @ui(merge: ['type' => 'button'])>
-    <svg @ui('icon')></svg>
-    <span @ui('title')>{{ $title }}</span>   {{-- picks up <x-slot:title class="..."> --}}
-    @has('badge')<i @ui('badge')></i>@endhas {{-- only when the element has classes --}}
+<button @attributes(merge: ['type' => 'button'])>
+    <svg @attributes('icon')></svg>
+    <span @attributes('title')>{{ $title }}</span>   {{-- picks up <x-slot:title class="..."> --}}
+    @has('badge')<i @attributes('badge')></i>@endhas {{-- only when the element has classes --}}
     {{ $slot }}
 </button>
 ```

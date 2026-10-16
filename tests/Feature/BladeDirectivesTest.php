@@ -17,9 +17,9 @@ it('compiles @option, @compound and @preset', function () {
         ->and(Blade::compileString("@preset('p', [])"))->toContain("->preset('p', [])");
 });
 
-it('compiles @ui with and without arguments', function () {
-    expect(Blade::compileString('<b @ui>'))->toContain('Malevich::ui($attributes ?? null, get_defined_vars()); ?>>')
-        ->and(Blade::compileString("<b @ui('icon')>"))->toContain("Malevich::ui(\$attributes ?? null, get_defined_vars(), 'icon')");
+it('compiles @attributes with and without arguments', function () {
+    expect(Blade::compileString('<b @attributes>'))->toContain('Malevich::attributes($attributes ?? null, get_defined_vars()); ?>>')
+        ->and(Blade::compileString("<b @attributes('icon')>"))->toContain("Malevich::attributes(\$attributes ?? null, get_defined_vars(), 'icon')");
 });
 
 it('declares a recipe on the bag when the template runs', function () {

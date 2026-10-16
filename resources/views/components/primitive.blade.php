@@ -1,7 +1,7 @@
 {{--
     Unstyled base element. Build your own components on top of it:
 
-    <x-malevich::primitive as="button" @ui>{{ $slot }}</x-malevich::primitive>
+    <x-malevich::primitive as="button" @attributes>{{ $slot }}</x-malevich::primitive>
 --}}
 
 @props([

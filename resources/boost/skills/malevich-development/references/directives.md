@@ -1,11 +1,11 @@
 # Directives reference
 
-All directives must be declared **before** `@ui`.
+All directives must be declared **before** `@attributes`.
 
 | Directive | Use |
 |---|---|
 | `@base('classes')` | Classes always present on the main element. |
-| `@base('target', 'classes')` | Always-on classes for inner element `@ui('target')`. Can be repeated, classes add up. |
+| `@base('target', 'classes')` | Always-on classes for inner element `@attributes('target')`. Can be repeated, classes add up. |
 | `@variant([...])`, `@color([...])`, `@size([...])` | Class map for `$variant` / `$color` / `$size`. Identical behaviour, only the name differs. |
 | `@option('radius', [...])` | Class map for any option name. |
 | `@option('radius', 'target', [...])` / `@variant('target', [...])` | Same, for an inner element. |
@@ -108,7 +108,7 @@ Per-target values: pass an array keyed by target, main element is `default`:
 
 ## Directive names and collisions
 
-- `@ui`, `@cases`, `@has` are renamable: `render_directive`, `cases_directive`, `has_directive` in `config/malevich.php`. `@base`, `@compound`, `@preset`, `@defaults`, `@option` are fixed.
+- `@attributes`, `@cases`, `@has` are renamable: `render_directive`, `cases_directive`, `has_directive` in `config/malevich.php`. `@base`, `@compound`, `@preset`, `@defaults`, `@option` are fixed.
 - Boot throws if a configured name is a Blade built-in, is already registered by the app or another package, is a Malevich name, is a method of `$attributes`, or is invalid.
 - A directive written without parentheses is left as text, so Tailwind's `@variant dark` inside a template stay intact.
 
@@ -137,5 +137,5 @@ Move maps into a partial and include after `@props`:
 ```blade
 @props(['size' => 'md'])
 @include('components.ui.partials.sizes')
-<button @ui>{{ $slot }}</button>
+<button @attributes>{{ $slot }}</button>
 ```

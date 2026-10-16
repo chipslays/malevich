@@ -16,6 +16,6 @@
     'true' => 'translate-x-5',
 ])
 
-<span @ui(merge: ['role' => 'switch', 'aria-checked' => $checked ? 'true' : 'false'])>
-    <span @ui('thumb')></span>
+<span @attributes(merge: ['role' => 'switch', 'aria-checked' => $checked ? 'true' : 'false'])>
+    <span @attributes('thumb')></span>
 </span>

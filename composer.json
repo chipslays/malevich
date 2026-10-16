@@ -1,6 +1,6 @@
 {
     "name": "malevich/malevich",
-    "description": "Variant-driven Blade components: declare class maps, render them with @ui.",
+    "description": "Variant-driven Blade components: declare class maps, render them with @attributes.",
     "keywords": ["laravel", "blade", "components", "variants", "tailwind", "ui", "design-system"],
     "type": "library",
     "license": "MIT",

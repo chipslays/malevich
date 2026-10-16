@@ -7,7 +7,7 @@
 
 @base('heading', 'font-bold')
 
-<div @ui>
-    <h2 @ui('heading', slot: $title)>{{ $title }}</h2>
+<div @attributes>
+    <h2 @attributes('heading', slot: $title)>{{ $title }}</h2>
     {{ $slot }}
 </div>

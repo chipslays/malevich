@@ -1,53 +1,53 @@
-# `@ui`, targets and slots
+# `@attributes`, targets and slots
 
 ## Forms
 
 | Form | Effect |
 |---|---|
-| `@ui` | Main element: classes + all attributes from the component tag. |
-| `@ui('icon')` | Inner element: only its own classes. Tag attributes never go to inner elements. |
-| `@ui(merge: ['type' => 'button'])` | Default attributes; the user's attributes with the same name win. |
-| `@ui('title')` | Also picks up attributes of a named slot `<x-slot:title class="...">` with the same name. |
-| `@ui('heading', slot: $title)` | Use a differently named slot. |
-| `@ui('title', slot: false)` | Ignore the slot's attributes. |
-| `@ui('title', merge: ['id' => 'x'])` | Inner element + default attributes. |
+| `@attributes` | Main element: classes + all attributes from the component tag. |
+| `@attributes('icon')` | Inner element: only its own classes. Tag attributes never go to inner elements. |
+| `@attributes(merge: ['type' => 'button'])` | Default attributes; the user's attributes with the same name win. |
+| `@attributes('title')` | Also picks up attributes of a named slot `<x-slot:title class="...">` with the same name. |
+| `@attributes('heading', slot: $title)` | Use a differently named slot. |
+| `@attributes('title', slot: false)` | Ignore the slot's attributes. |
+| `@attributes('title', merge: ['id' => 'x'])` | Inner element + default attributes. |
 
 Arguments: target (1st, positional), `slot:`, `merge:` (named).
 
 ## `@has`
 
-`@has('target') ... @endhas` renders its body only if the element ends up with classes (same arguments as `@ui`; `@else` works). Use it for parts that exist in some variants only. A `@base` makes a part non-empty everywhere, so an optional part has no `@base`: all its classes live in the variants.
+`@has('target') ... @endhas` renders its body only if the element ends up with classes (same arguments as `@attributes`; `@else` works). Use it for parts that exist in some variants only. A `@base` makes a part non-empty everywhere, so an optional part has no `@base`: all its classes live in the variants.
 
 ```blade
-@has('glow')<div @ui('glow')></div>@endhas
+@has('glow')<div @attributes('glow')></div>@endhas
 ```
 
-## `class="..."` next to `@ui`
+## `class="..."` next to `@attributes`
 
-On a plain HTML tag a `class` next to `@ui` is merged into one `class` attribute, after the element's own classes: `<span @ui('chip') class="size-4 {{ $extra }}">`. Only static text and `{{ }}` are supported; with `{!! !!}`, a Blade directive inside the class, or an existing `merge:`, compilation throws and you pass `merge: ['class' => ...]` yourself. `<x-...>` tags always merge their `class`.
+On a plain HTML tag a `class` next to `@attributes` is merged into one `class` attribute, after the element's own classes: `<span @attributes('chip') class="size-4 {{ $extra }}">`. Only static text and `{{ }}` are supported; with `{!! !!}`, a Blade directive inside the class, or an existing `merge:`, compilation throws and you pass `merge: ['class' => ...]` yourself. `<x-...>` tags always merge their `class`.
 
 ## Output rules (main element)
 
 - `class` order: `@base` -> class maps (file order) -> `@compound` -> `class` from `merge:` -> `class` from the tag. Duplicates removed. No empty `class=""`.
 - All other tag attributes pass through (`id`, `wire:*`, `x-*`, `data-*`, `aria-*`).
 - `merge:` attributes appear unless the tag sets them. `class` in `merge:` is added, not replaced. Values may be dynamic: `merge: ['aria-checked' => $checked ? 'true' : 'false']`.
-- Option names (`variant`, `color`, `size`, custom) and `preset` are never printed. If `variant="..."` shows up in HTML, the directive is missing or declared after `@ui`.
-- `@ui` may be used many times in one component, also for the same target.
+- Option names (`variant`, `color`, `size`, custom) and `preset` are never printed. If `variant="..."` shows up in HTML, the directive is missing or declared after `@attributes`.
+- `@attributes` may be used many times in one component, also for the same target.
 - Only valid inside a component file (needs `$attributes`).
 - On `<x-...>` tags use **single quotes** inside arguments.
-- `@ui` works on components too: `<x-heroicon-o-check @ui('icon') />`. The child must print `$attributes`.
+- `@attributes` works on components too: `<x-heroicon-o-check @attributes('icon') />`. The child must print `$attributes`.
 - The name can be changed with config `render_directive`.
 
 ## Targets (inner elements)
 
-Declare per-target maps with a target name as the first argument, render with `@ui('target')`:
+Declare per-target maps with a target name as the first argument, render with `@attributes('target')`:
 
 ```blade
 @base('spinner', 'animate-spin')
 @size('spinner', ['sm' => 'size-3', 'md' => 'size-4'])
 
-<button @ui>
-    <svg @ui('spinner')>...</svg>
+<button @attributes>
+    <svg @attributes('spinner')>...</svg>
 </button>
 ```
 
@@ -62,8 +62,8 @@ Declare per-target maps with a target name as the first argument, render with `@
 @props(['title' => null])
 @base('title', 'text-lg font-semibold')
 
-<div @ui>
-    @if ($title)<h3 @ui('title')>{{ $title }}</h3>@endif
+<div @attributes>
+    @if ($title)<h3 @attributes('title')>{{ $title }}</h3>@endif
     {{ $slot }}
 </div>
 ```
@@ -78,7 +78,7 @@ Declare per-target maps with a target name as the first argument, render with `@
 
 ## Building on other components
 
-`@ui` on a component tag hands classes and attributes to it as `$attributes`. This is how components stack, including on the primitive. The child must print `$attributes`.
+`@attributes` on a component tag hands classes and attributes to it as `$attributes`. This is how components stack, including on the primitive. The child must print `$attributes`.
 
 ## `$attributes` API (rarely needed)
 

@@ -7,6 +7,6 @@
     'plain' => 'bg-plain',
 ])
 
-<div @ui>
-    <span @ui('title')>{{ $slot }}</span>
+<div @attributes>
+    <span @attributes('title')>{{ $slot }}</span>
 </div>

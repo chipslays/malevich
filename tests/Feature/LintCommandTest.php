@@ -15,14 +15,14 @@ beforeEach(function () {
             @compound(['variant' => 'ghost', 'loading' => true], $dynamic)
             @preset('danger', ['variant' => $variant])
             {{-- @variant(['commented' => 'x']) --}}
-            <button @ui>{{ $slot }}</button>
+            <button @attributes>{{ $slot }}</button>
             BLADE,
-        'dynamic' => "@variant(\$variants)\n@size(['sm' => 'x'])\n<div @ui></div>",
-        'named' => "@option(\$name, ['a' => 'b'])\n<div @ui></div>",
-        'shared' => "@include('lint-partials.sizes', ['x' => \$y])\n<div @ui></div>",
-        'conditional' => "@includeIf('lint-partials.sizes')\n@variant(['a' => 'b'])\n<div @ui></div>",
-        'free' => "@color('text-red-500')\n<div @ui></div>",
-        'cards/index' => "@variant(['flat' => 'a'])\n<div @ui></div>",
+        'dynamic' => "@variant(\$variants)\n@size(['sm' => 'x'])\n<div @attributes></div>",
+        'named' => "@option(\$name, ['a' => 'b'])\n<div @attributes></div>",
+        'shared' => "@include('lint-partials.sizes', ['x' => \$y])\n<div @attributes></div>",
+        'conditional' => "@includeIf('lint-partials.sizes')\n@variant(['a' => 'b'])\n<div @attributes></div>",
+        'free' => "@color('text-red-500')\n<div @attributes></div>",
+        'cards/index' => "@variant(['flat' => 'a'])\n<div @attributes></div>",
     ];
 
     foreach ($components as $name => $source) {
