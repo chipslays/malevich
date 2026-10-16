@@ -106,10 +106,16 @@ final class Recipe
     }
 
     /**
-     * Accepts `(conditions, classes)` or `(target, conditions, classes)`.
+     * Accepts `(conditions, classes)`, `(target, conditions, classes)`, or
+     * `(conditions, targets: [target => classes])` to style several
+     * elements for the same combination at once.
      */
     public function compound(mixed ...$args): self
     {
+        if (array_key_exists('targets', $args)) {
+            return $this->compoundTargets($args);
+        }
+
         [$target, $conditions, $classes] = match (count($args)) {
             2 => [$this->defaultTarget, $args[0], $args[1]],
             3 => $args,
@@ -117,6 +123,29 @@ final class Recipe
         };
 
         $this->compounds[$target][] = [$conditions, $classes];
+
+        return $this;
+    }
+
+    /**
+     * `@compound([conditions], targets: ['default' => ..., 'icon' => ...])`:
+     * the keys are always elements, so the classes may be any form a class
+     * map accepts - a string, a list or a conditional array.
+     *
+     * @param  array<array-key, mixed>  $args
+     */
+    private function compoundTargets(array $args): self
+    {
+        $targets = $args['targets'];
+        unset($args['targets']);
+
+        if (array_keys($args) !== [0] || ! is_array($targets) || $targets === [] || array_is_list($targets)) {
+            throw new InvalidArgumentException("@compound with targets: expects ([conditions], targets: ['target' => classes, ...]).");
+        }
+
+        foreach ($targets as $target => $classes) {
+            $this->compounds[(string) $target][] = [$args[0], $classes];
+        }
 
         return $this;
     }

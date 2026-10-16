@@ -463,7 +463,8 @@ Read each line as a sentence: *"if variant is soft **and** color is red, add `bg
 
 ```blade
 @compound([conditions], classes)
-@compound('target', [conditions], classes)   {{-- for an inner element --}}
+@compound('target', [conditions], classes)                      {{-- for an inner element --}}
+@compound([conditions], targets: ['target' => classes, ...])    {{-- for several elements at once --}}
 ```
 
 - `conditions` - `['option' => value, ...]`. **All** of them must match.
@@ -475,6 +476,18 @@ Read each line as a sentence: *"if variant is soft **and** color is red, add `bg
 
 - `classes` - a string, list or conditional array, just like in a class map.
 - Compound classes are added **after** all class maps.
+
+**One combination, several elements.** When the same combination restyles more than one element, write the conditions once and list the classes per element with `targets:`. `default` is the main element:
+
+```blade
+@compound(['size' => 'sm', 'variant' => 'ghost'], targets: [
+    'default' => 'px-2',
+    'icon' => 'size-3',
+    'label' => 'text-xs',
+])
+```
+
+It is the same as one `@compound` per element. The keys are always elements, so the classes can take any form, conditional arrays included: `'icon' => ['size-3', 'opacity-70' => $muted]`.
 
 **`@compound` also works with props that have no class map.** That makes it the easiest way to react to a single flag:
 
@@ -1459,6 +1472,9 @@ No, only in Blade components - it needs the component's `$attributes`.
 @compound(['variant' => 'primary', 'size' => 'lg'], 'shadow-lg')
 @compound(['variant' => ['outline', 'ghost']], 'bg-transparent')
 @compound(['loading' => true], 'cursor-wait')
+
+{{-- one combination, classes for several elements --}}
+@compound(['variant' => 'ghost', 'size' => 'sm'], targets: ['default' => 'px-2', 'icon' => 'size-3'])
 
 <button @attributes(merge: ['type' => 'button'])>
     <svg @attributes('icon')></svg>

@@ -12,6 +12,7 @@ All directives must be declared **before** `@attributes`.
 | `@cases('option', [value => [target => classes]])` | The same class maps as `@variant('target', [...])` per element, grouped by value. |
 | `@compound([conds], 'classes')` | Classes when ALL conditions match. A list value means "any of". Added after all class maps. |
 | `@compound('target', [conds], 'classes')` | Same for an inner element. |
+| `@compound([conds], targets: ['target' => classes])` | One combination, classes for several elements (`default` = main element). |
 
 ## Class maps
 

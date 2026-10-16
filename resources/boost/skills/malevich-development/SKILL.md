@@ -49,6 +49,7 @@ Never write `$color` in the markup: `@attributes` reads the option from `@props`
 @cases('variant', ['teal' => ['default' => '...', 'title' => '...'], 'dark' => [...]])   {{-- same maps, grouped by value --}}
 @compound(['variant' => 'primary', 'size' => 'lg'], 'shadow-lg')   {{-- ALL conditions; list = any of --}}
 @compound(['loading' => true], 'cursor-wait')             {{-- flag --}}
+@compound(['size' => 'sm'], targets: ['default' => 'px-2', 'icon' => 'size-3'])   {{-- one combination, several elements --}}
 
 <button @attributes(merge: ['type' => 'button'])>                 {{-- default attributes, user wins --}}
     <svg @attributes('icon')></svg>

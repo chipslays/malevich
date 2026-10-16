@@ -22,6 +22,7 @@ beforeEach(function () {
         'conditional' => "@includeIf('lint-partials.sizes')\n@variant(['a' => 'b'])\n<div @attributes></div>",
         'free' => "@color('text-red-500')\n<div @attributes></div>",
         'cards/index' => "@variant(['flat' => 'a'])\n<div @attributes></div>",
+        'targeted' => "@variant(['flat' => 'a'])\n@compound(['variant' => 'raised'], targets: ['icon' => \$classes])\n<div @attributes></div>",
     ];
 
     foreach ($components as $name => $source) {
@@ -74,6 +75,7 @@ it('never reports what it cannot know', function () {
         <x-lint::named variant="anything" />
         <x-lint::conditional variant="anything" />
         <x-lint::free color="anything" />
+        <x-lint::targeted variant="raised" />
         <x-lint::shared size="xl" />
         <x-other variant="anything" />
         BLADE);
