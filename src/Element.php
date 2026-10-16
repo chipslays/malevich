@@ -267,48 +267,106 @@ final class Element implements Htmlable, Stringable
         }
 
         $component = $this->malevich->componentName($this->scope) ?? 'component';
-        $element = $this->target === $this->malevich->defaultTarget() ? '' : " > {$this->target}";
+        $element = $this->target === $this->malevich->defaultTarget() ? '' : " › {$this->target}";
 
-        $lines = ["malevich: <x-{$component}>{$element}"];
+        $sections = ["🧩 <x-{$component}>{$element}"];
 
-        $options = [];
+        $choices = [];
 
         foreach ($this->debugOptionNames() as $option) {
-            $options[] = "{$option}=".($this->choice($option) ?? 'null').' ('.$this->choiceSource($option).')';
+            $choices[$option] = $this->choice($option) ?? '-';
         }
 
-        if ($options !== []) {
-            $lines[] = 'options: '.implode(', ', $options);
+        if ($choices !== []) {
+            $width = max(array_map(strlen(...), $choices));
+            $options = [];
+
+            foreach ($choices as $option => $choice) {
+                $source = $choice === '-' ? 'not set' : $this->choiceSource($option);
+                $options[] = [$option, str_pad($choice, $width)."   ({$source})"];
+            }
+
+            $sections[] = self::debugSection('🔧 options', $options);
         }
 
         foreach ($this->fragments() as [$label, $fragment]) {
-            $classes = Arr::toCssClasses($fragment);
+            $list = Arr::toCssClasses($fragment);
 
-            if ($classes !== '') {
-                $lines[] = "{$label}: {$classes}";
+            if ($list !== '') {
+                $classes[] = [$label, $list];
             } elseif (str_contains($label, '=') && ! str_ends_with($label, '=*')) {
-                $lines[] = "{$label}: (no classes for this value)";
+                $classes[] = [$label, '⚠️ no classes for this value'];
             }
         }
 
-        $deduplicated = (string) array_reduce($this->fragments(), fn (ClassList $list, array $fragment) => $list->add($fragment[1]), new ClassList);
-        $result = $this->toClasses();
-
-        if ($result !== $deduplicated) {
-            $lines[] = "before merging: {$deduplicated}";
+        if ($classes !== []) {
+            $sections[] = self::debugSection('🎨 classes', $classes);
         }
 
-        $lines[] = 'result: '.($result === '' ? '(no classes)' : $result);
+        $before = (string) array_reduce($this->fragments(), fn (ClassList $list, array $fragment) => $list->add($fragment[1]), new ClassList);
+        $result = $this->toClasses();
+
+        if ($removed !== []) {
+            $sections[] = self::debugSection('🧹 removed by tailwind-merge', [['', implode(' ', $removed)]]);
+        }
+        $classes = [];
+
+
+        $sections[] = self::debugSection('✅ result', [['', $result === '' ? '(no classes)' : $result]]);
 
         // A comment can't contain "--"; tag values are already escaped.
-        $body = str_replace('--', '- -', implode("\n     ", $lines));
+        $body = str_replace('--', '- -', implode("\n\n", $sections));
 
-        return "<!-- {$body} -->\n";
+        return '<!-- '.preg_replace('/\n(?=.)/', "\n     ", $body)."\n-->\n";
+    }
+
+    /**
+     * A titled block of aligned "label  value" rows; long class lists wrap.
+     *
+     * @param  non-empty-list<array{0: string, 1: string}>  $rows
+     */
+    private static function debugSection(string $title, array $rows): string
+    {
+        $width = max(array_map(fn (array $row) => strlen($row[0]), $rows));
+        $lines = [$title];
+
+        foreach ($rows as [$label, $value]) {
+            $prefix = '   '.($width === 0 ? '' : str_pad($label, $width).'   ');
+
+            foreach (self::wrap($value) as $i => $line) {
+                $lines[] = ($i === 0 ? $prefix : str_repeat(' ', strlen($prefix))).$line;
+            }
+        }
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * Breaks a class list into lines of about $width characters.
+     *
+     * @return list<string>
+     */
+    private static function wrap(string $classes, int $width = 60): array
+    {
+        $lines = [''];
+
+        foreach (explode(' ', $classes) as $class) {
+            $last = count($lines) - 1;
+
+            if ($lines[$last] !== '' && strlen($lines[$last]) + strlen($class) + 1 > $width) {
+                $lines[] = $class;
+            } else {
+                $lines[$last] = ltrim($lines[$last].' '.$class);
+            }
+        }
+
+        return $lines;
     }
 
     /**
      * Options that matter for this element: those with a class map here and
      * those its matching or non-matching @compound conditions test.
+        $removed = array_diff(explode(' ', $before), explode(' ', $result));
      *
      * @return list<string>
      */
@@ -329,9 +387,9 @@ final class Element implements Htmlable, Stringable
             $this->normalize($this->choices[$option] ?? null) !== null => '->'.$option.'()',
             // The data Blade passed to the template: what the tag set, before @props defaults.
             $this->normalize($this->scope[$option] ?? null) !== null => is_array($this->scope['__data'] ?? null) && array_key_exists($option, $this->scope['__data'])
-                ? 'tag'
+                ? 'from the tag'
                 : '@props default',
-            $this->normalize($this->attributes->get($option)) !== null => 'tag',
+            $this->normalize($this->attributes->get($option)) !== null => 'from the tag',
             default => 'not set',
         };
     }

@@ -19,32 +19,73 @@ it('explains every element in a comment in front of it', function () {
 
     $html = renderRaw('<x-button variant="ghost" :size="[\'icon\' => \'lg\']" icon class="mt-2">Hi</x-button>');
 
-    expect($html)
-        ->toContain("<!-- malevich: <x-button>\n     options: variant=ghost (tag)\n     variant=*: btn\n     variant=ghost: btn-ghost\n     class: mt-2")
-        ->toContain("class: mt-2\n     result: btn btn-ghost mt-2 -->\n<button class=\"btn btn-ghost mt-2\"")
-        ->toContain("<!-- malevich: <x-button> > icon\n     options: size=lg (tag)\n     size=lg: w-6\n     result: w-6 -->\n<svg class=\"w-6\">");
+    expect($html)->toContain(<<<'HTML'
+        <!-- 🧩 <x-button>
+
+             🔧 options
+                variant   ghost   (from the tag)
+
+             🎨 classes
+                variant=*       btn
+                variant=ghost   btn-ghost
+                class           mt-2
+
+             ✅ result
+                btn btn-ghost mt-2
+        -->
+        <button class="btn btn-ghost mt-2"
+        HTML)->toContain(<<<'HTML'
+        <!-- 🧩 <x-button> › icon
+
+             🔧 options
+                size   lg   (from the tag)
+
+             🎨 classes
+                size=lg   w-6
+
+             ✅ result
+                w-6
+        -->
+        <svg class="w-6">
+        HTML);
 });
 
 it('tells a value from the tag apart from a @props default', function () {
     Malevich::debug();
 
     expect(renderRaw('<x-strict-button size="sm">Go</x-strict-button>'))
-        ->toContain('options: variant=primary (@props default), size=sm (tag)');
+        ->toContain('variant   primary   (@props default)')
+        ->toContain('size      sm        (from the tag)');
 });
 
 it('lists the matching @compound and values without classes', function () {
     Malevich::debug();
 
-    $html = renderRaw('<x-strict-button size="xl">Go</x-strict-button>');
+    expect(renderRaw('<x-strict-button size="xl">Go</x-strict-button>'))->toContain('size=xl           ⚠️ no classes for this value')
+        ->and(renderRaw('<x-strict-button>Go</x-strict-button>'))->toMatch('/@compound\(variant=primary, size=md\)\s+shadow/');
+});
 
-    expect($html)->toContain('size=xl: (no classes for this value)')
-        ->and(renderRaw('<x-strict-button>Go</x-strict-button>'))->toContain('@compound(variant=primary, size=md): shadow');
+it('shows what class merging removed', function () {
+    Malevich::debug();
+    Malevich::mergeClassesUsing(fn (string $classes) => str_replace('btn-ghost', '', $classes));
+
+    expect(renderRaw('<x-button variant="ghost">Hi</x-button>'))->toContain("🧹 removed by tailwind-merge\n        btn-ghost");
+});
+
+it('wraps long class lists', function () {
+    Malevich::debug();
+
+    $classes = implode(' ', array_map(fn (int $i) => "class-number-{$i}", range(1, 8)));
+
+    expect(renderRaw("<x-unsafe-classes classes=\"{$classes}\" />"))
+        ->toContain("class-number-4\n")
+        ->toContain('        class-number-5');
 });
 
 it('explains elements resolved for component tags', function () {
     Malevich::debug();
 
-    expect(renderRaw('<x-ui-button>Go</x-ui-button>'))->toContain("<!-- malevich: <x-ui-button>\n     options: variant=primary (@props default)");
+    expect(renderRaw('<x-ui-button>Go</x-ui-button>'))->toContain("<!-- 🧩 <x-ui-button>\n\n     🔧 options\n        variant   primary   (@props default)");
 });
 
 it('never breaks out of the comment', function () {
@@ -52,7 +93,7 @@ it('never breaks out of the comment', function () {
 
     $comment = str(renderRaw('<x-unsafe-classes classes="bg-(--brand) -->" />'))->between('<!--', '-->');
 
-    expect((string) $comment)->toContain('@base: bg-(- -brand) - ->')->toContain('result:');
+    expect((string) $comment)->toContain('bg-(- -brand) - ->')->toContain('✅ result');
 });
 
 it('is switched on and off in config, and a call in code wins', function () {
@@ -60,7 +101,7 @@ it('is switched on and off in config, and a call in code wins', function () {
     Malevich::flushConfig();
 
     expect(Malevich::isDebugging())->toBeTrue()
-        ->and(renderRaw('<x-toggle />'))->toContain('<!-- malevich: <x-toggle>');
+        ->and(renderRaw('<x-toggle />'))->toContain('<!-- 🧩 <x-toggle>');
 
     Malevich::debug(false);
 

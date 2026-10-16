@@ -1343,21 +1343,30 @@ Malevich::debug(app()->isLocal());   // or in code - a call wins over the config
 ```
 
 ```html
-<!-- malevich: <x-button>
-     options: variant=outline (tag), size=md (@props default)
-     @base: inline-flex items-center rounded-lg font-medium
-     variant=outline: border border-zinc-300 bg-white
-     size=md: h-10 px-4
-     @compound(variant=outline, size=md): shadow-sm
-     class: mt-2
-     result: inline-flex items-center rounded-lg font-medium border border-zinc-300 bg-white h-10 px-4 shadow-sm mt-2 -->
+<!-- 🧩 <x-button>
+
+     🔧 options
+        variant   outline   (from the tag)
+        size      md        (@props default)
+
+     🎨 classes
+        @base                                 inline-flex items-center rounded-lg font-medium
+        variant=outline                       border border-zinc-300 bg-white
+        size=md                               h-10 px-4
+        @compound(variant=outline, size=md)   shadow-sm
+        class                                 mt-2
+
+     ✅ result
+        inline-flex items-center rounded-lg font-medium border
+        border-zinc-300 bg-white h-10 px-4 shadow-sm mt-2
+-->
 <button class="inline-flex items-center ...">
 ```
 
-- **options** - the value of every option that matters for this element and where it came from: the tag, a `@props` default, or an explicit `->size()` call.
-- One line per piece of the class string, in the order it is built: `@base`, each option's map, every matching `@compound`, `merge:` and the `class` from the tag. A value that matches no key says so: `size=xl: (no classes for this value)`.
-- **before merging** shows up when [tailwind-merge](#fixing-tailwind-conflicts) changed the result, so you can see what it removed.
-- Inner elements get their own comment: `<x-button> > icon`.
+- **🔧 options** - the value of every option that matters for this element and where it came from: the tag, a `@props` default, or an explicit `->size()` call.
+- **🎨 classes** - one row per piece of the class string, in the order it is built: `@base`, each option's map, every matching `@compound`, `merge:` and the `class` from the tag. A value that matches no key says so: `size=xl   ⚠️ no classes for this value`.
+- **🧹 removed by tailwind-merge** shows up when [class merging](#fixing-tailwind-conflicts) dropped something, and lists exactly what.
+- Inner elements get their own comment: `<x-button> › icon`. Long class lists wrap.
 
 Open the page source or the browser's DevTools to read it. Never turn it on in production: it makes the HTML larger and shows how your components are built.
 ## Editor support (Tailwind IntelliSense)
@@ -1366,6 +1375,7 @@ The [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemN
 
 ```json
 {
+
     "tailwindCSS.includeLanguages": {
         "blade": "html"
     },
