@@ -8,14 +8,31 @@ http://localhost:8000/malevich
 
 ## What's on the page
 
-- **A list of your components** on the left, with search (press `/`).
-- **Default** - the component as `<x-button>` renders it, with no options.
-- **One row per option** - `variant="primary"`, `variant="outline"`, ... and `checked` / `:checked="false"` for booleans.
+- **A list of your components** on the left, with search (press `/`, Enter opens the first match).
+- **Playground** - click the values of every option and change the content; the preview updates as you go, together with the tag to copy. See [below](#the-playground).
+- **One section per option** - `variant="primary"`, `variant="outline"`, ... and `checked` / `:checked="false"` for booleans.
 - **A matrix** of the first two options (`variant` × `size`) - every combination at once. Click a cell to copy its tag.
-- On every preview: **copy the tag** and **show the HTML** it renders to.
-- **Light / dark** and a dotted or plain background.
+- On every preview:
+  - **dark / light** for just that preview;
+  - **code** - a window with the Blade tag and the HTML it renders to, formatted and highlighted, with a copy button;
+  - **copy** the tag.
+- In the top bar: **preview size** (small, medium, large), a dotted or plain background, and **light / dark for the whole page** - it switches every preview at once.
 
 A component that fails to render shows its error in place of the preview, so one broken component never breaks the page.
+
+## The playground
+
+Pick a value for every option, change the content and the attributes, and watch the component update. The controls panel on the right can be resized: drag the divider (or focus it and use the arrow keys; double-click resets it).
+
+The content has two tabs:
+
+- **Slots** - one field per slot. The usage example is split for you: the main content goes into `default`, every `<x-slot:title>` gets a field of its own, plus a `class` for that slot. Add a slot by its name or remove one. The text is shown exactly as typed - safe anywhere.
+- **Blade** - the content as Blade code: HTML, `<x-slot:...>`, `{{ }}` and **other components**. The buttons under the editor insert any component of your catalog with its usage example, so you can try a badge inside an alert or an icon inside a button. Switching tabs keeps what you typed.
+
+**Attributes** - everything else on the tag, no code needed: `class`, `href`, `id`, `wire:click`, ... Add any attribute by name, or click one of the component's own **props** (read from its `@props`) to add it with its default. `true` makes a flag (`<x-button loading>`), `false` turns it off. Values are passed as plain text, and bound (`:prop`) or directive (`@click`) names are not accepted, so nothing typed here runs as PHP.
+
+> [!NOTE]
+> Blade content runs code, so the Blade tab works only in the `local` environment, and it is sent with a CSRF token so no other website can trigger it. Where the catalog is turned on elsewhere, the slot fields still work.
 
 ## Which components show up
 
@@ -65,7 +82,7 @@ CSS from somewhere else? Tell the catalog what to put into its `<head>`:
 
 The catalog's own interface has its own scoped styles and never touches the previews.
 
-**Dark mode.** The dark button adds the `dark` class to `<html>`. Your components follow it if your Tailwind dark mode is class-based:
+**Dark mode.** A dark preview gets a dark background and the `dark` class on its container - each preview on its own, so a dark and a light button can sit side by side. Your components follow it if your Tailwind dark mode is class-based:
 
 ```css
 /* resources/css/app.css */
