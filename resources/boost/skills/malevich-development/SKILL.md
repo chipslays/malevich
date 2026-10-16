@@ -108,6 +108,6 @@ php artisan view:clear     # after config changes or package upgrade
 - [references/primitive.md](references/primitive.md): `<x-malevich::primitive>` behaviour and building buttons/links on it.
 - [references/rules.md](references/rules.md): hard rules, anti-patterns, design principles, project rules advice. Read before finishing any component.
 
-## Templates
+## Starter components
 
-Finished, working components to start from (copy and adapt names/palette to the project): [templates/button.blade.php](templates/button.blade.php) (primitive, variants, sizes, spinner target), [templates/badge.blade.php](templates/badge.blade.php) (`@compound` matrix), [templates/alert.blade.php](templates/alert.blade.php) (targets, named slot, `merge:` a11y), [templates/card.blade.php](templates/card.blade.php) (presets, `@defaults`, custom `@option`), [templates/switch.blade.php](templates/switch.blade.php) (boolean option, inner element), [templates/stat.blade.php](templates/stat.blade.php) (`@cases`, optional part with `@has`).
+`php artisan malevich:install --components=button` (or `alert`, `badge`, `card`, `stat`, `switch`, `all`) adds finished, working components to the project's components folder. Use one as a starting point when the project has nothing similar, then adapt names and palette.

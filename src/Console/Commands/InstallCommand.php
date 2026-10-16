@@ -23,9 +23,9 @@ class InstallCommand extends Command
     protected $description = 'Set up Malevich: config, editor support and starter components';
 
     /**
-     * Where the starter components live: the same, tested files the Boost skill shows as examples.
+     * The starter components: plain Blade files, copied into the application as they are.
      */
-    private const TEMPLATES = __DIR__.'/../../../resources/boost/skills/malevich-development/templates';
+    private const STARTERS = __DIR__.'/../../../resources/stubs/components';
 
     public function handle(Filesystem $files): int
     {
@@ -169,7 +169,7 @@ class InstallCommand extends Command
                 continue;
             }
 
-            $files->copy(self::TEMPLATES.'/'.$name.'.blade.php', $path);
+            $files->copy(self::STARTERS.'/'.$name.'.blade.php', $path);
             $this->components->twoColumnDetail("Component <fg=cyan>{$tag}</>", '<fg=green>created</>');
         }
     }
@@ -179,7 +179,7 @@ class InstallCommand extends Command
      */
     protected function availableComponents(Filesystem $files): array
     {
-        $names = array_map(fn (string $path) => basename($path, '.blade.php'), $files->glob(self::TEMPLATES.'/*.blade.php'));
+        $names = array_map(fn (string $path) => basename($path, '.blade.php'), $files->glob(self::STARTERS.'/*.blade.php'));
         sort($names);
 
         return $names;

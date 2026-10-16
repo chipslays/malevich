@@ -6,7 +6,7 @@
 2. Check whether a similar component exists; extend it instead of duplicating.
 3. Check the Tailwind major version (v3/v4 syntax differences) and match it.
 4. Scaffold: `php artisan make:malevich name` (or by hand). Delete unused blocks.
-5. Start from the closest file in `templates/` (button, badge, alert, card, switch).
+5. Start from the closest existing component in the project. If there is none, add a starter one: `php artisan malevich:install --components=button` (also `alert`, `badge`, `card`, `stat`, `switch`).
 6. Verify with the checklist below.
 
 ## `make:malevich`
