@@ -8,6 +8,7 @@ use BackedEnum;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\View\ComponentAttributeBag;
 use Illuminate\View\ComponentSlot;
+use Malevich\Exceptions\UnknownValueException;
 use Malevich\Support\ClassList;
 use Stringable;
 use UnitEnum;
@@ -27,7 +28,8 @@ use UnitEnum;
  *
  * The value of every axis is resolved in this order, first non-null wins:
  * an explicit call (`->color('danger')`), a variable in the template scope
- * (your @props), an attribute on the component tag, then active presets.
+ * (your @props), an attribute on the component tag, active presets, then
+ * the recipe's @defaults.
  *
  * Unknown method calls are forwarded to a ComponentAttributeBag with the
  * resolved class already applied, so `->only()`, `->has()`, `->get()` and
@@ -194,6 +196,10 @@ final class Element implements Htmlable, Stringable
             $choice = $this->choice($axis);
 
             if ($choice !== null && $choice !== '*') {
+                if (! array_key_exists($choice, $map) && Malevich::isStrict()) {
+                    $this->ensureKnown($axis, $choice, $map);
+                }
+
                 $classes = $classes->add($map[$choice] ?? null);
             }
         }
@@ -283,7 +289,34 @@ final class Element implements Htmlable, Stringable
             $value = $this->normalize($this->recipe()->presetFor($preset, $this->target)[$axis] ?? null) ?? $value;
         }
 
-        return $value;
+        return $value ?? $this->normalize($this->recipe()->defaultsFor($this->target)[$axis] ?? null);
+    }
+
+    /**
+     * Strict mode: a value no class map or @compound of the component knows
+     * is a typo. A value that only styles some of the elements is not, and
+     * neither is the missing side of a boolean (`['true' => '...']` + false).
+     *
+     * @param  array<array-key, mixed>  $map
+     */
+    private function ensureKnown(string $axis, string $value, array $map): void
+    {
+        if (array_diff(array_keys($map), ['*']) === []) {
+            return;
+        }
+
+        $known = array_values(array_unique(array_map(
+            fn (mixed $known) => (string) $this->normalize($known),
+            $this->recipe()->valuesOf($axis),
+        )));
+
+        $boolean = ['true', 'false'];
+
+        if (in_array($value, $known, true) || (in_array($value, $boolean, true) && array_intersect($known, $boolean) !== [])) {
+            return;
+        }
+
+        throw UnknownValueException::make($axis, $value, $this->target, $known);
     }
 
     /**

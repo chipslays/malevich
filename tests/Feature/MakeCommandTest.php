@@ -20,8 +20,8 @@ it('creates a component with every configured directive', function () {
     $contents = file_get_contents($this->path.'/button.blade.php');
 
     expect($contents)
-        ->toContain("'variant' => null,", "'radius' => null,", "@base('')", '@color([', '@radius([', '<div @ui>')
-        ->not->toContain('{{ props }}', '{{ directives }}', '{{ render }}');
+        ->toContain("@base('')", '@color([', '@radius([', '@defaults([', "// 'variant' => 'name',", "// 'radius' => 'name',", '<div @ui>')
+        ->not->toContain('@props', '{{ directives }}', '{{ defaults }}', '{{ render }}');
 });
 
 it('creates nested components and accepts the .blade.php suffix', function () {

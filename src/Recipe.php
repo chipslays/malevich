@@ -10,7 +10,8 @@ use InvalidArgumentException;
 /**
  * Everything a single component instance declared about its styling:
  * the class map of every axis (@variant, @color, @size, ...), compound
- * rules (@compound) and presets (@preset), grouped by target.
+ * rules (@compound), presets (@preset) and default values (@defaults),
+ * grouped by target.
  *
  * A target is a named, separately styled element of the component
  * ("icon", "label", ...). Declarations without a target belong to the
@@ -37,6 +38,16 @@ final class Recipe
      * @var array<string, list<mixed>> [target][] => classes
      */
     private array $base = [];
+
+    /**
+     * @var array<string, mixed> [axis] => value, for every target
+     */
+    private array $defaults = [];
+
+    /**
+     * @var array<string, array<string, mixed>> [target][axis] => value
+     */
+    private array $targetDefaults = [];
 
     /**
      * Classes an element always has. Accepts `(classes)` or `(target, classes)`.
@@ -132,6 +143,33 @@ final class Recipe
     }
 
     /**
+     * The value an axis takes when nothing else picks one: not the template,
+     * not the tag, not a preset. Accepts `(values)`, which applies to every
+     * target, or `(target, values)`, which applies to that target only.
+     * Later calls add to earlier ones.
+     */
+    public function defaults(mixed ...$args): self
+    {
+        [$target, $values] = match (count($args)) {
+            1 => [null, $args[0]],
+            2 => [$args[0], $args[1]],
+            default => throw new InvalidArgumentException("@defaults expects ([values]) or ('target', [values])."),
+        };
+
+        if (! is_array($values)) {
+            throw new InvalidArgumentException("@defaults expects an array of values, e.g. ['variant' => 'primary', 'size' => 'md'].");
+        }
+
+        if ($target === null) {
+            $this->defaults = array_merge($this->defaults, $values);
+        } else {
+            $this->targetDefaults[$target] = array_merge($this->targetDefaults[$target] ?? [], $values);
+        }
+
+        return $this;
+    }
+
+    /**
      * @return list<mixed>
      */
     public function baseFor(string $target): array
@@ -166,6 +204,44 @@ final class Recipe
         $preset = $this->presets[$name] ?? [];
 
         return is_array($preset[$target] ?? null) ? $preset[$target] : $preset;
+    }
+
+    /**
+     * Default values for the given target: the ones declared for every
+     * target, overridden by the ones declared for this target.
+     *
+     * @return array<string, mixed>
+     */
+    public function defaultsFor(string $target): array
+    {
+        return array_merge($this->defaults, $this->targetDefaults[$target] ?? []);
+    }
+
+    /**
+     * Every value the axis knows about, on any target: the keys of its class
+     * maps and the values its @compound conditions test for. Used to tell a
+     * typo apart from a value that only styles some of the elements.
+     *
+     * @return list<mixed>
+     */
+    public function valuesOf(string $axis): array
+    {
+        $values = [];
+
+        foreach ($this->axes as $axes) {
+            $values = [...$values, ...array_keys($axes[$axis] ?? [])];
+        }
+
+        foreach ($this->compounds as $compounds) {
+            foreach ($compounds as [$conditions]) {
+                if (array_key_exists($axis, $conditions)) {
+                    $expected = $conditions[$axis];
+                    $values = [...$values, ...(is_array($expected) ? array_values($expected) : [$expected])];
+                }
+            }
+        }
+
+        return array_values(array_filter($values, fn (mixed $value) => $value !== '*'));
     }
 
     public function hasPresets(): bool

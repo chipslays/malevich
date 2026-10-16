@@ -1,6 +1,6 @@
 ---
 name: malevich-development
-description: Build and edit variant-driven Blade components with Malevich (@base, @variant, @color, @size, @directive, @compound, @preset, @ui). Activate when creating or changing Blade components in resources/views/components, building UI kit components (button, badge, alert, card, input, modal), adding variants/sizes/colors to a component, converting $attributes->class([...]) ternaries, using <x-malevich::primitive>, running make:malevich, or when a Blade file contains @ui or @variant.
+description: Build and edit variant-driven Blade components with Malevich (@base, @variant, @color, @size, @directive, @compound, @preset, @defaults, @ui). Activate when creating or changing Blade components in resources/views/components, building UI kit components (button, badge, alert, card, input, modal), adding variants/sizes/colors to a component, converting $attributes->class([...]) ternaries, using <x-malevich::primitive>, running make:malevich, or when a Blade file contains @ui or @variant.
 ---
 
 # Malevich Development
@@ -11,8 +11,8 @@ Use it for reusable Blade components with options (variant, color, size, flags).
 
 ## How it works
 
-1. Directives (`@base`, `@variant`, `@color`, `@size`, `@directive`, `@compound`, `@preset`) only **remember** what you declare.
-2. `@ui` reads each option's value (from `@props`, then the tag attribute, then the preset), picks the classes, prints them.
+1. Directives (`@base`, `@variant`, `@color`, `@size`, `@directive`, `@compound`, `@preset`, `@defaults`) only **remember** what you declare.
+2. `@ui` reads each option's value (from `@props`, then the tag attribute, then the preset, then `@defaults`), picks the classes, prints them.
 3. **Directives MUST come before `@ui`**, right after `@props`.
 
 Class order: `@base` -> class maps (file order) -> `@compound` -> `merge: ['class']` -> `class` from the tag. Duplicates removed.
@@ -21,8 +21,6 @@ Class order: `@base` -> class maps (file order) -> `@compound` -> `merge: ['clas
 
 ```blade
 {{-- <x-badge color="green" class="ml-2">Paid</x-badge> --}}
-@props(['color' => 'gray'])
-
 @base('inline-flex rounded-full px-2 py-0.5 text-xs font-medium')
 
 @color([
@@ -30,15 +28,17 @@ Class order: `@base` -> class maps (file order) -> `@compound` -> `merge: ['clas
     'green' => 'bg-green-100 text-green-700',
 ])
 
+@defaults(['color' => 'gray'])
+
 <span @ui>{{ $slot }}</span>
 ```
 
-Never write `$color` in the markup. Static classes go in `@base`, not in a `class="..."` on the `@ui` element (on a plain tag such a class is merged after the element's own classes, but `@base` is the place for it).
+Never write `$color` in the markup, and don't put options in `@props` just to give them a default: `@defaults` does that and still lets presets win. Static classes go in `@base`, not in a `class="..."` on the `@ui` element (on a plain tag such a class is merged after the element's own classes, but `@base` is the place for it).
 
 ## Cheat sheet
 
 ```blade
-@props(['variant' => 'primary', 'size' => 'md', 'loading' => false, 'title' => null])
+@props(['loading' => false, 'title' => null])            {{-- only what the markup uses --}}
 
 @base('inline-flex items-center')                         {{-- always-on classes --}}
 @variant(['primary' => '...', 'outline' => '...'])        {{-- value -> classes --}}
@@ -50,6 +50,8 @@ Never write `$color` in the markup. Static classes go in `@base`, not in a `clas
 @compound(['variant' => 'primary', 'size' => 'lg'], 'shadow-lg')   {{-- ALL conditions; list = any of --}}
 @compound(['loading' => true], 'cursor-wait')             {{-- flag --}}
 @preset('big', ['size' => 'lg'])                          {{-- used as preset="big" --}}
+@defaults(['variant' => 'primary', 'size' => 'md'])       {{-- fallback, below tag/@props/preset --}}
+@defaults('icon', ['size' => 'sm'])                       {{-- per inner element --}}
 
 <button @ui(merge: ['type' => 'button'])>                 {{-- default attributes, user wins --}}
     <svg @ui('icon')></svg>
@@ -75,7 +77,9 @@ php artisan view:clear     # after config changes or package upgrade
 | Several elements change together per value of one prop | `@cases('variant', [value => [target => classes]])` |
 | An element exists only in some variants | `@has('target') ... @endhas`, all its classes in the variants (no `@base`) |
 | Classes depend on 2+ props or a flag | `@compound` |
-| Named bundle of props | `@preset` (options must default to `null`) |
+| Default value of an option | `@defaults([...])` (not a `@props` default) |
+| Named bundle of props | `@preset` (defaults in `@defaults`, never non-null `@props`) |
+| Catch value typos in dev | `Malevich::strict(! app()->isProduction())` |
 | Style an inner element | target: `@size('icon', [...])` + `@ui('icon')` |
 | Let users style an inner element | named slot with the same name as the target |
 | Default attributes / a11y | `@ui(merge: [...])` |
@@ -86,7 +90,8 @@ php artisan view:clear     # after config changes or package upgrade
 
 - Directives before `@ui`; always-on classes in `@base`, not `class=""`.
 - Full literal class names only; never `'bg-'.$color.'-500'`.
-- Every `@props` default must exist as a key in its map.
+- Every default (`@defaults`, or `@props`) must exist as a key in its map.
+- Option defaults go in `@defaults`; a non-null `@props` default silently beats presets.
 - Single quotes inside `@ui(...)` on `<x-...>` tags.
 - With the primitive: pass `:as="$as"`; do not put `href`, `target`, `disabled`, `type` in `@props`.
 - Match the project's existing component conventions, prefix and Tailwind version.
@@ -101,4 +106,4 @@ php artisan view:clear     # after config changes or package upgrade
 
 ## Templates
 
-Finished, working components to start from (copy and adapt names/palette to the project): [templates/button.blade.php](templates/button.blade.php) (primitive, variants, sizes, spinner target), [templates/badge.blade.php](templates/badge.blade.php) (`@compound` matrix), [templates/alert.blade.php](templates/alert.blade.php) (targets, named slot, `merge:` a11y), [templates/card.blade.php](templates/card.blade.php) (presets, custom `@directive`), [templates/switch.blade.php](templates/switch.blade.php) (boolean option, inner element), [templates/stat.blade.php](templates/stat.blade.php) (`@cases`, optional part with `@has`).
+Finished, working components to start from (copy and adapt names/palette to the project): [templates/button.blade.php](templates/button.blade.php) (primitive, variants, sizes, spinner target), [templates/badge.blade.php](templates/badge.blade.php) (`@compound` matrix), [templates/alert.blade.php](templates/alert.blade.php) (targets, named slot, `merge:` a11y), [templates/card.blade.php](templates/card.blade.php) (presets, `@defaults`, custom `@directive`), [templates/switch.blade.php](templates/switch.blade.php) (boolean option, inner element), [templates/stat.blade.php](templates/stat.blade.php) (`@cases`, optional part with `@has`).

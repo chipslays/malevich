@@ -20,7 +20,7 @@ class MalevichServiceProvider extends ServiceProvider
     /**
      * Directives with a fixed name. Everything else is configurable.
      */
-    private const FIXED = ['directive', 'base', 'compound', 'preset'];
+    private const FIXED = ['directive', 'base', 'compound', 'preset', 'defaults'];
 
     /**
      * Directive names Malevich registered, per Blade compiler. Tells our own
@@ -68,6 +68,7 @@ class MalevichServiceProvider extends ServiceProvider
         $this->declaration('base', fn (string $expression) => "<?php {$recipe}->base({$expression}); ?>");
         $this->declaration('compound', fn (string $expression) => "<?php {$recipe}->compound({$expression}); ?>");
         $this->declaration('preset', fn (string $expression) => "<?php {$recipe}->preset({$expression}); ?>");
+        $this->declaration('defaults', fn (string $expression) => "<?php {$recipe}->defaults({$expression}); ?>");
         $this->declaration(Malevich::casesDirective(), fn (string $expression) => "<?php {$recipe}->cases({$expression}); ?>");
 
         foreach ($this->axes() as $axis) {

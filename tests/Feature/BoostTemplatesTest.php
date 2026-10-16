@@ -22,3 +22,14 @@ it('renders the stat template as documented', function () {
         ->toContain('from-gray-800 to-gray-950')
         ->not->toContain('bg-teal-300/30');
 });
+
+it('lets a preset win over the card template defaults', function () {
+    Blade::anonymousComponentPath(__DIR__.'/../../resources/boost/skills/malevich-development', 'boost');
+
+    expect($this->render('<x-boost::templates.card>Hi</x-boost::templates.card>'))
+        ->toContain('border border-zinc-200 p-6')
+        ->and($this->render('<x-boost::templates.card preset="featured">Hi</x-boost::templates.card>'))
+        ->toContain('shadow-xl')->toContain('p-10')->not->toContain('border-zinc-200')
+        ->and($this->render('<x-boost::templates.card preset="featured" padding="sm">Hi</x-boost::templates.card>'))
+        ->toContain('p-3')->not->toContain('preset=');
+});

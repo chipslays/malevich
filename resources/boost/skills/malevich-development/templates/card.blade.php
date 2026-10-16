@@ -2,12 +2,6 @@
     <x-card preset="featured">...</x-card>
 --}}
 
-@props([
-    'preset' => null,
-    'variant' => null,
-    'padding' => null,
-])
-
 @preset('featured', ['variant' => 'elevated', 'padding' => 'lg'])
 @preset('compact', ['variant' => 'flat', 'padding' => 'sm'])
 
@@ -23,5 +17,7 @@
     'md' => 'p-6',
     'lg' => 'p-10',
 ])
+
+@defaults(['variant' => 'flat', 'padding' => 'md'])
 
 <div @ui>{{ $slot }}</div>

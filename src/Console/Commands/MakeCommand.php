@@ -64,7 +64,7 @@ class MakeCommand extends Command
         )) ?: '<fg=gray>none</>');
 
         $this->newLine();
-        $this->line('  <fg=gray>Next:</> fill in the <comment>@base</comment> classes and the maps for each directive.');
+        $this->line('  <fg=gray>Next:</> fill in the <comment>@base</comment> classes, the maps for each directive and their <comment>@defaults</comment>.');
         $this->newLine();
 
         return self::SUCCESS;
@@ -82,14 +82,16 @@ class MakeCommand extends Command
     }
 
     /**
-     * Fill the stub with one prop and one empty class map per configured
-     * directive, so custom directives show up in new components too.
+     * Fill the stub with one empty class map and one commented-out default
+     * per configured directive, so custom directives show up in new
+     * components too. Defaults go to @defaults, not @props, so they never
+     * shadow a preset.
      */
     protected function render(string $stub): string
     {
         $directives = Malevich::directives();
 
-        $props = array_map(fn (string $directive) => "    '{$directive}' => null,", $directives);
+        $defaults = array_map(fn (string $directive) => "    // '{$directive}' => 'name',", $directives);
 
         $maps = array_map(fn (string $directive) => implode("\n", [
             "@{$directive}([",
@@ -98,8 +100,8 @@ class MakeCommand extends Command
         ]), $directives);
 
         return str_replace(
-            ['{{ props }}', '{{ directives }}', '{{ render }}'],
-            [implode("\n", $props), implode("\n\n", $maps), Malevich::renderDirective()],
+            ['{{ directives }}', '{{ defaults }}', '{{ render }}'],
+            [implode("\n\n", $maps), implode("\n", $defaults), Malevich::renderDirective()],
             $stub,
         );
     }

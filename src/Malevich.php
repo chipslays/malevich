@@ -31,6 +31,8 @@ final class Malevich
      */
     private static ?Closure $classMerger = null;
 
+    private static bool $strict = false;
+
     /**
      * Config values read on every render, resolved once.
      *
@@ -56,6 +58,23 @@ final class Malevich
     public static function mergeClasses(string $classes): string
     {
         return self::$classMerger ? (self::$classMerger)($classes) : $classes;
+    }
+
+    /**
+     * Throw instead of silently rendering no classes when an axis gets a
+     * value its class maps don't define (`size="xl"`). Meant for local
+     * development and tests, in a service provider's boot():
+     *
+     *     Malevich::strict(! app()->isProduction());
+     */
+    public static function strict(bool $strict = true): void
+    {
+        self::$strict = $strict;
+    }
+
+    public static function isStrict(): bool
+    {
+        return self::$strict;
     }
 
     public static function recipe(?ComponentAttributeBag $attributes): Recipe
@@ -167,6 +186,7 @@ final class Malevich
     public static function flush(): void
     {
         self::$classMerger = null;
+        self::$strict = false;
         self::flushConfig();
         RecipeRegistry::flush();
     }

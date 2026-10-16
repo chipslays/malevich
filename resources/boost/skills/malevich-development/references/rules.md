@@ -5,8 +5,8 @@
 1. Declare every directive **before** `@ui`, right after `@props`.
 2. Always-on classes go in `@base`, not in a `class="..."` on the element that has `@ui` (it would be merged after, but `@base` is the right place). Never combine `@ui` with `$attributes->class(...)`, `{{ $attributes }}` or `@class` on the same element.
 3. Write full literal class names in maps. Never build them: `'bg-'.$color.'-500'`, `bg-{{ $color }}-500`. Tailwind cannot see them.
-4. Every default in `@props` must be an existing key of that option's map (case-sensitive).
-5. In components with `@preset`, options default to `null`.
+4. Option defaults go in `@defaults([...])`, and each must be an existing key of that option's map (case-sensitive).
+5. Never give an option a non-null `@props` default: it beats presets. Declare an option in `@props` only when the markup uses the variable, with a `null` default.
 6. Inside `<x-...>` tags use single quotes in `@ui(...)` arguments.
 7. Primitive-based components: `as` is a prop forwarded with `:as="$as"`; do not declare `href`, `target`, `disabled`, `type` in `@props` unless forwarding them.
 8. Inner elements: each `@ui('x')` needs matching target declarations if it should be styled; tag `class` never reaches it.
@@ -24,7 +24,7 @@
 - Dynamic class-name concatenation.
 - Encoding a combination as a fake value (`'primary-lg'`) instead of `@compound`.
 - Using `@preset` for one-off looks.
-- Non-null defaults with presets (they beat the preset).
+- Non-null `@props` defaults for options (they beat the preset; use `@defaults`).
 - Hardcoding `as="button"` on the primitive inside an overridable component.
 - Declaring `href`/`disabled` in `@props` of a primitive-based component without forwarding.
 - `@ui` in layouts/pages.
