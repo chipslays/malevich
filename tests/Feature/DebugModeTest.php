@@ -31,7 +31,7 @@ it('explains every element in a comment in front of it', function () {
              │
              └─ ✅ btn btn-ghost mt-2
         -->
-        <button class="mt-2 btn btn-ghost"
+        <button class="btn btn-ghost mt-2"
         HTML)->toContain(<<<'HTML'
         <!--
              ┌─ ⬛ <x-button variant="ghost" size="lg"> › icon
