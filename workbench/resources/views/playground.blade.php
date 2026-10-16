@@ -8,13 +8,13 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-zinc-50 text-zinc-900 antialiased">
-<main class="mx-auto max-w-4xl space-y-12 px-4 py-12">
+<main class="space-y-12 mx-auto px-4 py-12 max-w-4xl">
 
     <header>
-        <h1 class="text-3xl font-bold">Malevich playground</h1>
+        <h1 class="font-bold text-3xl">Malevich playground</h1>
         <p class="mt-2 text-zinc-600">
             Components live in <code>workbench/resources/views/components</code>.
-            Edit them or this page and refresh. Open DevTools to see the rendered classes.
+            Edit them or this page and refresh. Open DevTools to see the rendered classes, or <a class="underline" href="/malevich">the component catalog</a>.
         </p>
     </header>
 
@@ -52,7 +52,7 @@ BLADE,
 
     {{-- Button --}}
     <section class="{{ $section }}">
-        <h2 class="text-xl font-semibold">Button - @@variant, @@size, a target</h2>
+        <h2 class="font-semibold text-xl">Button - @@variant, @@size, a target</h2>
         <div class="{{ $row }}">
             <x-button>Primary</x-button>
             <x-button variant="secondary">Secondary</x-button>
@@ -76,7 +76,7 @@ BLADE,
 
     {{-- Badge --}}
     <section class="{{ $section }}">
-        <h2 class="text-xl font-semibold">Badge - @@compound</h2>
+        <h2 class="font-semibold text-xl">Badge - @@compound</h2>
         @foreach (['soft', 'solid', 'outline'] as $variant)
             <div class="{{ $row }}">
                 @foreach (['gray', 'green', 'red', 'blue'] as $color)
@@ -89,7 +89,7 @@ BLADE,
 
     {{-- Alert --}}
     <section class="{{ $section }}">
-        <h2 class="text-xl font-semibold">Alert - targets and slots</h2>
+        <h2 class="font-semibold text-xl">Alert - targets and slots</h2>
         <x-alert>A plain informational message.</x-alert>
         <x-alert color="green">
             <x-slot:title>Saved</x-slot:title>
@@ -104,8 +104,8 @@ BLADE,
 
     {{-- Card --}}
     <section class="{{ $section }}">
-        <h2 class="text-xl font-semibold">Card - @@option</h2>
-        <div class="grid gap-4 sm:grid-cols-3">
+        <h2 class="font-semibold text-xl">Card - @@option</h2>
+        <div class="gap-4 grid sm:grid-cols-3">
             <x-card>defaults: flat, md</x-card>
             <x-card variant="elevated" padding="lg">variant="elevated" padding="lg"</x-card>
             <x-card variant="elevated" padding="sm">variant="elevated" padding="sm"</x-card>
@@ -115,7 +115,7 @@ BLADE,
 
     {{-- Switch --}}
     <section class="{{ $section }}">
-        <h2 class="text-xl font-semibold">Switch - boolean values</h2>
+        <h2 class="font-semibold text-xl">Switch - boolean values</h2>
         <div class="{{ $row }}">
             <x-switch />
             <x-switch checked />

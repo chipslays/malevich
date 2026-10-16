@@ -15,6 +15,9 @@ class WorkbenchServiceProvider extends ServiceProvider
         config([
             'malevich.data_attributes' => true,
             'malevich.debug' => true,
+            'malevich.catalog.enabled' => true,
+            // No Vite build here, so Tailwind comes from a CDN. In an app the catalog loads its own Vite entries.
+            'malevich.catalog.head' => '<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>',
         ]);
     }
 }
