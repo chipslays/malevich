@@ -80,16 +80,17 @@ No ternaries, no `{{ $attributes->merge(['class' => ...]) }}`, no JavaScript, no
 22. [Sharing styles between components](#sharing-styles-between-components)
 23. [Fixing Tailwind conflicts](#fixing-tailwind-conflicts)
 24. [Data attributes](#data-attributes)
-25. [`make:malevich` command](#makemalevich-command)
-26. [The `$attributes` API](#the-attributes-api)
-27. [Testing components](#testing-components)
-28. [Catching typos in CI (`malevich:lint`)](#catching-typos-in-ci-malevichlint)
-29. [Configuration](#configuration)
-30. [Editor support (Tailwind IntelliSense)](#editor-support-tailwind-intellisense)
-31. [A complete example](#a-complete-example)
-32. [FAQ and troubleshooting](#faq-and-troubleshooting)
-33. [Cheat sheet](#cheat-sheet)
-34. [Playground and contributing](#playground-and-contributing)
+25. [Switching options in the browser (Alpine)](#switching-options-in-the-browser-alpine)
+26. [`make:malevich` command](#makemalevich-command)
+27. [The `$attributes` API](#the-attributes-api)
+28. [Testing components](#testing-components)
+29. [Catching typos in CI (`malevich:lint`)](#catching-typos-in-ci-malevichlint)
+30. [Configuration](#configuration)
+31. [Editor support (Tailwind IntelliSense)](#editor-support-tailwind-intellisense)
+32. [A complete example](#a-complete-example)
+33. [FAQ and troubleshooting](#faq-and-troubleshooting)
+34. [Cheat sheet](#cheat-sheet)
+35. [Playground and contributing](#playground-and-contributing)
 
 ---
 
@@ -1183,6 +1184,47 @@ Turn on `data_attributes` in the [config](#configuration) and the main element t
 - A boolean is written as `data-loading` when true and left out when false, so Tailwind's `data-loading:` variant matches exactly when the flag is on.
 - An attribute you pass yourself (`data-variant="custom"`) wins.
 
+## Switching options in the browser (Alpine)
+
+Options are resolved on the server. When an option has to change in the browser - a tab becomes active, an alert changes its tone - there are two ways, no JavaScript package needed.
+
+**Data attributes** - put the classes of every state into the class maps with Tailwind's `data-*` variants and switch only the attribute:
+
+```blade
+@base('rounded-lg px-4 data-[tone=danger]:bg-red-600 data-[tone=info]:bg-blue-600')
+
+<div x-data="{ tone: 'info' }" x-bind:data-tone="tone" @ui>...</div>
+```
+
+**`classesFor()`** - let Malevich resolve the full class string of every value on the server and hand the map to Alpine:
+
+```blade
+@props(['size' => 'md'])
+
+@variant(['primary' => 'bg-zinc-900 text-white', 'danger' => 'bg-red-600 text-white'])
+@size(['md' => 'h-10 px-4', 'lg' => 'h-12 px-6'])
+@compound(['variant' => 'danger', 'size' => 'lg'], 'shadow-lg')
+
+<button
+    x-data="{ variant: 'primary', classes: {{ Js::from($attributes->size($size)->classesFor('variant')) }} }"
+    x-bind:class="classes[variant]"
+    x-on:click="variant = 'danger'"
+>{{ $slot }}</button>
+```
+
+For `<x-button size="lg">` Alpine gets:
+
+```js
+{ primary: 'bg-zinc-900 text-white h-12 px-6', danger: 'bg-red-600 text-white h-12 px-6 shadow-lg' }
+```
+
+Every value is resolved by the same engine as `@ui`: `@base`, the other options, `@compound`, presets, the `class` from the tag and tailwind-merge all apply. All the classes are literals in your Blade file, so Tailwind finds them.
+
+- `classesFor('variant')` uses every value the component knows for the option; `classesFor('variant', ['primary', 'danger'])` only those.
+- For an inner element: `$attributes->for('icon')->classesFor('size')`.
+- Like the rest of the [`$attributes` API](#the-attributes-api), it can't see your template variables - pass the other options yourself: `->size($size)`.
+- With Livewire you don't need either: the component is re-rendered on the server.
+
 ## `make:malevich` command
 
 ```bash
@@ -1225,6 +1267,7 @@ Which tag? It depends on `components.prefix`:
 | `->slot($slot)` | Add the attributes of a named slot. |
 | `->merge([...])` | Default attributes, same as `@ui(merge: ...)`. |
 | `->toClasses()` | Return only the class string. |
+| `->classesFor('variant')` | The class string for every value of an option, for [Alpine](#switching-options-in-the-browser-alpine). |
 | `->only()`, `->except()`, `->has()`, `->get()`, `->whereStartsWith()`, ... | Regular `$attributes` methods, with the classes already applied. |
 
 Every call returns a **new** object, so you can safely branch:

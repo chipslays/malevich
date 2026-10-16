@@ -202,6 +202,7 @@ class MalevichServiceProvider extends ServiceProvider
         $this->macro('use', fn (Element $element, mixed ...$arguments) => $element->use(...$arguments));
         $this->macro('directive', fn (Element $element, string $axis, mixed $value = null) => $element->directive($axis, $value));
         $this->macro('preset', fn (Element $element, ?string $name) => $element->preset($name));
+        $this->macro('classesFor', fn (Element $element, string $axis, ?array $values = null) => $element->classesFor($axis, $values));
 
         foreach ($this->axes() as $axis) {
             $this->macro($axis, fn (Element $element, mixed $value = null) => $element->directive($axis, $value));

@@ -82,6 +82,7 @@ php artisan view:clear     # after config changes or package upgrade
 | Catch value typos in dev | `Malevich::strict(! app()->isProduction())` |
 | Set up a project (config, IntelliSense, starter components) | `php artisan malevich:install` |
 | Children react to the parent's option | `'data_attributes' => true` + `group-data-[variant=x]:` |
+| Switch an option in the browser (Alpine) | `data-*` variants in the maps + `x-bind:data-x`, or `{{ Js::from($attributes->classesFor('variant')) }}` + `x-bind:class="classes[variant]"` |
 | Test a component's classes | `->assertSeeClasses('a b')` / `expect($html)->toHaveClasses(...)` |
 | Find unknown option values in all views (CI) | `php artisan malevich:lint` (`--format=github`) |
 | Style an inner element | target: `@size('icon', [...])` + `@ui('icon')` |

@@ -183,6 +183,35 @@ final class Element implements Htmlable, Stringable
         return $this->resolvedClasses ??= $this->resolveClasses();
     }
 
+    /**
+     * The full class string of this element for every value of one option,
+     * resolved on the server, so Alpine can switch between them:
+     *
+     *     <div x-data="{ variant: 'primary', classes: {{ Js::from($attributes->classesFor('variant')) }} }">
+     *         <button x-bind:class="classes[variant]">
+     *
+     * Everything else stays as it is on this element (other options, the
+     * target, `class` from the tag). Without $values, every value the
+     * component knows for the option is used.
+     *
+     * @param  array<array-key, mixed>|null  $values  Only the values are used, keys are ignored.
+     * @return array<string, string> [value] => classes
+     */
+    public function classesFor(string $axis, ?array $values = null): array
+    {
+        $classes = [];
+
+        foreach ($values ?? $this->recipe()->valuesOf($axis) as $value) {
+            $key = $this->normalize($value);
+
+            if ($key !== null) {
+                $classes[$key] = $this->directive($axis, $value)->toClasses();
+            }
+        }
+
+        return $classes;
+    }
+
     private function resolveClasses(): string
     {
         $classes = new ClassList;
