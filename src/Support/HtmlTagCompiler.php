@@ -24,57 +24,30 @@ final class HtmlTagCompiler
 {
     public static function compile(string $template): string
     {
-        $directive = preg_quote(Malevich::renderDirective(), '/');
+        $directive = Malevich::renderDirective();
 
-        if (! preg_match("/@{$directive}\b/", $template) || ! str_contains($template, 'class')) {
+        if (! str_contains($template, '@'.$directive) || ! str_contains($template, 'class')) {
             return $template;
         }
 
-        $tag = "/
-            @verbatim.*?@endverbatim(*SKIP)(*FAIL)
-            |
-            \{\{--.*?--\}\}(*SKIP)(*FAIL)
-            |
-            <(?!x[-:])(?<name>[a-zA-Z][\w\-:.]*)
-            (?<attributes>
-                (?:
-                    \s+
-                    (?:
-                        @\w+(?<parens>\((?:(?>[^()]+)|(?&parens))*\))?
-                        | \{\{.*?\}\}
-                        | \{!!.*?!!\}
-                        | [\w\-:.@%]+(?:=(?:\"[^\"]*\"|'[^']*'|[^'\"=<>\s]+))?
-                    )
-                )*
-                \s*
-            )
-            \/?>
-        /xs";
+        return TagScanner::replaceTags($template, '(?!x[-:])[a-zA-Z][\w\-:.]*', function (array $tag) use ($directive): string {
+            $attributes = self::rewrite($tag['name'], $tag['attributes'], $directive);
 
-        // null means the regex gave up (e.g. a huge template): better untouched than empty.
-        return preg_replace_callback($tag, function (array $match) use ($directive): string {
-            $attributes = self::rewrite($match['name'], $match['attributes'], $directive);
-
-            return $attributes === $match['attributes']
-                ? $match[0]
-                : str_replace($match['attributes'], $attributes, $match[0]);
-        }, $template) ?? $template;
+            return $attributes === $tag['attributes'] ? $tag[0] : TagScanner::rebuild($tag, $attributes);
+        });
     }
 
     private static function rewrite(string $tag, string $attributes, string $directive): string
     {
-        $skip = "(?:\"[^\"]*\"|'[^']*'|\{\{.*?\}\}|\{!!.*?!!\})(*SKIP)(*FAIL)|";
-
-        $classes = [];
-        preg_match_all("/{$skip}(?<=\s)class=(?:\"(?<double>[^\"]*)\"|'(?<single>[^']*)')/s", $attributes, $classes, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+        $classes = TagScanner::findClasses($attributes);
 
         if ($classes === []) {
             return $attributes;
         }
 
-        $ui = "/{$skip}(?<=\s)@{$directive}(?<parens>\((?:(?>[^()]+)|(?&parens))*\))?(?=\s|$)/s";
+        $found = TagScanner::findDirective($attributes, $directive);
 
-        if (! preg_match($ui, $attributes, $found, PREG_OFFSET_CAPTURE)) {
+        if ($found === null) {
             return $attributes;
         }
 
@@ -82,19 +55,19 @@ final class HtmlTagCompiler
             throw new InvalidArgumentException("Malevich: <{$tag}> has more than one class attribute next to @{$directive}.");
         }
 
-        $value = $classes[0]['double'][0] !== '' ? $classes[0]['double'][0] : ($classes[0]['single'][0] ?? '');
-        $arguments = trim(substr($found['parens'][0] ?? '()', 1, -1));
+        [$class] = $classes;
+        $arguments = $found['arguments'];
 
         if (preg_match('/\bmerge\s*:/', $arguments)) {
             throw new InvalidArgumentException(
-                "Malevich: <{$tag}> has class=\"{$value}\" next to @{$directive}(... merge: ...). Put the classes into merge: ['class' => ...] instead.",
+                "Malevich: <{$tag}> has class=\"{$class['value']}\" next to @{$directive}(... merge: ...). Put the classes into merge: ['class' => ...] instead.",
             );
         }
 
-        $replacement = "@{$directive}(".($arguments === '' ? '' : "{$arguments}, ")."merge: ['class' => ".self::expression($tag, $value).'])';
+        $replacement = "@{$directive}(".($arguments === '' ? '' : "{$arguments}, ")."merge: ['class' => ".self::expression($tag, $class['value'], $directive).'])';
 
         // The class attribute goes together with the whitespace in front of it.
-        $start = $classes[0][0][1];
+        $start = $class['offset'];
 
         while ($start > 0 && ctype_space($attributes[$start - 1])) {
             $start--;
@@ -102,8 +75,8 @@ final class HtmlTagCompiler
 
         // The later offset goes first, so the earlier one stays valid.
         $edits = [
-            [$start, $classes[0][0][1] + strlen($classes[0][0][0]) - $start, ''],
-            [$found[0][1], strlen($found[0][0]), $replacement],
+            [$start, $class['offset'] + $class['length'] - $start, ''],
+            [$found['offset'], $found['length'], $replacement],
         ];
         usort($edits, fn (array $a, array $b) => $b[0] <=> $a[0]);
 
@@ -117,14 +90,14 @@ final class HtmlTagCompiler
     /**
      * Turn `size-4 {{ $extra }}` into the PHP expression `'size-4 '.(string) ($extra)`.
      */
-    private static function expression(string $tag, string $value): string
+    private static function expression(string $tag, string $value, string $directive): string
     {
         $parts = preg_split('/(\{\{.*?\}\}|\{!!.*?!!\})/s', $value, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY) ?: [];
         $expressions = [];
 
         foreach ($parts as $part) {
             if (str_starts_with($part, '{!!')) {
-                throw new InvalidArgumentException("Malevich: <{$tag}> uses {!! !!} inside class=\"...\" next to @ui. Use {{ }} or merge: ['class' => ...].");
+                throw new InvalidArgumentException("Malevich: <{$tag}> uses {!! !!} inside class=\"...\" next to @{$directive}. Use {{ }} or merge: ['class' => ...].");
             }
 
             if (str_starts_with($part, '{{')) {
@@ -134,7 +107,7 @@ final class HtmlTagCompiler
             }
 
             if (preg_match('/@\w|<\?/', $part)) {
-                throw new InvalidArgumentException("Malevich: <{$tag}> has a Blade directive inside class=\"...\" next to @ui. Use merge: ['class' => ...] instead.");
+                throw new InvalidArgumentException("Malevich: <{$tag}> has a Blade directive inside class=\"...\" next to @{$directive}. Use merge: ['class' => ...] instead.");
             }
 
             $expressions[] = var_export($part, true);

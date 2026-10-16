@@ -60,7 +60,7 @@ it('renames the cases and has directives', function () {
     reboot(['malevich.cases_directive' => 'palette', 'malevich.has_directive' => 'present']);
 
     expect(Blade::compileString("@palette('variant', [])"))->toContain('->cases(')
-        ->and(Blade::compileString("@present('glow')"))->toContain("Malevich::has(\$attributes, get_defined_vars(), 'glow')");
+        ->and(Blade::compileString("@present('glow')"))->toContain("Malevich::has(\$attributes ?? null, get_defined_vars(), 'glow')");
 });
 
 it('closes the has directive with @end plus its name', function () {

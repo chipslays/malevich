@@ -7,6 +7,7 @@ namespace Malevich;
 use Closure;
 use Illuminate\View\ComponentAttributeBag;
 use Illuminate\View\ComponentSlot;
+use LogicException;
 use Malevich\Support\RecipeRegistry;
 
 /**
@@ -21,9 +22,21 @@ final class Malevich
     public const SCOPE_VARIABLE = '__malevichRecipe';
 
     /**
+     * Template variable that holds the element `@ui` resolved for a component tag.
+     */
+    public const UI_VARIABLE = '__malevichUi';
+
+    /**
      * @var (Closure(string): string)|null
      */
     private static ?Closure $classMerger = null;
+
+    /**
+     * Config values read on every render, resolved once.
+     *
+     * @var array{default_target: string, render_directive: string, cases_directive: string, has_directive: string, directives: list<string>}|null
+     */
+    private static ?array $config = null;
 
     /**
      * Post-process every resolved class string, e.g. to resolve Tailwind
@@ -45,9 +58,9 @@ final class Malevich
         return self::$classMerger ? (self::$classMerger)($classes) : $classes;
     }
 
-    public static function recipe(ComponentAttributeBag $attributes): Recipe
+    public static function recipe(?ComponentAttributeBag $attributes): Recipe
     {
-        return RecipeRegistry::for($attributes);
+        return RecipeRegistry::for($attributes ?? self::outsideComponent());
     }
 
     /**
@@ -63,12 +76,14 @@ final class Malevich
      * @param  array<string, mixed>  $merge  Extra attributes, as with $attributes->merge().
      */
     public static function ui(
-        ComponentAttributeBag $attributes,
+        ?ComponentAttributeBag $attributes,
         array $scope,
         ?string $target = null,
         mixed $slot = null,
         array $merge = [],
     ): Element {
+        $attributes ??= self::outsideComponent();
+
         if ($slot === null && $target !== null && ($scope[$target] ?? null) instanceof ComponentSlot) {
             $slot = $scope[$target];
         }
@@ -88,7 +103,7 @@ final class Malevich
      * @param  array<string, mixed>  $merge  Extra attributes, as with @ui.
      */
     public static function has(
-        ComponentAttributeBag $attributes,
+        ?ComponentAttributeBag $attributes,
         array $scope,
         ?string $target = null,
         mixed $slot = null,
@@ -99,22 +114,22 @@ final class Malevich
 
     public static function defaultTarget(): string
     {
-        return config('malevich.default_target') ?: 'default';
+        return self::config()['default_target'];
     }
 
     public static function renderDirective(): string
     {
-        return config('malevich.render_directive') ?: 'ui';
+        return self::config()['render_directive'];
     }
 
     public static function casesDirective(): string
     {
-        return config('malevich.cases_directive') ?: 'cases';
+        return self::config()['cases_directive'];
     }
 
     public static function hasDirective(): string
     {
-        return config('malevich.has_directive') ?: 'has';
+        return self::config()['has_directive'];
     }
 
     /**
@@ -124,7 +139,7 @@ final class Malevich
      */
     public static function directives(): array
     {
-        return array_values(array_filter((array) config('malevich.directives', []), is_string(...)));
+        return self::config()['directives'];
     }
 
     /**
@@ -138,11 +153,47 @@ final class Malevich
     }
 
     /**
+     * Forget the config values read so far, so changes made with config()
+     * at runtime are picked up. The service provider calls it on boot.
+     */
+    public static function flushConfig(): void
+    {
+        self::$config = null;
+    }
+
+    /**
      * Reset global state. Mainly useful in tests.
      */
     public static function flush(): void
     {
         self::$classMerger = null;
+        self::flushConfig();
         RecipeRegistry::flush();
+    }
+
+    /**
+     * @return array{default_target: string, render_directive: string, cases_directive: string, has_directive: string, directives: list<string>}
+     */
+    private static function config(): array
+    {
+        return self::$config ??= [
+            'default_target' => self::string('malevich.default_target', 'default'),
+            'render_directive' => self::string('malevich.render_directive', 'ui'),
+            'cases_directive' => self::string('malevich.cases_directive', 'cases'),
+            'has_directive' => self::string('malevich.has_directive', 'has'),
+            'directives' => array_values(array_filter((array) config('malevich.directives', []), is_string(...))),
+        ];
+    }
+
+    private static function string(string $key, string $default): string
+    {
+        $value = config($key);
+
+        return is_string($value) && $value !== '' ? $value : $default;
+    }
+
+    private static function outsideComponent(): never
+    {
+        throw new LogicException('Malevich: @'.self::renderDirective().' and the class map directives only work inside a Blade component, where $attributes is defined.');
     }
 }

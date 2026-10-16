@@ -57,6 +57,17 @@ final class Element implements Htmlable, Stringable
     private array $extra = [];
 
     /**
+     * Memoized results. Reset whenever with() derives a new element.
+     *
+     * @var array<string, string|null>
+     */
+    private array $resolvedChoices = [];
+
+    private ?string $resolvedClasses = null;
+
+    private ?ComponentAttributeBag $resolvedBag = null;
+
+    /**
      * @param  ComponentAttributeBag  $attributes  The bag the recipe was declared against.
      * @param  array<string, mixed>  $scope  Template variables to read axis values from.
      * @param  Recipe|null  $recipe  Defaults to the recipe declared against $attributes.
@@ -166,6 +177,11 @@ final class Element implements Htmlable, Stringable
      */
     public function toClasses(): string
     {
+        return $this->resolvedClasses ??= $this->resolveClasses();
+    }
+
+    private function resolveClasses(): string
+    {
         $classes = new ClassList;
 
         foreach ($this->recipe()->baseFor($this->target) as $base) {
@@ -197,6 +213,11 @@ final class Element implements Htmlable, Stringable
 
     public function toAttributeBag(): ComponentAttributeBag
     {
+        return $this->resolvedBag ??= $this->resolveAttributeBag();
+    }
+
+    private function resolveAttributeBag(): ComponentAttributeBag
+    {
         $own = $this->ownAttributes()?->getAttributes() ?? [];
         $consumed = [...$this->recipe()->axisNames(), 'class'];
 
@@ -207,7 +228,11 @@ final class Element implements Htmlable, Stringable
         $attributes = $own + $this->escapedExtra();
         $attributes = array_diff_key($attributes, array_flip($consumed));
 
-        $classes = $this->toClasses();
+        // The bag is printed without escaping. Classes from the tag are already
+        // escaped, so only a quote (from a class map or the class merger) could
+        // still break out of the attribute - and turning it into &quot; is
+        // harmless for values that were escaped before.
+        $classes = str_replace('"', '&quot;', $this->toClasses());
 
         return new ComponentAttributeBag(
             $classes === '' ? $attributes : ['class' => $classes, ...$attributes],
@@ -237,19 +262,22 @@ final class Element implements Htmlable, Stringable
 
     private function choice(string $axis): ?string
     {
-        $candidates = [
-            fn () => $this->choices[$axis] ?? null,
-            fn () => $this->scope[$axis] ?? null,
-            fn () => $this->attributes->get($axis),
-        ];
-
-        foreach ($candidates as $candidate) {
-            if (($value = $this->normalize($candidate())) !== null) {
-                return $value;
-            }
+        if (! array_key_exists($axis, $this->resolvedChoices)) {
+            $this->resolvedChoices[$axis] = $this->resolveChoice($axis);
         }
 
-        $value = null;
+        return $this->resolvedChoices[$axis];
+    }
+
+    private function resolveChoice(string $axis): ?string
+    {
+        $value = $this->normalize($this->choices[$axis] ?? null)
+            ?? $this->normalize($this->scope[$axis] ?? null)
+            ?? $this->normalize($this->attributes->get($axis));
+
+        if ($value !== null) {
+            return $value;
+        }
 
         foreach ($this->activePresets() as $preset) {
             $value = $this->normalize($this->recipe()->presetFor($preset, $this->target)[$axis] ?? null) ?? $value;
@@ -330,6 +358,9 @@ final class Element implements Htmlable, Stringable
     private function with(callable $mutate): self
     {
         $clone = clone $this;
+        $clone->resolvedChoices = [];
+        $clone->resolvedClasses = null;
+        $clone->resolvedBag = null;
         $mutate($clone);
 
         return $clone;

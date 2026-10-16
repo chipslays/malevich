@@ -1,9 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\File;
+use Illuminate\View\ComponentAttributeBag;
+use Malevich\Element;
+use Malevich\Malevich;
 use Malevich\MalevichServiceProvider;
 use Malevich\Support\ClassList;
 use Malevich\Support\ComponentTagCompiler;
+use Malevich\Support\HtmlTagCompiler;
 
 function bootWith(array $config): void
 {
@@ -46,7 +50,8 @@ it('does not rewrite @ui inside quoted attribute values or echoes', function () 
         ->toContain('title="press @ui now"')
         ->toContain(":label=\"'@ui'\"")
         ->toContain("data-x='a @ui b'")
-        ->toContain(':attributes="\Malevich\Malevich::ui($attributes, get_defined_vars())->toAttributeBag()"');
+        ->toContain('<?php $__malevichUi = \Malevich\Malevich::ui($attributes ?? null, get_defined_vars()); ?><x-foo')
+        ->toContain(':attributes="$__malevichUi->toAttributeBag()"');
 });
 
 it('splits multi-line class strings on any whitespace', function () {
@@ -70,4 +75,53 @@ it('neutralizes dots in component names', function () {
     expect($path.'/escape.blade.php')->toBeFile();
 
     File::deleteDirectory($path);
+});
+
+it('finds @ui on a component tag with ">" inside a quoted attribute', function () {
+    expect($this->render('<x-alpine />'))->toBe('<span x-show="count > 0" class="v-a"><i class="ic" title="a)b"></i></span>');
+});
+
+it('keeps double quotes and parentheses in @ui arguments on component tags', function () {
+    expect(ComponentTagCompiler::compile('<x-foo @ui("icon", merge: [\'title\' => "a)b"]) />'))
+        ->toBe('<?php $__malevichUi = \Malevich\Malevich::ui($attributes ?? null, get_defined_vars(), "icon", merge: [\'title\' => "a)b"]); ?><x-foo :attributes="$__malevichUi->toAttributeBag()" />');
+});
+
+it('leaves the template untouched when the regex gives up', function () {
+    $jit = ini_get('pcre.jit');
+    $limit = ini_get('pcre.backtrack_limit');
+    ini_set('pcre.jit', '0');
+    ini_set('pcre.backtrack_limit', '1');
+
+    try {
+        expect(ComponentTagCompiler::compile('<x-foo a="b" @ui />'))->toBe('<x-foo a="b" @ui />')
+            ->and(HtmlTagCompiler::compile('<b a="b" class="c" @ui>'))->toBe('<b a="b" class="c" @ui>');
+    } finally {
+        ini_set('pcre.jit', (string) $jit);
+        ini_set('pcre.backtrack_limit', (string) $limit);
+    }
+});
+
+it('explains that @ui needs a component', function () {
+    $this->render('<p @ui></p>');
+})->throws(Exception::class, 'only work inside a Blade component');
+
+it('does not let a quote in a class map break out of the attribute', function () {
+    expect($this->render('<x-unsafe-classes :classes="$classes" />', ['classes' => '"><script>alert(1)</script>']))
+        ->toBe('<div class="&quot;><script>alert(1)</script>"></div>');
+});
+
+it('does not escape the classes a second time', function () {
+    expect($this->render('<x-unsafe-classes classes="a" class="{{ \'b&c\' }}" />'))->toBe('<div class="a b&amp;c"></div>');
+});
+
+it('keeps memoized results per element', function () {
+    $bag = new ComponentAttributeBag;
+    Malevich::recipe($bag)->axis('size', ['sm' => 's', 'lg' => 'l']);
+
+    $small = (new Element($bag))->size('sm');
+
+    expect($small->toClasses())->toBe('s')
+        ->and($small->size('lg')->toClasses())->toBe('l')
+        ->and($small->toClasses())->toBe('s')
+        ->and((string) $small->merge(['id' => 'x']))->toBe('class="s" id="x"');
 });

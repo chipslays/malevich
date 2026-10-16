@@ -25,6 +25,12 @@ final class Primitive
      */
     private const DISABLEABLE = ['button', 'fieldset', 'input', 'optgroup', 'option', 'select', 'textarea'];
 
+    /**
+     * Elements that run code, load resources or change the document itself.
+     * Never a sensible `as`, and dangerous when `as` comes from data.
+     */
+    private const FORBIDDEN = ['applet', 'base', 'embed', 'frame', 'frameset', 'iframe', 'link', 'meta', 'object', 'script', 'style'];
+
     public readonly string $tag;
 
     public readonly ComponentAttributeBag $attributes;
@@ -56,7 +62,13 @@ final class Primitive
             throw new InvalidArgumentException("[{$tag}] is not a valid tag name for <x-malevich::primitive as=\"...\">.");
         }
 
-        return strtolower($tag);
+        $tag = strtolower($tag);
+
+        if (in_array($tag, self::FORBIDDEN, true)) {
+            throw new InvalidArgumentException("<x-malevich::primitive> refuses to render <{$tag}>: it is not a UI element.");
+        }
+
+        return $tag;
     }
 
     private function resolveAttributes(ComponentAttributeBag $attributes, bool $disabled): ComponentAttributeBag

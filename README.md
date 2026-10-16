@@ -938,6 +938,7 @@ You will rarely use it directly in pages. It's meant to be the **root of your ow
 | `href="..." disabled` | `<a aria-disabled="true" tabindex="-1" data-disabled>` (no `href`) | Links can't be disabled natively, so the link is removed and screen readers are told it's disabled. |
 | `as="img" src="..."` | `<img src="..." />` | Void elements are self-closing and never get content. |
 | `as="div onclick=..."` | an exception | Only valid tag names are accepted. |
+| `as="script"` | an exception | Tags that run code or load resources (`script`, `style`, `iframe`, `object`, `embed`, `link`, `meta`, `base`, ...) are refused, so an `as` that comes from data can't inject them. |
 
 Every other attribute (`class`, `id`, `wire:*`, `x-*`, ...) is passed through. Attributes you set always win over the defaults above - e.g. your own `type` or `rel`.
 
@@ -1293,7 +1294,7 @@ Yes. Malevich just puts strings into `class`. BEM, Bootstrap, your own CSS - any
 Yes. `wire:*`, `x-*` and `@click`-style attributes on the tag are passed through untouched.
 
 **Is it fast? Is it safe with Octane?**
-Directives compile to plain PHP once, like any Blade directive. At render time it's a few array lookups. Class maps belong to the component instance and are freed with it, so nothing leaks between requests or Octane workers.
+Directives compile to plain PHP once, like any Blade directive. At render time it's a few array lookups: a button with variants, sizes, a combination and an icon costs about 15% more than the same button written by hand with `$attributes->class([...])` (run `composer bench` to measure on your machine). Class maps belong to the component instance and are freed with it, so nothing leaks between requests or Octane workers.
 
 **Can two components use the same preset name?**
 Yes. Presets, like class maps, belong to the component that declares them.
@@ -1368,6 +1369,7 @@ composer lint      # fix code style (Pint)
 composer analyse   # static analysis (PHPStan)
 composer test      # tests (Pest)
 composer check     # all three, without fixing
+composer bench     # rendering cost compared to a hand-written component
 ```
 
 ## License

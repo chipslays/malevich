@@ -53,5 +53,9 @@ it('refuses two class attributes', function () {
 })->throws(InvalidArgumentException::class, 'more than one class');
 
 it('compiles the rewritten tag into one @ui call', function () {
-    expect(Blade::compileString('<b class="x" @ui>'))->toContain("Malevich::ui(\$attributes, get_defined_vars(), merge: ['class' => 'x'])");
+    expect(Blade::compileString('<b class="x" @ui>'))->toContain("Malevich::ui(\$attributes ?? null, get_defined_vars(), merge: ['class' => 'x'])");
+});
+
+it('moves an unquoted class into merge:', function () {
+    expect(HtmlTagCompiler::compile('<b class=x @ui>'))->toBe("<b @ui(merge: ['class' => 'x'])>");
 });

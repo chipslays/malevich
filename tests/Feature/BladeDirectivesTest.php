@@ -7,7 +7,7 @@ use Malevich\MalevichServiceProvider;
 
 it('compiles axis directives into recipe declarations', function (string $directive) {
     expect(Blade::compileString("@{$directive}(['a' => 'b'])"))
-        ->toContain("Malevich::recipe(\$attributes))->axis('{$directive}', ['a' => 'b'])");
+        ->toContain("Malevich::recipe(\$attributes ?? null))->axis('{$directive}', ['a' => 'b'])");
 })->with(['variant', 'color', 'size']);
 
 it('compiles @directive, @compound and @preset', function () {
@@ -18,8 +18,8 @@ it('compiles @directive, @compound and @preset', function () {
 });
 
 it('compiles @ui with and without arguments', function () {
-    expect(Blade::compileString('<b @ui>'))->toContain('Malevich::ui($attributes, get_defined_vars()); ?>>')
-        ->and(Blade::compileString("<b @ui('icon')>"))->toContain("Malevich::ui(\$attributes, get_defined_vars(), 'icon')");
+    expect(Blade::compileString('<b @ui>'))->toContain('Malevich::ui($attributes ?? null, get_defined_vars()); ?>>')
+        ->and(Blade::compileString("<b @ui('icon')>"))->toContain("Malevich::ui(\$attributes ?? null, get_defined_vars(), 'icon')");
 });
 
 it('declares a recipe on the bag when the template runs', function () {

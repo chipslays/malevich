@@ -53,10 +53,14 @@ final class ClassList implements Stringable
      */
     public function __toString(): string
     {
-        return collect($this->compiled)
-            ->flatMap(fn (string $classString) => preg_split('/\s+/', $classString) ?: [])
-            ->filter()
-            ->unique()
-            ->implode(' ');
+        $classes = [];
+
+        foreach ($this->compiled as $fragment) {
+            foreach (preg_split('/\s+/', $fragment, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $class) {
+                $classes[$class] = true;
+            }
+        }
+
+        return implode(' ', array_keys($classes));
     }
 }

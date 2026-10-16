@@ -68,7 +68,7 @@ it('rewrites @ui only inside component tags', function () {
     BLADE);
 
     expect($compiled)
-        ->toContain(":attributes=\"\Malevich\Malevich::ui(\$attributes, get_defined_vars(), 'icon', merge: ['x' => 'y'])->toAttributeBag()\"")
+        ->toContain("<?php \$__malevichUi = \Malevich\Malevich::ui(\$attributes ?? null, get_defined_vars(), 'icon', merge: ['x' => 'y']); ?><x-foo a=\"b\" :attributes=\"\$__malevichUi->toAttributeBag()\" />")
         ->toContain('<span @ui></span>')
         ->toContain('title="mail@ui.com"')
         ->toContain('<x-baz @ui />');
@@ -78,3 +78,7 @@ it('lets the user override the tag of a component built on a primitive', functio
     expect($this->render('<x-ui-button as="span">Hi</x-ui-button>'))
         ->toBe('<span class="btn btn-primary"><span class="icon"></span> Hi</span>');
 });
+
+it('refuses tags that are not UI elements', function (string $tag) {
+    $this->render('<x-malevich::primitive :as="$tag">x</x-malevich::primitive>', ['tag' => $tag]);
+})->with(['script', 'SCRIPT', 'iframe', 'style', 'object'])->throws(ViewException::class, 'refuses to render');

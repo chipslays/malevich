@@ -57,11 +57,12 @@ class MalevichServiceProvider extends ServiceProvider
 
     protected function registerBladeDirectives(): void
     {
+        Malevich::flushConfig();
         $this->ensureValidNames();
 
         // The recipe is also kept in a template variable, so @ui still finds it
         // after Blade swaps $attributes for a new bag (e.g. inside <x-...> tags).
-        $recipe = '($'.Malevich::SCOPE_VARIABLE.' ??= \\'.Malevich::class.'::recipe($attributes))';
+        $recipe = '($'.Malevich::SCOPE_VARIABLE.' ??= \\'.Malevich::class.'::recipe($attributes ?? null))';
 
         $this->declaration('directive', fn (string $expression) => "<?php {$recipe}->axis({$expression}); ?>");
         $this->declaration('base', fn (string $expression) => "<?php {$recipe}->base({$expression}); ?>");
@@ -76,13 +77,13 @@ class MalevichServiceProvider extends ServiceProvider
         $this->registerDirective(Malevich::renderDirective(), function (string $expression) {
             $arguments = trim($expression) === '' ? '' : ", {$expression}";
 
-            return '<?php echo \\'.Malevich::class."::ui(\$attributes, get_defined_vars(){$arguments}); ?>";
+            return '<?php echo \\'.Malevich::class."::ui(\$attributes ?? null, get_defined_vars(){$arguments}); ?>";
         });
 
         $this->registerDirective(Malevich::hasDirective(), function (string $expression) {
             $arguments = trim($expression) === '' ? '' : ", {$expression}";
 
-            return '<?php if (\\'.Malevich::class."::has(\$attributes, get_defined_vars(){$arguments})): ?>";
+            return '<?php if (\\'.Malevich::class."::has(\$attributes ?? null, get_defined_vars(){$arguments})): ?>";
         });
 
         // `@end` + the name, like @endauth: the closing tag is a plain endif.

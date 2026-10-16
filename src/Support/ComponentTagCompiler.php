@@ -12,56 +12,38 @@ use Malevich\Malevich;
  *     <x-malevich::primitive as="button" @ui('icon')>
  *
  * Blade never runs directives inside `<x-...>` tags, so before the
- * template is compiled `@ui(...)` is rewritten into an `:attributes`
- * binding, which Blade forwards to the child component as its attributes:
+ * template is compiled the element is resolved right in front of the tag
+ * and passed to the child component as its attributes:
  *
- *     <x-malevich::primitive as="button" :attributes="\Malevich\Malevich::ui($attributes, get_defined_vars(), 'icon')->toAttributeBag()">
+ *     <?php $__malevichUi = \Malevich\Malevich::ui($attributes ?? null, get_defined_vars(), 'icon'); ?>
+ *     <x-malevich::primitive as="button" :attributes="$__malevichUi->toAttributeBag()">
+ *
+ * Resolving it in plain PHP keeps any quotes in the arguments out of the
+ * attribute value, and resolves the element once instead of twice.
  */
 final class ComponentTagCompiler
 {
     public static function compile(string $template): string
     {
-        $directive = preg_quote(Malevich::renderDirective(), '/');
+        $directive = Malevich::renderDirective();
 
-        if (! preg_match("/<\s*x[-:][^>]*@{$directive}\b/", $template)) {
+        if (! str_contains($template, '@'.$directive) || ! preg_match('/<\s*x[-:]/', $template)) {
             return $template;
         }
 
-        $tag = "/
-            @verbatim.*?@endverbatim(*SKIP)(*FAIL)
-            |
-            <\s*x[-:][\w\-:.]*
-            (?<attributes>
-                (?:
-                    \s+
-                    (?:
-                        @\w+(?<parens>\((?:(?>[^()]+)|(?&parens))*\))?
-                        | \{\{.*?\}\}
-                        | [\w\-:.@%]+(?:=(?:\"[^\"]*\"|'[^']*'|[^'\"=<>\s]+))?
-                    )
-                )*
-                \s*
-            )
-            \/?>
-        /xs";
+        return TagScanner::replaceTags($template, '\s*x[-:][\w\-:.]*', function (array $tag) use ($directive): string {
+            $found = TagScanner::findDirective($tag['attributes'], $directive);
 
-        return (string) preg_replace_callback($tag, function (array $match) use ($directive): string {
-            // Quoted values and {{ }} echoes are skipped, so `title="press @ui"` stays text.
-            $attributes = (string) preg_replace_callback(
-                "/(?:\"[^\"]*\"|'[^']*'|\{\{.*?\}\})(*SKIP)(*FAIL)|(?<=\s)@{$directive}(?<parens>\((?:(?>[^()]+)|(?&parens))*\))?(?=\s|$)/s",
-                fn (array $ui) => self::binding($ui['parens'] ?? ''),
-                $match['attributes'],
-            );
+            if ($found === null) {
+                return $tag[0];
+            }
 
-            return str_replace($match['attributes'], $attributes, $match[0]);
-        }, $template);
-    }
+            $variable = '$'.Malevich::UI_VARIABLE;
+            $arguments = $found['arguments'] === '' ? '' : ", {$found['arguments']}";
+            $attributes = substr_replace($tag['attributes'], ":attributes=\"{$variable}->toAttributeBag()\"", $found['offset'], $found['length']);
 
-    private static function binding(string $parens): string
-    {
-        $arguments = trim(substr($parens, 1, -1));
-        $arguments = $arguments === '' ? '' : ", {$arguments}";
-
-        return ':attributes="\\'.Malevich::class."::ui(\$attributes, get_defined_vars(){$arguments})->toAttributeBag()\"";
+            return "<?php {$variable} = \\".Malevich::class."::ui(\$attributes ?? null, get_defined_vars(){$arguments}); ?>"
+                .TagScanner::rebuild($tag, $attributes);
+        });
     }
 }
