@@ -17,15 +17,15 @@ it('boots again without mistaking its own directives for a clash', function () {
     expect(Blade::compileString("@cases('variant', [])"))->toContain('->cases(');
 });
 
-it('refuses a cases or has directive that is a built-in Blade directive', function (string $option) {
-    reboot(['malevich.'.$option => 'if']);
-})->with(['cases_directive', 'has_directive'])->throws(InvalidArgumentException::class, 'is a built-in Blade directive');
+it('refuses a directive name that is a built-in Blade directive', function (string $role) {
+    reboot(["malevich.directives.{$role}" => 'if']);
+})->with(['attributes', 'base', 'option', 'compound', 'cases', 'has'])->throws(InvalidArgumentException::class, 'is a built-in Blade directive');
 
-it('refuses a name that another package already registered', function (string $option) {
+it('refuses a name that another package already registered', function (string $role) {
     Blade::directive('taken', fn () => '');
 
-    reboot(['malevich.'.$option => 'taken']);
-})->with(['cases_directive', 'has_directive', 'render_directive'])->throws(InvalidArgumentException::class, 'by your application or another package');
+    reboot(["malevich.directives.{$role}" => 'taken']);
+})->with(['attributes', 'base', 'option', 'compound', 'cases', 'has'])->throws(InvalidArgumentException::class, 'by your application or another package');
 
 it('refuses an option that another package already registered', function () {
     Blade::directive('radius', fn () => '');
@@ -34,39 +34,53 @@ it('refuses an option that another package already registered', function () {
 })->throws(InvalidArgumentException::class, 'by your application or another package');
 
 it('refuses invalid or doubled names', function (array $config, string $message) {
-    reboot($config);
+    expect(fn () => reboot($config))->toThrow(InvalidArgumentException::class, $message);
 })->with([
-    'cases invalid' => [['malevich.cases_directive' => 'my-theme'], 'is not a valid directive name'],
-    'cases = render' => [['malevich.cases_directive' => 'attributes'], 'used both as render_directive and cases_directive'],
-    'has = cases' => [['malevich.has_directive' => 'cases'], 'used both as cases_directive and has_directive'],
-    'cases as option' => [['malevich.options' => ['variant', 'cases']], 'used both as cases_directive and in options'],
-    'has as option' => [['malevich.options' => ['has']], 'used both as has_directive and in options'],
-])->throws(InvalidArgumentException::class);
+    'invalid' => [['malevich.directives.cases' => 'my-theme'], 'is not a valid directive name'],
+    'cases = attributes' => [['malevich.directives.cases' => 'attributes'], 'used both as directives.attributes and directives.cases'],
+    'has = base' => [['malevich.directives.has' => 'base'], 'used both as directives.base and directives.has'],
+    'option as an option' => [['malevich.options' => ['variant', 'option']], 'used both as directives.option and in options'],
+    'has as an option' => [['malevich.options' => ['has']], 'used both as directives.has and in options'],
+]);
 
-it('refuses a cases directive that is a fixed Malevich directive', function () {
-    reboot(['malevich.cases_directive' => 'base']);
-})->throws(InvalidArgumentException::class, 'is already a Malevich directive');
-
-it('refuses to boot when a fixed name is taken by another package', function () {
+it('refuses to boot when a directive name is taken by another package', function () {
     // A fresh compiler that already has someone else's @base, as if their
     // provider had booted before ours.
     Blade::swap(new BladeCompiler(app('files'), sys_get_temp_dir()));
     Blade::directive('base', fn () => '');
 
     reboot();
-})->throws(InvalidArgumentException::class, 'cannot be changed');
+})->throws(InvalidArgumentException::class, '[@base] is already registered as a Blade directive by your application or another package. Pick another name');
 
-it('renames the cases and has directives', function () {
-    reboot(['malevich.cases_directive' => 'palette', 'malevich.has_directive' => 'present']);
+it('renames every directive', function () {
+    reboot(['malevich.directives' => [
+        'attributes' => 'paint',
+        'base' => 'always',
+        'option' => 'axis',
+        'compound' => 'when',
+        'cases' => 'palette',
+        'has' => 'present',
+    ]]);
 
-    expect(Blade::compileString("@palette('variant', [])"))->toContain('->cases(')
+    expect(Blade::compileString('<b @paint>'))->toContain('Malevich::attributes($attributes ?? null, get_defined_vars())')
+        ->and(Blade::compileString("@always('x')"))->toContain("->base('x')")
+        ->and(Blade::compileString("@axis('radius', [])"))->toContain("->option('radius', [])")
+        ->and(Blade::compileString("@when(['size' => 'sm'], 'x')"))->toContain("->compound(['size' => 'sm'], 'x')")
+        ->and(Blade::compileString("@palette('variant', [])"))->toContain('->cases(')
         ->and(Blade::compileString("@present('glow')"))->toContain("Malevich::has(\$attributes ?? null, get_defined_vars(), 'glow')");
+});
+
+it('renders a component written with renamed directives', function () {
+    reboot(['malevich.directives.attributes' => 'paint', 'malevich.directives.base' => 'always']);
+
+    expect(trim(Blade::render("@php(\$attributes = new Illuminate\\View\\ComponentAttributeBag(['class' => 'x']))\n@always('a')\n<b @paint></b>", deleteCachedView: true)))
+        ->toBe('<b class="a x"></b>');
 });
 
 it('closes the has directive with @end plus its name', function () {
     expect(Blade::compileString("@has('glow')x @endhas"))->toEndWith('x <?php endif; ?>');
 
-    reboot(['malevich.has_directive' => 'present']);
+    reboot(['malevich.directives.has' => 'present']);
 
     expect(Blade::compileString("@present('glow')x @endpresent"))->toEndWith('x <?php endif; ?>');
 });

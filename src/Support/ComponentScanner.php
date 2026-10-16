@@ -94,7 +94,10 @@ final class ComponentScanner
         $template = (string) preg_replace('/@verbatim.*?@endverbatim|\{\{--.*?--\}\}/s', '', $this->files->get($path));
 
         $options = Malevich::options();
-        $names = ['option', 'compound', 'include', 'includeIf', 'includeWhen', 'includeUnless', 'includeFirst', 'each', Malevich::casesDirective(), ...$options];
+        $option = Malevich::directive('option');
+        $compound = Malevich::directive('compound');
+        $cases = Malevich::directive('cases');
+        $names = [$option, $compound, $cases, 'include', 'includeIf', 'includeWhen', 'includeUnless', 'includeFirst', 'each', ...$options];
         $pattern = '/(?<!@)@(?<name>'.implode('|', array_map(fn (string $name) => preg_quote($name, '/'), $names)).')\b\s*(?<arguments>'.TagScanner::PARENS.')?/';
 
         preg_match_all($pattern, $template, $matches, PREG_SET_ORDER | PREG_UNMATCHED_AS_NULL);
@@ -113,9 +116,9 @@ final class ComponentScanner
                 $name === 'include' => $this->include($arguments, $declarations, $depth),
                 // A partial that may or may not be there could declare anything.
                 str_starts_with($name, 'include'), $name === 'each' => throw new InvalidArgumentException('Conditional partial.'),
-                $name === 'option' => $this->option(null, $arguments, $declarations),
-                $name === 'compound' => $this->compound($arguments, $declarations),
-                $name === Malevich::casesDirective() => $this->cases($arguments, $declarations),
+                $name === $option => $this->option(null, $arguments, $declarations),
+                $name === $compound => $this->compound($arguments, $declarations),
+                $name === $cases => $this->cases($arguments, $declarations),
                 default => $this->option($name, $arguments, $declarations),
             };
         }

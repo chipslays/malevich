@@ -12,10 +12,10 @@ The directive that prints an element's classes and attributes is called after wh
 |---|---|
 | `<button @ui>`, `<svg @ui('icon')>` | `<button @attributes>`, `<svg @attributes('icon')>` |
 | `@ui(merge: [...])`, `@ui('title', slot: ...)` | `@attributes(merge: [...])`, `@attributes('title', slot: ...)` |
-| `'render_directive' => 'ui'` (default) | `'render_directive' => 'attributes'` |
+| `'render_directive' => 'ui'` (default) | `'directives' => ['attributes' => 'attributes', ...]` |
 | `Malevich::ui(...)` | `Malevich::attributes(...)` |
 
-Replace `@ui` in your components (a search for `@ui` followed by `>`, `(` or a space finds them all). If you published the config and kept `'render_directive' => 'ui'`, `@ui` keeps working until you change it.
+Replace `@ui` in your components (a search for `@ui` followed by `>`, `(` or a space finds them all). To keep writing `@ui`, set `'directives' => ['attributes' => 'ui']` in your config.
 
 ### "Directives" are now "options"
 
@@ -56,6 +56,23 @@ Tailwind IntelliSense: in `.vscode/settings.json` replace `directive` with `opti
 {{-- 2.0 --}}
 <x-card variant="elevated" padding="lg">
 ```
+
+### Directive names live in one place
+
+`render_directive`, `cases_directive` and `has_directive` are replaced by one `directives` array, which now also covers `@base`, `@option` and `@compound`:
+
+```php
+'directives' => [
+    'attributes' => 'attributes',
+    'base' => 'base',
+    'option' => 'option',
+    'compound' => 'compound',
+    'cases' => 'cases',
+    'has' => 'has',
+],
+```
+
+If you published the config, move your custom names there. `Malevich::renderDirective()`, `casesDirective()` and `hasDirective()` are now `Malevich::directive('attributes')`, `directive('cases')` and `directive('has')`.
 
 ### Behaviour changes
 

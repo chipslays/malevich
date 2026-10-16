@@ -36,7 +36,7 @@ On a plain HTML tag a `class` next to `@attributes` is merged into one `class` a
 - Only valid inside a component file (needs `$attributes`).
 - On `<x-...>` tags use **single quotes** inside arguments.
 - `@attributes` works on components too: `<x-heroicon-o-check @attributes('icon') />`. The child must print `$attributes`.
-- The name can be changed with config `render_directive`.
+- The name can be changed with config `directives.attributes`.
 
 ## Targets (inner elements)
 

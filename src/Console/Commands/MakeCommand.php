@@ -92,14 +92,12 @@ class MakeCommand extends Command
         $props = array_map(fn (string $option) => "    '{$option}' => null,", $options);
 
         $maps = array_map(fn (string $option) => implode("\n", [
-            "@{$option}([",
-            "    // 'name' => 'classes',",
-            '])',
+            "@{$option}([])",
         ]), $options);
 
         return str_replace(
-            ['{{ props }}', '{{ options }}', '{{ render }}'],
-            [implode("\n", $props), implode("\n\n", $maps), Malevich::renderDirective()],
+            ['{{ props }}', '{{ base }}', '{{ options }}', '{{ render }}'],
+            [implode("\n", $props), Malevich::directive('base'), implode("\n\n", $maps), Malevich::directive('attributes')],
             $stub,
         );
     }

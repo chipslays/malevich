@@ -26,7 +26,7 @@ final class ComponentTagCompiler
 {
     public static function compile(string $template): string
     {
-        $directive = Malevich::renderDirective();
+        $directive = Malevich::directive('attributes');
 
         if (! str_contains($template, '@'.$directive) || ! preg_match('/<\s*x[-:]/', $template)) {
             return $template;

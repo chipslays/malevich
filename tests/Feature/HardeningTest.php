@@ -21,7 +21,7 @@ it('refuses option names that would replace built-in Blade directives', function
 
 it('refuses option names that clash with Malevich directives', function () {
     bootWith(['malevich.options' => ['compound']]);
-})->throws(InvalidArgumentException::class, 'is already a Malevich directive');
+})->throws(InvalidArgumentException::class, 'used both as directives.compound and in options');
 
 it('refuses option names that are methods of $attributes', function () {
     bootWith(['malevich.options' => ['merge']]);
@@ -33,10 +33,10 @@ it('refuses invalid option names', function () {
 
 it('refuses a render directive that is also an option', function () {
     bootWith(['malevich.options' => ['variant', 'attributes']]);
-})->throws(InvalidArgumentException::class, 'used both as render_directive and in options');
+})->throws(InvalidArgumentException::class, 'used both as directives.attributes and in options');
 
 it('accepts the default and custom names', function () {
-    bootWith(['malevich.options' => ['variant', 'size', 'color', 'radius', 'tone'], 'malevich.render_directive' => 'styles']);
+    bootWith(['malevich.options' => ['variant', 'size', 'color', 'radius', 'tone'], 'malevich.directives.attributes' => 'styles']);
 
     expect(true)->toBeTrue();
 });

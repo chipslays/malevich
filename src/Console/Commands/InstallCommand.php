@@ -113,7 +113,7 @@ class InstallCommand extends Command
      */
     public static function classRegex(): array
     {
-        $names = array_unique(['base', 'option', 'compound', Malevich::casesDirective(), ...Malevich::options()]);
+        $names = array_unique([Malevich::directive('base'), Malevich::directive('option'), Malevich::directive('compound'), Malevich::directive('cases'), ...Malevich::options()]);
 
         return [
             '@(?:'.implode('|', $names).')\\s*\\(([\\s\\S]*?)\\)\\s*(?:\\n|$)',

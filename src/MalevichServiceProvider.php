@@ -21,11 +21,6 @@ use WeakMap;
 class MalevichServiceProvider extends ServiceProvider
 {
     /**
-     * Directives with a fixed name. Everything else is configurable.
-     */
-    private const FIXED = ['option', 'base', 'compound'];
-
-    /**
      * Directive names Malevich registered, per Blade compiler. Tells our own
      * directives apart from a clash with another package when the provider
      * boots again.
@@ -73,29 +68,29 @@ class MalevichServiceProvider extends ServiceProvider
         // after Blade swaps $attributes for a new bag (e.g. inside <x-...> tags).
         $recipe = '($'.MalevichManager::SCOPE_VARIABLE.' ??= \\'.Malevich::class.'::recipe($attributes ?? null))';
 
-        $this->declaration('option', fn (string $expression) => "<?php {$recipe}->option({$expression}); ?>");
-        $this->declaration('base', fn (string $expression) => "<?php {$recipe}->base({$expression}); ?>");
-        $this->declaration('compound', fn (string $expression) => "<?php {$recipe}->compound({$expression}); ?>");
-        $this->declaration(Malevich::casesDirective(), fn (string $expression) => "<?php {$recipe}->cases({$expression}); ?>");
+        // Each declaration calls the Recipe method of its role, whatever the directive is named.
+        foreach (['option', 'base', 'compound', 'cases'] as $role) {
+            $this->declaration(Malevich::directive($role), fn (string $expression) => "<?php {$recipe}->{$role}({$expression}); ?>");
+        }
 
         foreach ($this->options() as $option) {
             $this->declaration($option, fn (string $expression) => "<?php {$recipe}->option('{$option}', {$expression}); ?>");
         }
 
-        $this->registerDirective(Malevich::renderDirective(), function (string $expression) {
+        $this->registerDirective(Malevich::directive('attributes'), function (string $expression) {
             $arguments = trim($expression) === '' ? '' : ", {$expression}";
 
             return '<?php echo \\'.Malevich::class."::attributes(\$attributes ?? null, get_defined_vars(){$arguments}); ?>";
         });
 
-        $this->registerDirective(Malevich::hasDirective(), function (string $expression) {
+        $this->registerDirective(Malevich::directive('has'), function (string $expression) {
             $arguments = trim($expression) === '' ? '' : ", {$expression}";
 
             return '<?php if (\\'.Malevich::class."::has(\$attributes ?? null, get_defined_vars(){$arguments})): ?>";
         });
 
         // `@end` + the name, like @endauth: the closing tag is a plain endif.
-        $this->registerDirective('end'.Malevich::hasDirective(), fn () => '<?php endif; ?>');
+        $this->registerDirective('end'.Malevich::directive('has'), fn () => '<?php endif; ?>');
 
         // Blade ignores directives inside <x-...> tags, so @attributes is rewritten there first.
         Blade::prepareStringsForCompilationUsing(ComponentTagCompiler::compile(...));
@@ -137,29 +132,19 @@ class MalevichServiceProvider extends ServiceProvider
      */
     protected function ensureValidNames(): void
     {
-        foreach (self::FIXED as $name) {
-            if ($this->isBuiltIn($name) || $this->isTakenByAnotherPackage($name)) {
-                throw new InvalidArgumentException("Malevich: the directive [@{$name}] is already taken by Blade or another package, and its name cannot be changed. Remove the clash or open an issue.");
-            }
-        }
-
-        // name => the config option it comes from
+        // name => the config key it comes from
         $names = [];
 
-        foreach ([
-            'render_directive' => Malevich::renderDirective(),
-            'cases_directive' => Malevich::casesDirective(),
-            'has_directive' => Malevich::hasDirective(),
-        ] as $key => $name) {
+        foreach (Malevich::directives() as $role => $name) {
             if (isset($names[$name])) {
-                throw new InvalidArgumentException("Malevich: [@{$name}] is used both as {$names[$name]} and {$key}. Pick another name in config/malevich.php.");
+                throw new InvalidArgumentException("Malevich: [@{$name}] is used both as {$names[$name]} and directives.{$role}. Pick another name in config/malevich.php.");
             }
 
-            $names[$name] = $key;
+            $names[$name] = "directives.{$role}";
         }
 
         // The closing tag of the has-directive is a name of its own.
-        $names['end'.Malevich::hasDirective()] = 'has_directive';
+        $names['end'.Malevich::directive('has')] = 'directives.has';
 
         foreach ($this->options() as $name) {
             if (isset($names[$name]) && $names[$name] !== 'options') {
@@ -172,7 +157,6 @@ class MalevichServiceProvider extends ServiceProvider
         foreach ($names as $name => $key) {
             $problem = match (true) {
                 ! preg_match('/^[A-Za-z_]\w*$/', $name) => 'is not a valid directive name',
-                in_array($name, self::FIXED, true) => 'is already a Malevich directive',
                 $this->isBuiltIn($name) => 'is a built-in Blade directive',
                 $this->isTakenByAnotherPackage($name) => 'is already registered as a Blade directive by your application or another package',
                 $key === 'options' && method_exists(ComponentAttributeBag::class, $name) => 'is already a method of $attributes',

@@ -29,6 +29,19 @@ class MalevichManager
     public const ATTRIBUTES_VARIABLE = '__malevichAttributes';
 
     /**
+     * Malevich's own directives by role, with their default names. Every
+     * name can be changed in config/malevich.php (`directives`).
+     */
+    public const DIRECTIVES = [
+        'attributes' => 'attributes',
+        'base' => 'base',
+        'option' => 'option',
+        'compound' => 'compound',
+        'cases' => 'cases',
+        'has' => 'has',
+    ];
+
+    /**
      * @var (Closure(string): string)|null
      */
     private ?Closure $classMerger = null;
@@ -38,7 +51,7 @@ class MalevichManager
     /**
      * Config values read on every render, resolved once.
      *
-     * @var array{default_target: string, render_directive: string, cases_directive: string, has_directive: string, options: list<string>, data_attributes: bool, merger: (Closure(string): string)|null}|null
+     * @var array{default_target: string, directives: array<string, string>, options: list<string>, data_attributes: bool, merger: (Closure(string): string)|null}|null
      */
     private ?array $config = null;
 
@@ -160,19 +173,23 @@ class MalevichManager
         return $this->config()['default_target'];
     }
 
-    public function renderDirective(): string
+    /**
+     * The configured name of one of Malevich's directives, by its role:
+     * attributes, base, option, compound, cases or has.
+     */
+    public function directive(string $role): string
     {
-        return $this->config()['render_directive'];
+        return $this->config()['directives'][$role] ?? throw new LogicException("Malevich: there is no [{$role}] directive.");
     }
 
-    public function casesDirective(): string
+    /**
+     * Every directive name by role, e.g. ['attributes' => 'attributes', 'base' => 'base', ...].
+     *
+     * @return array<string, string>
+     */
+    public function directives(): array
     {
-        return $this->config()['cases_directive'];
-    }
-
-    public function hasDirective(): string
-    {
-        return $this->config()['has_directive'];
+        return $this->config()['directives'];
     }
 
     /**
@@ -225,15 +242,16 @@ class MalevichManager
     }
 
     /**
-     * @return array{default_target: string, render_directive: string, cases_directive: string, has_directive: string, options: list<string>, data_attributes: bool, merger: (Closure(string): string)|null}
+     * @return array{default_target: string, directives: array<string, string>, options: list<string>, data_attributes: bool, merger: (Closure(string): string)|null}
      */
     private function config(): array
     {
         return $this->config ??= [
             'default_target' => $this->string('malevich.default_target', 'default'),
-            'render_directive' => $this->string('malevich.render_directive', 'attributes'),
-            'cases_directive' => $this->string('malevich.cases_directive', 'cases'),
-            'has_directive' => $this->string('malevich.has_directive', 'has'),
+            'directives' => array_combine(
+                array_keys(self::DIRECTIVES),
+                array_map(fn (string $role, string $default) => $this->string("malevich.directives.{$role}", $default), array_keys(self::DIRECTIVES), self::DIRECTIVES),
+            ),
             'options' => array_values(array_filter((array) $this->repository->get('malevich.options', []), is_string(...))),
             'data_attributes' => (bool) $this->repository->get('malevich.data_attributes', false),
             'merger' => $this->repository->get('malevich.merge_classes', 'auto') === 'auto' ? $this->tailwindMerger() : null,
@@ -271,6 +289,6 @@ class MalevichManager
 
     private function outsideComponent(): never
     {
-        throw new LogicException('Malevich: @'.$this->renderDirective().' and the class map directives only work inside a Blade component, where $attributes is defined.');
+        throw new LogicException('Malevich: @'.$this->directive('attributes').' and the class map directives only work inside a Blade component, where $attributes is defined.');
     }
 }

@@ -180,17 +180,11 @@ This creates `resources/views/components/badge.blade.php` with an empty block fo
 
 @base('')
 
-@variant([
-    // 'name' => 'classes',
-])
+@variant([])
 
-@size([
-    // 'name' => 'classes',
-])
+@size([])
 
-@color([
-    // 'name' => 'classes',
-])
+@color([])
 
 <div @attributes>
     {{ $slot }}
@@ -544,7 +538,7 @@ It is the same as one `@compound` per element. The keys are always elements, so 
 > [!NOTE]
 > Write conditional classes (`['a', 'b' => $cond]`) under a target key, never directly as a value: a string-keyed array is read as a list of targets.
 
-The name `@cases` can be changed with the `cases_directive` [config option](#configuration).
+The name `@cases` can be changed in the [config](#configuration): `directives.cases`.
 
 ## Which tool should I use?
 
@@ -646,7 +640,7 @@ If there are no classes at all, no empty `class=""` is printed.
 - A `class="..."` on the same tag is **added after** the element's own classes, as on a component tag: `<span @attributes('chip') class="size-4 {{ $extra }}">`. Static text and `{{ }}` are supported. For anything else (`{!! !!}`, `@if` inside the class, or `merge:` already in use) Malevich throws on compile - pass the classes through `merge: ['class' => ...]` instead.
 
 > [!NOTE]
-> The name `@attributes` can be changed with the `render_directive` [config option](#configuration).
+> The name `@attributes` can be changed in the [config](#configuration): `directives.attributes`.
 
 ## Where values come from
 
@@ -758,7 +752,7 @@ It is a normal conditional: `@else` and `@endhas` work, and it takes the same ar
 > [!IMPORTANT]
 > `@base('glow', ...)` is always there, so a part with a `@base` is never "empty". For an optional part put **all** of its classes into the variants, as above.
 
-The name `@has` can be changed with the `has_directive` [config option](#configuration).
+The name `@has` can be changed in the [config](#configuration): `directives.has`.
 
 ## Named slots
 
@@ -1018,16 +1012,29 @@ Not every name is allowed. Malevich throws an exception on boot if a name:
 
 - is a built-in Blade directive (`if`, `class`, `foreach`, `props`, ...) - it would replace that directive in your whole app;
 - is already registered as a Blade directive by your application or another package (a Blade directive is global, the last one wins and silently breaks the other);
-- is a Malevich directive (`base`, `compound`, `option`, or your `render_directive`, `cases_directive`, `has_directive`);
+- is already the name of one of Malevich's own directives (`directives` in the config);
 - is already a method of `$attributes` (`merge`, `get`, `only`, ...) - the fluent call `$attributes->merge(...)` could never reach it;
 - contains anything but letters, digits and `_`.
 
 ### Name collisions
 
-The names of Malevich's own directives are rarely a problem, but they are all configurable or checked:
+Every directive Malevich registers can be renamed in the config, so a clash with Blade, your app or another package is always solvable:
 
-- `@attributes`, `@cases` and `@has` can be renamed with `render_directive`, `cases_directive` and `has_directive`.
-- `@base`, `@compound` and `@option` are fixed. On boot Malevich checks that Blade or another package has not taken them and throws a clear exception if so.
+```php
+// config/malevich.php
+'directives' => [
+    'attributes' => 'attributes',   // <button @attributes>
+    'base' => 'base',               // @base('...')
+    'option' => 'option',           // @option('radius', [...])
+    'compound' => 'compound',       // @compound([...], '...')
+    'cases' => 'cases',             // @cases('variant', [...])
+    'has' => 'has',                 // @has('glow') ... @endhas
+],
+```
+
+- On boot Malevich checks every name - yours and its own - and throws a clear exception on a clash, naming the config key to change.
+- `@has` is closed with `@end` + its name: rename `has` to `present` and you write `@present(...) ... @endpresent`.
+- After renaming, run `php artisan view:clear`. The [IntelliSense pattern](#editor-support-tailwind-intellisense) written by `malevich:install` follows the new names.
 - A directive that needs an expression (`@variant([...])`, `@cases('x', [...])`, `@base('...')`) and is written **without parentheses** is left alone. So CSS inside a template survives: Tailwind's `@variant dark (...)` is not touched.
 
 ## Sharing styles between components
@@ -1279,9 +1286,7 @@ So a clean run doesn't prove there are no typos at all - it proves there are non
 | Key | Default | What it does |
 |---|---|---|
 | `options` | `['variant', 'size', 'color']` | Options with a directive of their own: `@variant`, `@size`, ... Add your own here. |
-| `render_directive` | `'attributes'` | The name of `@attributes`. Change it if it clashes with another package. |
-| `cases_directive` | `'cases'` | The name of [`@cases`](#cases---one-declaration-per-value). |
-| `has_directive` | `'has'` | The name of [`@has`](#parts-that-exist-only-in-some-variants-has). |
+| `directives` | `attributes`, `base`, `option`, `compound`, `cases`, `has` | The name of each Malevich directive. Rename any of them if it clashes with another package - see [Name collisions](#name-collisions). |
 | `default_target` | `'default'` | Name of the main element in per-target arrays and `@cases`. |
 | `components.path` | `resource_path('views/components')` | Where `make:malevich` creates components. |
 | `components.prefix` | `null` | Tag prefix for that folder: `null` -> `<x-button>`, `'ui'` -> `<x-ui::button>`. |

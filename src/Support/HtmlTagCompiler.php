@@ -24,7 +24,7 @@ final class HtmlTagCompiler
 {
     public static function compile(string $template): string
     {
-        $directive = Malevich::renderDirective();
+        $directive = Malevich::directive('attributes');
 
         if (! str_contains($template, '@'.$directive) || ! str_contains($template, 'class')) {
             return $template;

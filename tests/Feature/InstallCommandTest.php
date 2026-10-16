@@ -43,7 +43,7 @@ it('creates no components', function () {
 });
 
 it('builds the IntelliSense pattern from the configured options', function () {
-    config(['malevich.options' => ['variant', 'radius'], 'malevich.cases_directive' => 'palette']);
+    config(['malevich.options' => ['variant', 'radius'], 'malevich.directives.cases' => 'palette']);
     Malevich\Malevich::flushConfig();
 
     expect(InstallCommand::classRegex()[0])->toStartWith('@(?:base|option|compound|palette|variant|radius)\s*\(');

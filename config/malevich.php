@@ -24,42 +24,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Render Directive
+    | Directive Names
     |--------------------------------------------------------------------------
     |
-    | Name of the directive that prints an element's resolved attributes:
-    | <button @attributes> ... </button>, <svg @attributes('icon')>. Change it if 'attributes'
-    | collides with a directive of your own.
+    | The name of every directive Malevich registers, by what it does. Rename
+    | any of them if it collides with a directive of your own or of another
+    | package - Malevich checks the names on boot and tells you about a clash.
+    | Run `php artisan view:clear` after changing them.
     |
     */
 
-    'render_directive' => 'attributes',
-
-    /*
-    |--------------------------------------------------------------------------
-    | Cases Directive
-    |--------------------------------------------------------------------------
-    |
-    | Name of the directive that declares an option grouped by its values:
-    | @cases('variant', ['teal' => ['default' => '...', 'title' => '...']]).
-    | Change it if 'cases' collides with a directive of your own.
-    |
-    */
-
-    'cases_directive' => 'cases',
-
-    /*
-    |--------------------------------------------------------------------------
-    | Has Directive
-    |--------------------------------------------------------------------------
-    |
-    | Name of the conditional that renders its body only when an element has
-    | classes: @has('glow') <div @attributes('glow')></div> @endif. Change it if
-    | 'has' collides with a directive of your own.
-    |
-    */
-
-    'has_directive' => 'has',
+    'directives' => [
+        'attributes' => 'attributes',
+        'base' => 'base',
+        'option' => 'option',
+        'compound' => 'compound',
+        'cases' => 'cases',
+        'has' => 'has',
+    ],
 
     /*
     |--------------------------------------------------------------------------

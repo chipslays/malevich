@@ -76,7 +76,7 @@ Per-target values: pass an array keyed by target, main element is `default`:
 
 ## Directive names and collisions
 
-- `@attributes`, `@cases`, `@has` are renamable: `render_directive`, `cases_directive`, `has_directive` in `config/malevich.php`. `@base`, `@compound`, `@option` are fixed.
+- Every directive name is configurable in `config/malevich.php` under `directives` (`attributes`, `base`, `option`, `compound`, `cases`, `has`). In a project that renamed them, use the project's names.
 - Boot throws if a configured name is a Blade built-in, is already registered by the app or another package, is a Malevich name, is a method of `$attributes`, or is invalid.
 - A directive written without parentheses is left as text, so Tailwind's `@variant dark` inside a template stay intact.
 
