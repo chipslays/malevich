@@ -6,6 +6,7 @@ namespace Malevich;
 
 use BackedEnum;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Str;
 use Illuminate\View\ComponentAttributeBag;
 use Illuminate\View\ComponentSlot;
 use Malevich\Exceptions\UnknownValueException;
@@ -232,7 +233,7 @@ final class Element implements Htmlable, Stringable
         }
 
         $attributes = $own + $this->escapedExtra();
-        $attributes = array_diff_key($attributes, array_flip($consumed));
+        $attributes = array_diff_key($attributes, array_flip($consumed)) + $this->dataAttributes();
 
         // The bag is printed without escaping. Classes from the tag are already
         // escaped, so only a quote (from a class map or the class merger) could
@@ -243,6 +244,36 @@ final class Element implements Htmlable, Stringable
         return new ComponentAttributeBag(
             $classes === '' ? $attributes : ['class' => $classes, ...$attributes],
         );
+    }
+
+    /**
+     * `data-variant="primary"` & co. for the main element, when enabled in
+     * config. A true flag is written without a value, a false one is left out,
+     * so Tailwind's `data-loading:` matches exactly when the flag is on.
+     *
+     * @return array<string, string>
+     */
+    private function dataAttributes(): array
+    {
+        if ($this->target !== Malevich::defaultTarget() || ! Malevich::dataAttributes()) {
+            return [];
+        }
+
+        $attributes = [];
+
+        foreach ($this->recipe()->axisNames() as $axis) {
+            $value = $this->choice($axis);
+
+            if ($value === null || $value === 'false') {
+                continue;
+            }
+
+            // Values from the tag are escaped already, so only a quote is turned
+            // into &quot; - like the class, and never escaped twice.
+            $attributes['data-'.str_replace('_', '-', Str::kebab($axis))] = $value === 'true' ? '' : str_replace('"', '&quot;', $value);
+        }
+
+        return $attributes;
     }
 
     /**

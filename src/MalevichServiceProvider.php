@@ -10,9 +10,11 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\View\ComponentAttributeBag;
 use InvalidArgumentException;
+use Malevich\Console\Commands\InstallCommand;
 use Malevich\Console\Commands\MakeCommand;
 use Malevich\Support\ComponentTagCompiler;
 use Malevich\Support\HtmlTagCompiler;
+use Malevich\Testing\ClassAssertions;
 use WeakMap;
 
 class MalevichServiceProvider extends ServiceProvider
@@ -47,7 +49,10 @@ class MalevichServiceProvider extends ServiceProvider
                 __DIR__.'/../resources/views/components' => resource_path('views/vendor/malevich/components'),
             ], 'malevich:components');
 
-            $this->commands([MakeCommand::class]);
+            $this->commands([InstallCommand::class, MakeCommand::class]);
+
+            // Tests run in the console too: ->assertSeeClasses() and expect()->toHaveClasses().
+            ClassAssertions::register();
         }
 
         $this->registerBladeDirectives();

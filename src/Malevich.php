@@ -36,7 +36,7 @@ final class Malevich
     /**
      * Config values read on every render, resolved once.
      *
-     * @var array{default_target: string, render_directive: string, cases_directive: string, has_directive: string, directives: list<string>}|null
+     * @var array{default_target: string, render_directive: string, cases_directive: string, has_directive: string, directives: list<string>, data_attributes: bool, merger: (Closure(string): string)|null}|null
      */
     private static ?array $config = null;
 
@@ -46,7 +46,8 @@ final class Malevich
      *
      *     Malevich::mergeClassesUsing(fn (string $classes) => TailwindMerge::merge($classes));
      *
-     * Pass null to restore the default (de-duplication only).
+     * Pass null to restore the default: tailwind-merge when installed and
+     * `merge_classes` is "auto", de-duplication only otherwise.
      *
      * @param  (Closure(string): string)|null  $merger
      */
@@ -57,7 +58,17 @@ final class Malevich
 
     public static function mergeClasses(string $classes): string
     {
-        return self::$classMerger ? (self::$classMerger)($classes) : $classes;
+        $merger = self::$classMerger ?? self::config()['merger'];
+
+        return $merger ? $merger($classes) : $classes;
+    }
+
+    /**
+     * Whether the main element gets a `data-*` attribute per option.
+     */
+    public static function dataAttributes(): bool
+    {
+        return self::config()['data_attributes'];
     }
 
     /**
@@ -192,7 +203,7 @@ final class Malevich
     }
 
     /**
-     * @return array{default_target: string, render_directive: string, cases_directive: string, has_directive: string, directives: list<string>}
+     * @return array{default_target: string, render_directive: string, cases_directive: string, has_directive: string, directives: list<string>, data_attributes: bool, merger: (Closure(string): string)|null}
      */
     private static function config(): array
     {
@@ -202,7 +213,31 @@ final class Malevich
             'cases_directive' => self::string('malevich.cases_directive', 'cases'),
             'has_directive' => self::string('malevich.has_directive', 'has'),
             'directives' => array_values(array_filter((array) config('malevich.directives', []), is_string(...))),
+            'data_attributes' => (bool) config('malevich.data_attributes', false),
+            'merger' => config('malevich.merge_classes', 'auto') === 'auto' ? self::tailwindMerger() : null,
         ];
+    }
+
+    /**
+     * tailwind-merge, if the application has it installed.
+     *
+     * @return (Closure(string): string)|null
+     */
+    private static function tailwindMerger(): ?Closure
+    {
+        $facade = 'TailwindMerge\Laravel\Facades\TailwindMerge';
+
+        if (class_exists($facade)) {
+            return fn (string $classes): string => $facade::merge($classes);
+        }
+
+        $merger = 'TailwindMerge\TailwindMerge';
+
+        if (class_exists($merger)) {
+            return fn (string $classes): string => $merger::instance()->merge($classes);
+        }
+
+        return null;
     }
 
     private static function string(string $key, string $default): string

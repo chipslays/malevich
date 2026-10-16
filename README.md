@@ -79,14 +79,16 @@ No ternaries, no `{{ $attributes->merge(['class' => ...]) }}`, no JavaScript, no
 21. [Your own directives](#your-own-directives)
 22. [Sharing styles between components](#sharing-styles-between-components)
 23. [Fixing Tailwind conflicts](#fixing-tailwind-conflicts)
-24. [`make:malevich` command](#makemalevich-command)
-25. [The `$attributes` API](#the-attributes-api)
-26. [Configuration](#configuration)
-27. [Editor support (Tailwind IntelliSense)](#editor-support-tailwind-intellisense)
-28. [A complete example](#a-complete-example)
-29. [FAQ and troubleshooting](#faq-and-troubleshooting)
-30. [Cheat sheet](#cheat-sheet)
-31. [Playground and contributing](#playground-and-contributing)
+24. [Data attributes](#data-attributes)
+25. [`make:malevich` command](#makemalevich-command)
+26. [The `$attributes` API](#the-attributes-api)
+27. [Testing components](#testing-components)
+28. [Configuration](#configuration)
+29. [Editor support (Tailwind IntelliSense)](#editor-support-tailwind-intellisense)
+30. [A complete example](#a-complete-example)
+31. [FAQ and troubleshooting](#faq-and-troubleshooting)
+32. [Cheat sheet](#cheat-sheet)
+33. [Playground and contributing](#playground-and-contributing)
 
 ---
 
@@ -131,9 +133,25 @@ Needs Laravel 12 (PHP 8.2+) or Laravel 13 (PHP 8.3+). The service provider is re
 
 ```bash
 composer require malevich/malevich
+php artisan malevich:install
 ```
 
-Publishing the config is optional. You need it only to add your own directives or change paths:
+`malevich:install` is optional, but sets everything up in one go:
+
+- publishes `config/malevich.php`;
+- configures [Tailwind IntelliSense](#editor-support-tailwind-intellisense) in `.vscode/settings.json` (other settings are kept);
+- tells you whether [Tailwind conflicts](#fixing-tailwind-conflicts) are resolved;
+- offers ready-made starter components - alert, badge, button, card, stat, switch - as plain Blade files in your components folder.
+
+```bash
+php artisan malevich:install --components=button --components=badge   # no questions
+php artisan malevich:install --components=all --no-vscode
+php artisan malevich:install --force                                  # overwrite config and components
+```
+
+Existing files are never overwritten without `--force`.
+
+Publishing the config by hand works too. You need it only to add your own directives or change paths:
 
 ```bash
 php artisan vendor:publish --tag malevich:config
@@ -1118,24 +1136,51 @@ Now buttons, inputs and selects always have matching heights.
 
 By default Malevich only removes duplicate classes. If the component has `px-4` and the user passes `class="px-8"`, both end up in the HTML, and the result depends on Tailwind's CSS order - not on your intent.
 
-Plug in [tailwind-merge](https://github.com/gehrisandro/tailwind-merge-laravel) once and the user's classes always win:
+Install [tailwind-merge](https://github.com/gehrisandro/tailwind-merge-laravel) and the user's classes always win - there is nothing to configure, Malevich picks it up by itself:
 
 ```bash
 composer require gehrisandro/tailwind-merge-laravel
 ```
 
+```blade
+<x-button class="px-8">   {{-- class="... px-8", the component's px-4 is gone --}}
+```
+
+The plain PHP package (`gehrisandro/tailwind-merge-php`) is detected as well. To keep only de-duplication even with tailwind-merge installed, set `'merge_classes' => false` in the [config](#configuration).
+
+Need something else? `mergeClassesUsing()` takes any function from the final class string to a new one and always wins over the automatic choice:
+
 ```php
 // app/Providers/AppServiceProvider.php
 use Malevich\Malevich;
-use TailwindMerge\Laravel\Facades\TailwindMerge;
 
 public function boot(): void
 {
-    Malevich::mergeClassesUsing(fn (string $classes) => TailwindMerge::merge($classes));
+    Malevich::mergeClassesUsing(fn (string $classes) => MyMerger::merge($classes));
 }
 ```
 
-`mergeClassesUsing()` accepts any function that takes the final class string and returns a new one, so you can plug in anything else as well.
+## Data attributes
+
+Turn on `data_attributes` in the [config](#configuration) and the main element tells everybody which options it got:
+
+```php
+'data_attributes' => true,
+```
+
+```blade
+<x-button variant="danger" size="lg" loading>Save</x-button>
+```
+
+```html
+<button class="..." data-variant="danger" data-size="lg" data-loading>Save</button>
+```
+
+- Inner elements can react to the parent without props: `<svg class="group-data-[variant=danger]:text-white">` (with `group` on the button), or CSS like `[data-variant=danger] .icon`.
+- Tests and Dusk get stable selectors: `button[data-variant=danger]`.
+- Only options the component declares a class map for are written, and only on the main element.
+- A boolean is written as `data-loading` when true and left out when false, so Tailwind's `data-loading:` variant matches exactly when the flag is on.
+- An attribute you pass yourself (`data-variant="custom"`) wins.
 
 ## `make:malevich` command
 
@@ -1197,6 +1242,26 @@ Every call returns a **new** object, so you can safely branch:
 - Explicit values win over everything, including `@props`.
 - Call them on the `$attributes` the component received. `$attributes->merge([...])` returns a new bag that knows nothing about your class maps, so write `->variant(...)->merge([...])`, not `->merge([...])->variant(...)`.
 
+## Testing components
+
+Malevich adds class assertions to Laravel's test views, components and responses. They pass when **one element** has **all** of the classes, in any order and among any others:
+
+```php
+$this->blade('<x-button variant="danger">Delete</x-button>')
+    ->assertSeeClasses('bg-red-600 text-white')
+    ->assertDontSeeClasses('bg-zinc-900');
+
+$this->get('/settings')->assertSeeClasses(['rounded-2xl', 'shadow-xl']);
+```
+
+With Pest there is an expectation too:
+
+```php
+expect(Blade::render('<x-badge color="green">New</x-badge>'))->toHaveClasses('bg-green-100 text-green-700');
+```
+
+A failure lists the class attributes it found, so a missing or misspelled class is easy to spot. Combine it with [strict mode](#strict-mode) in your `TestCase` to catch values a component doesn't know.
+
 ## Configuration
 
 `config/malevich.php`:
@@ -1210,6 +1275,8 @@ Every call returns a **new** object, so you can safely branch:
 | `default_target` | `'default'` | Name of the main element in per-target arrays and presets. |
 | `components.path` | `resource_path('views/components')` | Where `make:malevich` creates components. |
 | `components.prefix` | `null` | Tag prefix for that folder: `null` -> `<x-button>`, `'ui'` -> `<x-ui::button>`. |
+| `data_attributes` | `false` | Put `data-variant="..."` & co. on the main element. See [Data attributes](#data-attributes). |
+| `merge_classes` | `'auto'` | `'auto'`: resolve Tailwind conflicts with tailwind-merge when it's installed. `false`: only remove duplicates. See [Fixing Tailwind conflicts](#fixing-tailwind-conflicts). |
 
 ### Strict mode
 
@@ -1241,7 +1308,7 @@ Keep it off in production: there an unstyled element is better than an error pag
 
 ## Editor support (Tailwind IntelliSense)
 
-The [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss) extension only looks for classes in `class="..."` and a few known places. To get autocomplete, hover previews and color swatches inside `@base`, `@variant` & co., tell it where the classes are. Add this to `.vscode/settings.json` in your project:
+The [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss) extension only looks for classes in `class="..."` and a few known places. To get autocomplete, hover previews and color swatches inside `@base`, `@variant` & co., tell it where the classes are. `php artisan malevich:install` does it for you (with your own directives included), or add this to `.vscode/settings.json` by hand:
 
 ```json
 {
@@ -1418,6 +1485,7 @@ No, only in Blade components - it needs the component's `$attributes`.
 ```
 
 ```bash
+php artisan malevich:install
 php artisan make:malevich button
 php artisan vendor:publish --tag malevich:config
 php artisan vendor:publish --tag malevich:components

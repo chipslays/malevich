@@ -59,16 +59,29 @@ Mapping: unconditional classes -> `@base`; classes conditioned on one variable -
 
 ## Tailwind conflicts
 
-Default: only duplicates are removed. To let the user's classes win, install `gehrisandro/tailwind-merge-laravel` and in `AppServiceProvider::boot()`:
+Without tailwind-merge only duplicates are removed. Installing `gehrisandro/tailwind-merge-laravel` (or `-php`) is enough: with `'merge_classes' => 'auto'` (the default) Malevich uses it by itself and the user's `class="px-8"` beats the component's `px-4`. `'merge_classes' => false` turns it off. A custom merger always wins:
 
 ```php
-use Malevich\Malevich;
-use TailwindMerge\Laravel\Facades\TailwindMerge;
-
-Malevich::mergeClassesUsing(fn (string $classes) => TailwindMerge::merge($classes));
+Malevich::mergeClassesUsing(fn (string $classes) => MyMerger::merge($classes)); // any fn (string): string
 ```
 
-Any `fn (string): string` works.
+## Data attributes
+
+`'data_attributes' => true` in `config/malevich.php` writes the resolved options on the main element: `data-variant="danger" data-size="lg"`, a true flag as `data-loading`, a false one left out. Use it for `group-data-[variant=danger]:` styling of children and for test/Dusk selectors instead of extra props.
+
+## Testing components
+
+Class assertions are registered automatically:
+
+```php
+$this->blade('<x-button variant="danger">Delete</x-button>')
+    ->assertSeeClasses('bg-red-600 text-white')     // one element with all of them, any order
+    ->assertDontSeeClasses('bg-zinc-900');
+$this->get('/settings')->assertSeeClasses('rounded-2xl');
+expect($html)->toHaveClasses(['bg-red-600', 'text-white']); // Pest
+```
+
+Prefer them over `assertSee('class="..."')`, which breaks on class order. Enable `Malevich::strict()` in tests to catch unknown values.
 
 ## Editor support
 

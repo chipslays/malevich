@@ -93,4 +93,33 @@ return [
 
     'default_target' => 'default',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Data Attributes
+    |--------------------------------------------------------------------------
+    |
+    | Put the resolved value of every option on the component's main element:
+    | <button data-variant="primary" data-size="lg">. Style children with
+    | Tailwind's group-data-[variant=primary]: or select elements in tests.
+    | A boolean option is written as data-loading when true, left out when false.
+    |
+    */
+
+    'data_attributes' => false,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Class Merging
+    |--------------------------------------------------------------------------
+    |
+    | 'auto'  - resolve Tailwind conflicts (px-4 vs px-8) with tailwind-merge
+    |           when gehrisandro/tailwind-merge-laravel (or -php) is installed
+    | false   - only remove duplicate classes
+    |
+    | Malevich::mergeClassesUsing() in a service provider always wins.
+    |
+    */
+
+    'merge_classes' => 'auto',
+
 ];

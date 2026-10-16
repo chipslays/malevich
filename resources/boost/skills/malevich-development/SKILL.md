@@ -80,6 +80,9 @@ php artisan view:clear     # after config changes or package upgrade
 | Default value of an option | `@defaults([...])` (not a `@props` default) |
 | Named bundle of props | `@preset` (defaults in `@defaults`, never non-null `@props`) |
 | Catch value typos in dev | `Malevich::strict(! app()->isProduction())` |
+| Set up a project (config, IntelliSense, starter components) | `php artisan malevich:install` |
+| Children react to the parent's option | `'data_attributes' => true` + `group-data-[variant=x]:` |
+| Test a component's classes | `->assertSeeClasses('a b')` / `expect($html)->toHaveClasses(...)` |
 | Style an inner element | target: `@size('icon', [...])` + `@ui('icon')` |
 | Let users style an inner element | named slot with the same name as the target |
 | Default attributes / a11y | `@ui(merge: [...])` |
@@ -92,7 +95,6 @@ php artisan view:clear     # after config changes or package upgrade
 - Full literal class names only; never `'bg-'.$color.'-500'`.
 - Every default (`@defaults`, or `@props`) must exist as a key in its map.
 - Option defaults go in `@defaults`; a non-null `@props` default silently beats presets.
-- Single quotes inside `@ui(...)` on `<x-...>` tags.
 - With the primitive: pass `:as="$as"`; do not put `href`, `target`, `disabled`, `type` in `@props`.
 - Match the project's existing component conventions, prefix and Tailwind version.
 
