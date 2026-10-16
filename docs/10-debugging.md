@@ -15,7 +15,7 @@ Open the page source or DevTools:
 
 ```html
 <!--
-     ┌─ 🎨 <x-button variant="outline" size="md">
+     ┌─ ⬛ <x-button variant="outline" size="md">
      │
      ├─ 🔹 variant = outline ← from tag
      ├─ 🔹 size = md ← from props
@@ -35,7 +35,7 @@ How to read it:
 
 | Line | Meaning |
 |---|---|
-| `┌─ 🎨 <x-button ...>` | The component and the value of each option. |
+| `┌─ ⬛ <x-button ...>` | The component and the value of each option. |
 | `🔹 size = md ← from props` | Where the value came from: the tag, a `@props` default, or an explicit `->size()` call. |
 | `🔸 ... → classes` | Which declaration added which classes, in the order they are built. |
 | `⚠️ size = xl → no classes for this value` | A value that matches nothing - often a typo. |

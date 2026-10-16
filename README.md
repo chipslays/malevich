@@ -1,4 +1,4 @@
-<h1 align="center">Malevich 🎨</h1>
+<h1 align="center">Malevich ⬛</h1>
 
 <p align="center">
   Variant-driven Blade components without the class spaghetti.

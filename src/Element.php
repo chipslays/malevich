@@ -277,7 +277,7 @@ final class Element implements Htmlable, Stringable
      * The debug comment for this element: empty unless debug mode is on.
      *
      *     <!--
-     *          ┌─ 🎨 <x-button variant="outline" size="md">
+     *          ┌─ ⬛ <x-button variant="outline" size="md">
      *          │
      *          ├─ 🔹 variant = outline ← from tag
      *          ├─ 🔹 size = md ← from props
@@ -308,7 +308,7 @@ final class Element implements Htmlable, Stringable
             };
         }
 
-        $lines = ["┌─ 🎨 <x-{$component}{$props}>{$element}", '│'];
+        $lines = ["┌─ ⬛ <x-{$component}{$props}>{$element}", '│'];
 
         foreach ($this->debugOptionNames() as $option) {
             $choice = $this->choice($option);

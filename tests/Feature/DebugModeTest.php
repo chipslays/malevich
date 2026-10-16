@@ -21,7 +21,7 @@ it('explains every element in a comment in front of it', function () {
 
     expect($html)->toContain(<<<'HTML'
         <!--
-             ┌─ 🎨 <x-button variant="ghost">
+             ┌─ ⬛ <x-button variant="ghost">
              │
              ├─ 🔹 variant = ghost ← from tag
              │
@@ -31,10 +31,10 @@ it('explains every element in a comment in front of it', function () {
              │
              └─ ✅ btn btn-ghost mt-2
         -->
-        <button class="btn btn-ghost mt-2"
+        <button class="mt-2 btn btn-ghost"
         HTML)->toContain(<<<'HTML'
         <!--
-             ┌─ 🎨 <x-button variant="ghost" size="lg"> › icon
+             ┌─ ⬛ <x-button variant="ghost" size="lg"> › icon
              │
              ├─ 🔹 size = lg ← from tag
              │
@@ -77,7 +77,7 @@ it('shows what class merging removed', function () {
 it('explains elements resolved for component tags', function () {
     Malevich::debug();
 
-    expect(renderRaw('<x-ui-button>Go</x-ui-button>'))->toContain("┌─ 🎨 <x-ui-button variant=\"primary\">\n     │\n     ├─ 🔹 variant = primary ← from props");
+    expect(renderRaw('<x-ui-button>Go</x-ui-button>'))->toContain("┌─ ⬛ <x-ui-button variant=\"primary\">\n     │\n     ├─ 🔹 variant = primary ← from props");
 });
 
 it('never breaks out of the comment', function () {
@@ -93,7 +93,7 @@ it('is switched on and off in config, and a call in code wins', function () {
     Malevich::flushConfig();
 
     expect(Malevich::isDebugging())->toBeTrue()
-        ->and(renderRaw('<x-toggle />'))->toContain('┌─ 🎨 <x-toggle>');
+        ->and(renderRaw('<x-toggle />'))->toContain('┌─ ⬛ <x-toggle>');
 
     Malevich::debug(false);
 
