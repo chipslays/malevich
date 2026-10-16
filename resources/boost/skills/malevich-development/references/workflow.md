@@ -110,7 +110,8 @@ Add custom directive names to the first pattern.
 - [ ] No leaked option attributes in the output (`variant="..."`).
 - [ ] Accessibility defaults in `merge:`; `data-disabled:` used with the primitive.
 - [ ] Usage comment at the top of the file.
-- [ ] Rendered once to confirm output, e.g. Pest/PHPUnit: `$this->blade('<x-button variant="outline" size="sm">Go</x-button>')->assertSee('border border-gray-300', false)`, or open it in the app after `php artisan view:clear`.
+- [ ] Rendered once to confirm output, e.g. `$this->blade('<x-button variant="outline" size="sm">Go</x-button>')->assertSeeClasses('border border-gray-300')`, or open it in the app after `php artisan view:clear`.
+- [ ] `php artisan malevich:lint` passes after adding, renaming or removing option values.
 - [ ] If tailwind-merge isn't installed and users will override `class`, mention the conflict caveat.
 
 ## Troubleshooting

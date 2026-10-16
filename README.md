@@ -83,12 +83,13 @@ No ternaries, no `{{ $attributes->merge(['class' => ...]) }}`, no JavaScript, no
 25. [`make:malevich` command](#makemalevich-command)
 26. [The `$attributes` API](#the-attributes-api)
 27. [Testing components](#testing-components)
-28. [Configuration](#configuration)
-29. [Editor support (Tailwind IntelliSense)](#editor-support-tailwind-intellisense)
-30. [A complete example](#a-complete-example)
-31. [FAQ and troubleshooting](#faq-and-troubleshooting)
-32. [Cheat sheet](#cheat-sheet)
-33. [Playground and contributing](#playground-and-contributing)
+28. [Catching typos in CI (`malevich:lint`)](#catching-typos-in-ci-malevichlint)
+29. [Configuration](#configuration)
+30. [Editor support (Tailwind IntelliSense)](#editor-support-tailwind-intellisense)
+31. [A complete example](#a-complete-example)
+32. [FAQ and troubleshooting](#faq-and-troubleshooting)
+33. [Cheat sheet](#cheat-sheet)
+34. [Playground and contributing](#playground-and-contributing)
 
 ---
 
@@ -1262,6 +1263,41 @@ expect(Blade::render('<x-badge color="green">New</x-badge>'))->toHaveClasses('bg
 
 A failure lists the class attributes it found, so a missing or misspelled class is easy to spot. Combine it with [strict mode](#strict-mode) in your `TestCase` to catch values a component doesn't know.
 
+## Catching typos in CI (`malevich:lint`)
+
+[Strict mode](#strict-mode) catches `variant="primay"` when the page is rendered. `malevich:lint` catches it before that, in every view, including pages nobody opened:
+
+```bash
+php artisan malevich:lint
+```
+
+```text
+  ✗ resources/views/settings.blade.php:14  <x-button>
+    variant [primay] is not defined; expected one of: primary, outline, ghost. Did you mean [primary]?
+
+   ERROR  1 problem in 212 tags of 9 components.
+```
+
+It reads your components without rendering them, collects the values every option accepts (keys of the class maps, values tested by `@compound`, maps in `@include`d partials) and the preset names, then checks every `<x-...>` tag in your views. The exit code is `1` when something is wrong, so it can fail a build:
+
+```yaml
+# .github/workflows/ci.yml
+- run: php artisan malevich:lint --format=github   # problems show up as annotations on the pull request
+```
+
+```bash
+php artisan malevich:lint resources/views/admin          # only some folders or files
+```
+
+**It never guesses.** Only what it can read for sure is checked, everything else is skipped:
+
+- Values written as literals are checked: `variant="primary"`. Bound and echoed ones are not: `:variant="$v"`, `variant="{{ $v }}"`.
+- A class map that isn't a literal (`@variant($variants)`) turns off the check for that option; a `@directive($name, ...)`, an unreadable `@compound` or a conditional partial (`@includeIf`) turns it off for the whole component.
+- An option whose map is a plain string (`@color('text-red-500')`) accepts any value.
+- `loading="false"` next to a `['true' => '...']` map is fine, like in strict mode.
+
+So a clean run doesn't prove there are no typos at all - it proves there are none in what can be checked, which with [literal class names](#class-maps) is nearly everything.
+
 ## Configuration
 
 `config/malevich.php`:
@@ -1487,6 +1523,7 @@ No, only in Blade components - it needs the component's `$attributes`.
 ```bash
 php artisan malevich:install
 php artisan make:malevich button
+php artisan malevich:lint
 php artisan vendor:publish --tag malevich:config
 php artisan vendor:publish --tag malevich:components
 ```

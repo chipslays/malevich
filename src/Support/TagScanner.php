@@ -33,7 +33,53 @@ final class TagScanner
      */
     public static function replaceTags(string $template, string $name, Closure $callback): string
     {
-        $pattern = '/
+        return preg_replace_callback(self::tagPattern($name), $callback, $template) ?? $template;
+    }
+
+    /**
+     * Every tag whose name matches $name, with its offset in the template.
+     *
+     * @return list<array{name: string, attributes: string, offset: int}>
+     */
+    public static function findTags(string $template, string $name): array
+    {
+        if (! preg_match_all(self::tagPattern($name), $template, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE)) {
+            return [];
+        }
+
+        return array_map(fn (array $match) => [
+            'name' => $match['name'][0],
+            'attributes' => $match['attributes'][0],
+            'offset' => $match[0][1],
+        ], $matches);
+    }
+
+    /**
+     * Plain `name="value"` attributes of a tag. Bound (`:name`), echoed and
+     * valueless attributes are left out: their value is not known here.
+     *
+     * @return array<string, string>
+     */
+    public static function staticAttributes(string $attributes): array
+    {
+        preg_match_all('/(?:\{\{.*?\}\}|\{!!.*?!!\})(*SKIP)(*FAIL)|(?<=\s)(?<name>[\w\-.]+)=(?:"(?<double>[^"]*)"|\'(?<single>[^\']*)\')/s', $attributes, $matches, PREG_SET_ORDER | PREG_UNMATCHED_AS_NULL);
+
+        $static = [];
+
+        foreach ($matches as $match) {
+            $value = (string) ($match['double'] ?? $match['single'] ?? '');
+
+            if (! str_contains($value, '{{') && ! str_contains($value, '{!!') && ! str_contains($value, '@')) {
+                $static[(string) $match['name']] = $value;
+            }
+        }
+
+        return $static;
+    }
+
+    private static function tagPattern(string $name): string
+    {
+        return '/
             @verbatim.*?@endverbatim(*SKIP)(*FAIL)
             |
             \{\{--.*?--\}\}(*SKIP)(*FAIL)
@@ -53,8 +99,6 @@ final class TagScanner
             )
             \/?>
         /xs';
-
-        return preg_replace_callback($pattern, $callback, $template) ?? $template;
     }
 
     /**
