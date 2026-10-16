@@ -15,6 +15,15 @@ abstract class TestCase extends Orchestra
         return [MalevichServiceProvider::class];
     }
 
+    /**
+     * HTTP tests (the catalog) go through the web middleware, which encrypts
+     * cookies. Locally the playground's .env has a key; CI has none.
+     */
+    protected function defineEnvironment($app): void
+    {
+        $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('m', 32)));
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
