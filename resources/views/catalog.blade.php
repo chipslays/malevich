@@ -14,7 +14,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $name ? "<x-{$name}> · " : '' }}Malevich catalog</title>
+    {{-- Tag names are always written as &lt;x-...: Blade compiles a literal opening x- tag as a component, even inside a PHP string. --}}
+    <title>@if ($name)&lt;x-{{ $name }}&gt; · @endif Malevich catalog</title>
     <script>
         try {
             if (localStorage.getItem('malevich.dark') === '1') document.documentElement.classList.add('dark');

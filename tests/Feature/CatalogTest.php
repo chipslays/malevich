@@ -105,6 +105,12 @@ it('warns when the app CSS is not loaded', function () {
     $this->get('/malevich')->assertOk()->assertSee('Your CSS isn\'t loaded', false);
 });
 
+it('never writes a component tag into its own views', function (string $view) {
+    // Blade (and Livewire on top of it) compiles an opening x- tag anywhere in a view,
+    // even inside a PHP string, so `"<x-{$name}>"` broke the page in some apps.
+    expect(file_get_contents(__DIR__."/../../resources/views/{$view}.blade.php"))->not->toMatch('/<\s*x[-:]/');
+})->with(['catalog', 'catalog-cell']);
+
 it('is a 404 when disabled', function () {
     Catalog::routes();
 
