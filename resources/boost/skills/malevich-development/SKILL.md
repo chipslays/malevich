@@ -80,7 +80,7 @@ php artisan view:clear     # after config changes or package upgrade
 | Default value of an option | `@defaults([...])` (not a `@props` default) |
 | Named bundle of props | `@preset` (defaults in `@defaults`, never non-null `@props`) |
 | Catch value typos in dev | `Malevich::strict(! app()->isProduction())` |
-| Set up a project (config, IntelliSense, starter components) | `php artisan malevich:install` |
+| Set up a project (config, Tailwind IntelliSense) | `php artisan malevich:install` |
 | Children react to the parent's option | `'data_attributes' => true` + `group-data-[variant=x]:` |
 | Switch an option in the browser (Alpine) | `data-*` variants in the maps + `x-bind:data-x`, or `{{ Js::from($attributes->classesFor('variant')) }}` + `x-bind:class="classes[variant]"` |
 | Test a component's classes | `->assertSeeClasses('a b')` / `expect($html)->toHaveClasses(...)` |
@@ -107,7 +107,3 @@ php artisan view:clear     # after config changes or package upgrade
 - [references/ui-and-targets.md](references/ui-and-targets.md): all `@attributes` forms, `merge:`, inner elements, named slots, building on other components, `$attributes` API.
 - [references/primitive.md](references/primitive.md): `<x-malevich::primitive>` behaviour and building buttons/links on it.
 - [references/rules.md](references/rules.md): hard rules, anti-patterns, design principles, project rules advice. Read before finishing any component.
-
-## Starter components
-
-`php artisan malevich:install --components=button` (or `alert`, `badge`, `card`, `stat`, `switch`, `all`) adds finished, working components to the project's components folder. Use one as a starting point when the project has nothing similar, then adapt names and palette.

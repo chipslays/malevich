@@ -142,16 +142,14 @@ php artisan malevich:install
 
 - publishes `config/malevich.php`;
 - configures [Tailwind IntelliSense](#editor-support-tailwind-intellisense) in `.vscode/settings.json` (other settings are kept);
-- tells you whether [Tailwind conflicts](#fixing-tailwind-conflicts) are resolved;
-- offers ready-made starter components - alert, badge, button, card, stat, switch - as plain Blade files in your components folder.
+- tells you whether [Tailwind conflicts](#fixing-tailwind-conflicts) are resolved.
+
+It creates no components - those are yours. Start one with [`make:malevich`](#makemalevich-command).
 
 ```bash
-php artisan malevich:install --components=button --components=badge   # no questions
-php artisan malevich:install --components=all --no-vscode
-php artisan malevich:install --force                                  # overwrite config and components
+php artisan malevich:install --no-vscode   # leave .vscode/settings.json alone
+php artisan malevich:install --force       # overwrite an existing config/malevich.php
 ```
-
-Existing files are never overwritten without `--force`.
 
 Publishing the config by hand works too. You need it only to add your own options or change paths:
 

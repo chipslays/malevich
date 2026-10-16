@@ -30,7 +30,7 @@ A prop that picks classes (`variant`, `size`, `color`, ...) is called an **optio
 
 If you published the config, rename the key. Search your views for `@directive(` and `->directive(`.
 
-Tailwind IntelliSense: in `.vscode/settings.json` replace `directive` with `option` in the Malevich pattern (`@(?:base|variant|color|size|option|compound|cases)...`), or run `php artisan malevich:install --components=none`, which replaces the old entry.
+Tailwind IntelliSense: in `.vscode/settings.json` replace `directive` with `option` in the Malevich pattern (`@(?:base|variant|color|size|option|compound|cases)...`), or run `php artisan malevich:install`, which replaces the old entry.
 
 ### `Malevich` is a facade
 

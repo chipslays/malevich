@@ -10,22 +10,14 @@ use Malevich\Malevich;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 
-use function Laravel\Prompts\multiselect;
-
 #[AsCommand(name: 'malevich:install')]
 class InstallCommand extends Command
 {
     protected $signature = 'malevich:install
-        {--components=* : Starter components to add, e.g. --components=button --components=badge, "all" or "none"}
         {--no-vscode : Do not touch .vscode/settings.json}
-        {--force : Overwrite the config and existing starter components}';
+        {--force : Overwrite an existing config/malevich.php}';
 
-    protected $description = 'Set up Malevich: config, editor support and starter components';
-
-    /**
-     * The starter components: plain Blade files, copied into the application as they are.
-     */
-    private const STARTERS = __DIR__.'/../../../resources/stubs/components';
+    protected $description = 'Set up Malevich: config and editor support';
 
     public function handle(Filesystem $files): int
     {
@@ -38,7 +30,6 @@ class InstallCommand extends Command
         }
 
         $this->reportClassMerging();
-        $this->addComponents($files);
 
         $this->newLine();
         $this->line('  <fg=gray>Next:</>');
@@ -145,78 +136,5 @@ class InstallCommand extends Command
         if (! $installed) {
             $this->line('  To let <comment>class="px-8"</comment> win over a component\'s <comment>px-4</comment>: <info>composer require gehrisandro/tailwind-merge-laravel</info>');
         }
-    }
-
-    protected function addComponents(Filesystem $files): void
-    {
-        $available = $this->availableComponents($files);
-        $chosen = $this->chosenComponents($available);
-
-        if ($chosen === []) {
-            return;
-        }
-
-        $directory = rtrim((string) config('malevich.components.path'), '/\\');
-        $files->ensureDirectoryExists($directory);
-
-        foreach ($chosen as $name) {
-            $path = $directory.'/'.$name.'.blade.php';
-            $tag = OutputFormatter::escape('<'.Malevich::componentTag($name).'>');
-
-            if ($files->exists($path) && ! $this->option('force')) {
-                $this->components->twoColumnDetail("Component {$tag}", '<fg=yellow>exists, skipped</> (use --force)');
-
-                continue;
-            }
-
-            $files->copy(self::STARTERS.'/'.$name.'.blade.php', $path);
-            $this->components->twoColumnDetail("Component <fg=cyan>{$tag}</>", '<fg=green>created</>');
-        }
-    }
-
-    /**
-     * @return list<string>
-     */
-    protected function availableComponents(Filesystem $files): array
-    {
-        $names = array_map(fn (string $path) => basename($path, '.blade.php'), $files->glob(self::STARTERS.'/*.blade.php'));
-        sort($names);
-
-        return $names;
-    }
-
-    /**
-     * @param  list<string>  $available
-     * @return list<string>
-     */
-    protected function chosenComponents(array $available): array
-    {
-        /** @var list<string> $requested */
-        $requested = (array) $this->option('components');
-
-        if ($requested === [] && $this->input->isInteractive()) {
-            /** @var list<string> $requested */
-            $requested = multiselect(
-                label: 'Which starter components do you want?',
-                options: $available,
-                hint: 'Plain Blade files in your components folder - change them as you like.',
-            );
-        }
-
-        if (in_array('none', $requested, true)) {
-            return [];
-        }
-
-        if (in_array('all', $requested, true)) {
-            return $available;
-        }
-
-        $unknown = array_diff($requested, $available);
-
-        if ($unknown !== []) {
-            $this->components->warn('Unknown starter components: '.implode(', ', $unknown).'. Available: '.implode(', ', $available).'.');
-        }
-
-        return array_values(array_intersect($available, $requested));
     }
 }
