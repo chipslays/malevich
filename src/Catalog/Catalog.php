@@ -66,7 +66,7 @@ final class Catalog
     {
         $components = [];
 
-        foreach ($this->scanner->components() as $name => $component) {
+        foreach ($this->scanner->components(all: true) as $name => $component) {
             if (! str_starts_with($name, 'malevich::')) {
                 $components[$name] = ['file' => $component['file'], 'options' => $this->ordered($component['options'])];
             }

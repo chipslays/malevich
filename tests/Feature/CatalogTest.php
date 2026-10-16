@@ -30,6 +30,21 @@ it('lists the components with options, without the package ones', function () {
         ->and($components['cat::chip']['options'])->toBe(['variant' => ['solid', 'outline'], 'size' => ['sm', 'md']]);
 });
 
+it('lists a component with empty class maps too, but not plain Blade components', function () {
+    $catalog = Catalog::make();
+    $components = $catalog->components();
+
+    expect($components)->toHaveKey('cat::fresh')
+        ->not->toHaveKey('cat::plain')
+        ->and($components['cat::fresh']['options'])->toBe([])
+        ->and($catalog->sheet('cat::fresh', $components['cat::fresh'])['default']->html)->toBe('<div class="fresh">Fresh</div>');
+
+    config(['malevich.catalog.enabled' => true]);
+    Catalog::routes();
+
+    $this->get('/malevich?component=cat::fresh')->assertOk()->assertSee('No option values yet');
+});
+
 it('renders the default, every value of every option and a matrix of the first two', function () {
     $catalog = Catalog::make();
     $sheet = $catalog->sheet('cat::chip', $catalog->components()['cat::chip']);

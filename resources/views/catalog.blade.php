@@ -237,7 +237,7 @@
             <div class="mlv-empty">
                 <div class="mlv-logo"></div>
                 <h1>No components yet</h1>
-                <p>Every Blade component with a class map shows up here. Create one with <code>php artisan make:malevich button</code> and refresh.</p>
+                <p>Every Blade component that uses <code>@@attributes</code> shows up here. Create one with <code>php artisan make:malevich button</code> and refresh.</p>
             </div>
         @else
             <header class="mlv-hero">
@@ -246,9 +246,11 @@
                     {!! $icon('file') !!} {{ $relative($component['file']) }}
                 </button>
                 <div class="mlv-chips">
-                    @foreach ($component['options'] as $option => $values)
+                    @forelse ($component['options'] as $option => $values)
                         <span class="mlv-chip"><b>{{ $option }}</b> {{ implode(' · ', $values) }}</span>
-                    @endforeach
+                    @empty
+                        <span class="mlv-chip">No option values yet - fill in a class map like <b>@@variant(['primary' => '...'])</b> and every value shows up here.</span>
+                    @endforelse
                 </div>
             </header>
 

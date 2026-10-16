@@ -19,9 +19,9 @@ A component that fails to render shows its error in place of the preview, so one
 
 ## Which components show up
 
-Every Blade component with a class map shows up by itself. The catalog reads your component files the same way as [`malevich:lint`](11-testing.md#catching-typos-before-the-page-is-rendered) - without running them - to find the values of every option.
+Every Blade component that uses `@attributes` shows up by itself - also a fresh one from `make:malevich` with empty class maps, with just its default preview. The catalog reads your component files the same way as [`malevich:lint`](11-testing.md#catching-typos-before-the-page-is-rendered) - without running them - to find the values of every option.
 
-Values have to be written out to be found: `@size(['sm' => '...', 'lg' => '...'])` is read, `@size($sizes)` isn't. The package's own components (`<x-malevich::primitive>`) are left out.
+Values have to be written out to be found: `@size(['sm' => '...', 'lg' => '...'])` is read, `@size($sizes)` isn't - such an option gets no row of its own. The package's own components (`<x-malevich::primitive>`) are left out.
 
 ## Making previews look real
 

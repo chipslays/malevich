@@ -33,9 +33,11 @@ final class ComponentScanner
      * Components that declare at least one checkable option, by tag name
      * without the `x-` (e.g. "button", "forms.input", "ui::badge").
      *
+     * @param  bool  $all  Also every other component that uses @attributes, with
+     *                     the options that could be read (none for a fresh one).
      * @return array<string, array{file: string, options: array<string, list<string>>}>
      */
-    public function components(): array
+    public function components(bool $all = false): array
     {
         $components = [];
 
@@ -46,6 +48,10 @@ final class ComponentScanner
                 }
 
                 $component = $this->component($file->getPathname());
+
+                if ($component === null && $all && $this->usesMalevich($file->getPathname())) {
+                    $component = ['file' => $file->getPathname(), 'options' => []];
+                }
 
                 if ($component === null) {
                     continue;
@@ -108,6 +114,16 @@ final class ComponentScanner
             'file' => $path,
             'options' => $options,
         ];
+    }
+
+    /**
+     * Whether the file prints an element with @attributes (outside comments).
+     */
+    private function usesMalevich(string $path): bool
+    {
+        $template = (string) preg_replace('/@verbatim.*?@endverbatim|\{\{--.*?--\}\}/s', '', $this->files->get($path));
+
+        return (bool) preg_match('/(?<!@)@'.preg_quote(Malevich::directive('attributes'), '/').'\b/', $template);
     }
 
     /**
