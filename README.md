@@ -81,14 +81,15 @@ No ternaries, no `{{ $attributes->merge(['class' => ...]) }}`, no JavaScript, no
 23. [Switching options in the browser (Alpine)](#switching-options-in-the-browser-alpine)
 24. [`make:malevich` command](#makemalevich-command)
 25. [The `$attributes` API](#the-attributes-api)
-26. [Testing components](#testing-components)
-27. [Catching typos in CI (`malevich:lint`)](#catching-typos-in-ci-malevichlint)
-28. [Configuration](#configuration)
-29. [Editor support (Tailwind IntelliSense)](#editor-support-tailwind-intellisense)
-30. [A complete example](#a-complete-example)
-31. [FAQ and troubleshooting](#faq-and-troubleshooting)
-32. [Cheat sheet](#cheat-sheet)
-33. [Playground and contributing](#playground-and-contributing)
+26. [Component catalog](#component-catalog)
+27. [Testing components](#testing-components)
+28. [Catching typos in CI (`malevich:lint`)](#catching-typos-in-ci-malevichlint)
+29. [Configuration](#configuration)
+30. [Editor support (Tailwind IntelliSense)](#editor-support-tailwind-intellisense)
+31. [A complete example](#a-complete-example)
+32. [FAQ and troubleshooting](#faq-and-troubleshooting)
+33. [Cheat sheet](#cheat-sheet)
+34. [Playground and contributing](#playground-and-contributing)
 
 ---
 
@@ -1231,6 +1232,44 @@ Every call returns a **new** object, so you can safely branch:
 - Explicit values win over everything, including `@props`.
 - Call them on the `$attributes` the component received. `$attributes->merge([...])` returns a new bag that knows nothing about your class maps, so write `->variant(...)->merge([...])`, not `->merge([...])->variant(...)`.
 
+## Component catalog
+
+Open `/malevich` in your local app and see every component rendered with every value of every option - no stories to write, nothing to register:
+
+- **Default** - the component as `<x-button>` renders it.
+- **One row per option** - `variant="primary"`, `variant="outline"`, ... and `checked` / `:checked="false"` for booleans.
+- **A matrix** of the first two options (`variant` × `size`), to see every combination at once.
+- **Copy** puts the tag on the clipboard, **HTML** shows what it renders to, **Dark** switches the page to dark mode (it adds the `dark` class to `<html>`).
+
+The catalog reads the components the same way as [`malevich:lint`](#catching-typos-in-ci-malevichlint): a component shows up as soon as it has a class map with literal keys. A component that fails to render shows its error in place of the preview instead of breaking the page.
+
+The slot text comes from the usage example in the component's leading comment (the one `make:malevich` writes), so the previews look real:
+
+```blade
+{{--
+    <x-alert color="red">
+        <x-slot:title>Payment failed</x-slot:title>
+        Your card was declined.
+    </x-alert>
+--}}
+```
+
+Without such a comment the slot is the component's name (`Button`).
+
+**Your CSS and JS.** The previews are styled by your project, not by the catalog: the page loads the same Vite entries as your app - the `input` of `vite.config.js` (`resources/css/app.css` and `resources/js/app.js` by default). So your Tailwind theme (`--color-primary`, custom fonts, plugins) and your JS (Alpine) work exactly as on your pages. Run `npm run dev` or `npm run build` first.
+
+If your styles come from somewhere else, say so in `catalog.head`:
+
+```php
+'catalog' => [
+    'head' => '<link rel="stylesheet" href="/css/app.css">',
+],
+```
+
+The catalog's own interface has inline styles and never touches the previews. The **Dark** button adds the `dark` class to `<html>`, which is what Tailwind's class-based dark mode (`@custom-variant dark (&:where(.dark, .dark *))`) reacts to.
+
+**Where it is available.** Only when the app runs in the `local` environment. `MALEVICH_CATALOG=true` turns it on anywhere (put it behind auth with `catalog.middleware` then), `MALEVICH_CATALOG=false` turns it off. The URL is `catalog.path`.
+
 ## Testing components
 
 Malevich adds class assertions to Laravel's test views, components and responses. They pass when **one element** has **all** of the classes, in any order and among any others:
@@ -1300,6 +1339,10 @@ So a clean run doesn't prove there are no typos at all - it proves there are non
 | `data_attributes` | `false` | Put `data-variant="..."` & co. on the main element. See [Data attributes](#data-attributes). |
 | `strict` | `env('MALEVICH_STRICT', false)` | Throw on option values a component doesn't define. See [Strict mode](#strict-mode). |
 | `debug` | `env('MALEVICH_DEBUG', false)` | An HTML comment in front of every element explaining its classes. See [Debug mode](#debug-mode). |
+| `catalog.enabled` | `env('MALEVICH_CATALOG')` | The [component catalog](#component-catalog). `null`: only in the `local` environment. |
+| `catalog.path` | `'malevich'` | The catalog's URL. |
+| `catalog.middleware` | `['web']` | Middleware of the catalog route, e.g. add `'auth'`. |
+| `catalog.head` | `null` | HTML for the catalog's `<head>`. `null`: the Vite entries of your app (`input` in `vite.config.js`). |
 | `merge_classes` | `'auto'` | `'auto'`: resolve Tailwind conflicts with tailwind-merge when it's installed. `false`: only remove duplicates. See [Fixing Tailwind conflicts](#fixing-tailwind-conflicts). |
 
 ### Strict mode
@@ -1563,7 +1606,7 @@ composer install
 composer serve
 ```
 
-Open http://127.0.0.1:8000/playground. Components live in `workbench/resources/views/components`, the page is `workbench/resources/views/playground.blade.php`. Edit and refresh.
+Open http://127.0.0.1:8000/playground. Components live in `workbench/resources/views/components`, the page is `workbench/resources/views/playground.blade.php`. Edit and refresh. The [component catalog](#component-catalog) is at http://127.0.0.1:8000/malevich. The playground has no Vite build, so it loads Tailwind from a CDN (`catalog.head` in `workbench/app/Providers/WorkbenchServiceProvider.php`); in your app the catalog uses your own build.
 
 Before sending a pull request:
 

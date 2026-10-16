@@ -133,4 +133,28 @@ return [
 
     'debug' => env('MALEVICH_DEBUG', false),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Component Catalog
+    |--------------------------------------------------------------------------
+    |
+    | A page that renders every component with every value of its options:
+    | http://your-app.test/malevich. Off unless the app runs locally; set
+    | MALEVICH_CATALOG=true or false to decide yourself.
+    |
+    | head - HTML (Blade) for the page's <head>. When null, the page loads the
+    |        same Vite entries as your app (the `input` of vite.config.js), so
+    |        your theme, custom colors, fonts and JS apply to the previews.
+    |        Set it when your CSS comes from somewhere else, e.g.
+    |        '<link rel="stylesheet" href="/css/app.css">'.
+    |
+    */
+
+    'catalog' => [
+        'enabled' => env('MALEVICH_CATALOG', false),
+        'path' => 'malevich',
+        'middleware' => ['web'],
+        'head' => null,
+    ],
+
 ];

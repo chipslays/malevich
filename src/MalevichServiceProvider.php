@@ -10,6 +10,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\View\ComponentAttributeBag;
 use InvalidArgumentException;
+use Malevich\Catalog\Catalog;
 use Malevich\Console\Commands\InstallCommand;
 use Malevich\Console\Commands\LintCommand;
 use Malevich\Console\Commands\MakeCommand;
@@ -57,6 +58,10 @@ class MalevichServiceProvider extends ServiceProvider
         $this->registerBladeDirectives();
         $this->registerAttributeBagMacros();
         $this->registerComponentPath();
+
+        if (Catalog::enabled() && ! $this->app->routesAreCached()) {
+            Catalog::routes();
+        }
     }
 
     protected function registerBladeDirectives(): void
