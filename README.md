@@ -1349,30 +1349,29 @@ Malevich::debug(app()->isLocal());   // or in code - a call wins over the config
 ```
 
 ```html
-<!-- 🧩 <x-button>
-
-     🔧 options
-        variant   outline   (from the tag)
-        size      md        (@props default)
-
-     🎨 classes
-        @base                                 inline-flex items-center rounded-lg font-medium
-        variant=outline                       border border-zinc-300 bg-white
-        size=md                               h-10 px-4
-        @compound(variant=outline, size=md)   shadow-sm
-        class                                 mt-2
-
-     ✅ result
-        inline-flex items-center rounded-lg font-medium border
-        border-zinc-300 bg-white h-10 px-4 shadow-sm mt-2
+<!--
+     ┌─ 🎨 <x-button variant="outline" size="md">
+     │
+     ├─ 🔹 variant = outline ← from tag
+     ├─ 🔹 size = md ← from props
+     │
+     ├─ 🔸 @base → inline-flex items-center rounded-lg font-medium
+     ├─ 🔸 variant = outline → border border-zinc-300 bg-white
+     ├─ 🔸 size = md → h-10 px-4
+     ├─ 🔸 @compound(variant=outline, size=md) → shadow-sm
+     ├─ 🔸 class from the tag → mt-2
+     │
+     └─ ✅ inline-flex items-center rounded-lg font-medium border border-zinc-300 bg-white h-10 px-4 shadow-sm mt-2
 -->
 <button class="inline-flex items-center ...">
 ```
 
-- **🔧 options** - the value of every option that matters for this element and where it came from: the tag, a `@props` default, or an explicit `->size()` call.
-- **🎨 classes** - one row per piece of the class string, in the order it is built: `@base`, each option's map, every matching `@compound`, `merge:` and the `class` from the tag. A value that matches no key says so: `size=xl   ⚠️ no classes for this value`.
-- **🧹 removed by tailwind-merge** shows up when [class merging](#fixing-tailwind-conflicts) dropped something, and lists exactly what.
-- Inner elements get their own comment: `<x-button> › icon`. Long class lists wrap.
+- **`┌─ 🎨 <x-button ...>`** - the component with the value of each of its options.
+- **`🔹 option = value`** - the value of every option that matters for this element and where it came from: the tag, a `@props` default, or an explicit `->size()` call.
+- **`🔸`** - one row per piece of the class string, in the order it is built: `@base`, the element's own `class=""`, each option's map, every matching `@compound`, `merge:` and the class from the tag. A value that matches no key is marked: `├─ ⚠️ size = xl → no classes for this value`.
+- **`├─ 🧹 tailwind-merge removed`** shows up when [class merging](#fixing-tailwind-conflicts) dropped something, and lists exactly what.
+- **`└─ ✅`** - the final classes.
+- Inner elements get their own comment: `<x-button ...> › icon`.
 
 Open the page source or the browser's DevTools to read it. Never turn it on in production: it makes the HTML larger and shows how your components are built.
 
