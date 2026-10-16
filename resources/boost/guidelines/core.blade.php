@@ -5,7 +5,7 @@ Malevich (`malevich/malevich`) builds variant-driven Blade components: you decla
 - Components are plain Blade files (`resources/views/components/...`). Scaffold one with `php artisan make:malevich button`; `php artisan malevich:install` sets up config, Tailwind IntelliSense and starter components.
 - After adding or renaming option values, run `php artisan malevich:lint`: it lists `<x-...>` tags in all views that use a value a component doesn't define. Keep class maps literal so it can read them.
 - Test components with `->assertSeeClasses('bg-red-600 text-white')` on `$this->blade(...)` / responses, or Pest's `expect($html)->toHaveClasses(...)`, not with `assertSee('class="..."')`.
-- Declare directives (`@base`, `@variant`, `@color`, `@size`, `@directive`, `@cases`, `@compound`, `@preset`, `@defaults`) right after `@props` and **before** `@ui`.
+- Declare directives (`@base`, `@variant`, `@color`, `@size`, `@option`, `@cases`, `@compound`, `@preset`, `@defaults`) right after `@props` and **before** `@ui`.
 - Put option defaults in `@defaults(['variant' => 'primary'])`, not in `@props`: a non-null `@props` default beats presets. Options don't need `@props` at all; `@ui` reads the tag.
 - Turn on `Malevich::strict(! app()->isProduction())` in `AppServiceProvider::boot()` so a value with no key in its class map throws instead of silently rendering no classes.
 - When one option restyles several inner elements, `@cases('variant', [value => [target => classes]])` groups the maps by value; `@has('target') ... @endhas` draws a part only when it has classes.

@@ -27,7 +27,7 @@ use UnitEnum;
  *
  *     {{ $attributes->for('icon')->color('danger')->merge(['aria-hidden' => 'true']) }}
  *
- * The value of every axis is resolved in this order, first non-null wins:
+ * The value of every option is resolved in this order, first non-null wins:
  * an explicit call (`->color('danger')`), a variable in the template scope
  * (your @props), an attribute on the component tag, active presets, then
  * the recipe's @defaults.
@@ -41,6 +41,8 @@ use UnitEnum;
 final class Element implements Htmlable, Stringable
 {
     private string $target;
+
+    private readonly MalevichManager $malevich;
 
     /**
      * @var array<string, mixed>
@@ -72,16 +74,19 @@ final class Element implements Htmlable, Stringable
 
     /**
      * @param  ComponentAttributeBag  $attributes  The bag the recipe was declared against.
-     * @param  array<string, mixed>  $scope  Template variables to read axis values from.
+     * @param  array<string, mixed>  $scope  Template variables to read option values from.
      * @param  Recipe|null  $recipe  Defaults to the recipe declared against $attributes.
+     * @param  MalevichManager|null  $malevich  Defaults to the application's.
      */
     public function __construct(
         private readonly ComponentAttributeBag $attributes,
         ?string $target = null,
         private readonly array $scope = [],
         private readonly ?Recipe $recipe = null,
+        ?MalevichManager $malevich = null,
     ) {
-        $this->target = $target ?? Malevich::defaultTarget();
+        $this->malevich = $malevich ?? app(MalevichManager::class);
+        $this->target = $target ?? $this->malevich->defaultTarget();
     }
 
     /**
@@ -110,7 +115,7 @@ final class Element implements Htmlable, Stringable
     }
 
     /**
-     * Set several axis values at once, or switch target and set them:
+     * Set several option values at once, or switch target and set them:
      *
      *     ->use(['size' => 'lg', 'color' => ['icon' => 'red']])
      *     ->use('icon', ['size' => 'lg'])
@@ -132,12 +137,12 @@ final class Element implements Htmlable, Stringable
     }
 
     /**
-     * Set the value of a single axis. An array value is treated as a map
+     * Set the value of a single option. An array value is treated as a map
      * keyed by target.
      */
-    public function directive(string $axis, mixed $value): self
+    public function option(string $option, mixed $value): self
     {
-        return $this->with(fn (self $s) => $s->choices[$axis] = $value);
+        return $this->with(fn (self $s) => $s->choices[$option] = $value);
     }
 
     /**
@@ -161,15 +166,15 @@ final class Element implements Htmlable, Stringable
     }
 
     /**
-     * `->color('red')` is shorthand for `->directive('color', 'red')`.
-     * Anything that is not an axis is forwarded to the resolved attribute bag.
+     * `->color('red')` is shorthand for `->option('color', 'red')`.
+     * Anything that is not an option is forwarded to the resolved attribute bag.
      *
      * @param  array<int, mixed>  $arguments
      */
     public function __call(string $name, array $arguments): mixed
     {
-        if ($this->isAxis($name)) {
-            return $this->directive($name, $arguments[0] ?? null);
+        if ($this->isOption($name)) {
+            return $this->option($name, $arguments[0] ?? null);
         }
 
         return $this->toAttributeBag()->{$name}(...$arguments);
@@ -197,15 +202,15 @@ final class Element implements Htmlable, Stringable
      * @param  array<array-key, mixed>|null  $values  Only the values are used, keys are ignored.
      * @return array<string, string> [value] => classes
      */
-    public function classesFor(string $axis, ?array $values = null): array
+    public function classesFor(string $option, ?array $values = null): array
     {
         $classes = [];
 
-        foreach ($values ?? $this->recipe()->valuesOf($axis) as $value) {
+        foreach ($values ?? $this->recipe()->valuesOf($option) as $value) {
             $key = $this->normalize($value);
 
             if ($key !== null) {
-                $classes[$key] = $this->directive($axis, $value)->toClasses();
+                $classes[$key] = $this->option($option, $value)->toClasses();
             }
         }
 
@@ -220,14 +225,14 @@ final class Element implements Htmlable, Stringable
             $classes = $classes->add($base);
         }
 
-        foreach ($this->recipe()->axesFor($this->target) as $axis => $map) {
+        foreach ($this->recipe()->optionsFor($this->target) as $option => $map) {
             $classes = $classes->add($map['*'] ?? null);
 
-            $choice = $this->choice($axis);
+            $choice = $this->choice($option);
 
             if ($choice !== null && $choice !== '*') {
-                if (! array_key_exists($choice, $map) && Malevich::isStrict()) {
-                    $this->ensureKnown($axis, $choice, $map);
+                if (! array_key_exists($choice, $map) && $this->malevich->isStrict()) {
+                    $this->ensureKnown($option, $choice, $map);
                 }
 
                 $classes = $classes->add($map[$choice] ?? null);
@@ -244,7 +249,7 @@ final class Element implements Htmlable, Stringable
             ->add($this->escapedExtra()['class'] ?? null)
             ->add($this->ownAttributes()?->get('class'));
 
-        return Malevich::mergeClasses((string) $classes);
+        return $this->malevich->mergeClasses((string) $classes);
     }
 
     public function toAttributeBag(): ComponentAttributeBag
@@ -255,7 +260,7 @@ final class Element implements Htmlable, Stringable
     private function resolveAttributeBag(): ComponentAttributeBag
     {
         $own = $this->ownAttributes()?->getAttributes() ?? [];
-        $consumed = [...$this->recipe()->axisNames(), 'class'];
+        $consumed = [...$this->recipe()->optionNames(), 'class'];
 
         if ($this->recipe()->hasPresets()) {
             $consumed[] = 'preset';
@@ -284,14 +289,14 @@ final class Element implements Htmlable, Stringable
      */
     private function dataAttributes(): array
     {
-        if ($this->target !== Malevich::defaultTarget() || ! Malevich::dataAttributes()) {
+        if ($this->target !== $this->malevich->defaultTarget() || ! $this->malevich->dataAttributes()) {
             return [];
         }
 
         $attributes = [];
 
-        foreach ($this->recipe()->axisNames() as $axis) {
-            $value = $this->choice($axis);
+        foreach ($this->recipe()->optionNames() as $option) {
+            $value = $this->choice($option);
 
             if ($value === null || $value === 'false') {
                 continue;
@@ -299,7 +304,7 @@ final class Element implements Htmlable, Stringable
 
             // Values from the tag are escaped already, so only a quote is turned
             // into &quot; - like the class, and never escaped twice.
-            $attributes['data-'.str_replace('_', '-', Str::kebab($axis))] = $value === 'true' ? '' : str_replace('"', '&quot;', $value);
+            $attributes['data-'.str_replace('_', '-', Str::kebab($option))] = $value === 'true' ? '' : str_replace('"', '&quot;', $value);
         }
 
         return $attributes;
@@ -326,30 +331,30 @@ final class Element implements Htmlable, Stringable
         return $this->toHtml();
     }
 
-    private function choice(string $axis): ?string
+    private function choice(string $option): ?string
     {
-        if (! array_key_exists($axis, $this->resolvedChoices)) {
-            $this->resolvedChoices[$axis] = $this->resolveChoice($axis);
+        if (! array_key_exists($option, $this->resolvedChoices)) {
+            $this->resolvedChoices[$option] = $this->resolveChoice($option);
         }
 
-        return $this->resolvedChoices[$axis];
+        return $this->resolvedChoices[$option];
     }
 
-    private function resolveChoice(string $axis): ?string
+    private function resolveChoice(string $option): ?string
     {
-        $value = $this->normalize($this->choices[$axis] ?? null)
-            ?? $this->normalize($this->scope[$axis] ?? null)
-            ?? $this->normalize($this->attributes->get($axis));
+        $value = $this->normalize($this->choices[$option] ?? null)
+            ?? $this->normalize($this->scope[$option] ?? null)
+            ?? $this->normalize($this->attributes->get($option));
 
         if ($value !== null) {
             return $value;
         }
 
         foreach ($this->activePresets() as $preset) {
-            $value = $this->normalize($this->recipe()->presetFor($preset, $this->target)[$axis] ?? null) ?? $value;
+            $value = $this->normalize($this->recipe()->presetFor($preset, $this->target)[$option] ?? null) ?? $value;
         }
 
-        return $value ?? $this->normalize($this->recipe()->defaultsFor($this->target)[$axis] ?? null);
+        return $value ?? $this->normalize($this->recipe()->defaultsFor($this->target)[$option] ?? null);
     }
 
     /**
@@ -359,7 +364,7 @@ final class Element implements Htmlable, Stringable
      *
      * @param  array<array-key, mixed>  $map
      */
-    private function ensureKnown(string $axis, string $value, array $map): void
+    private function ensureKnown(string $option, string $value, array $map): void
     {
         if (array_diff(array_keys($map), ['*']) === []) {
             return;
@@ -367,7 +372,7 @@ final class Element implements Htmlable, Stringable
 
         $known = array_values(array_unique(array_map(
             fn (mixed $known) => (string) $this->normalize($known),
-            $this->recipe()->valuesOf($axis),
+            $this->recipe()->valuesOf($option),
         )));
 
         $boolean = ['true', 'false'];
@@ -376,7 +381,7 @@ final class Element implements Htmlable, Stringable
             return;
         }
 
-        throw UnknownValueException::make($axis, $value, $this->target, $known);
+        throw UnknownValueException::make($option, $value, $this->target === $this->malevich->defaultTarget() ? null : $this->target, $known);
     }
 
     /**
@@ -384,10 +389,10 @@ final class Element implements Htmlable, Stringable
      */
     private function matches(array $conditions): bool
     {
-        foreach ($conditions as $axis => $expected) {
+        foreach ($conditions as $option => $expected) {
             $expected = array_map($this->normalize(...), (array) $expected);
 
-            if (! in_array($this->choice($axis), $expected, true)) {
+            if (! in_array($this->choice($option), $expected, true)) {
                 return false;
             }
         }
@@ -432,17 +437,17 @@ final class Element implements Htmlable, Stringable
      */
     private function ownAttributes(): ?ComponentAttributeBag
     {
-        return $this->slotAttributes ?? ($this->target === Malevich::defaultTarget() ? $this->attributes : null);
+        return $this->slotAttributes ?? ($this->target === $this->malevich->defaultTarget() ? $this->attributes : null);
     }
 
-    private function isAxis(string $name): bool
+    private function isOption(string $name): bool
     {
-        return $this->recipe()->hasAxis($name) || in_array($name, Malevich::directives(), true);
+        return $this->recipe()->hasOption($name) || in_array($name, $this->malevich->options(), true);
     }
 
     private function recipe(): Recipe
     {
-        return $this->recipe ?? Malevich::recipe($this->attributes);
+        return $this->recipe ?? $this->malevich->recipe($this->attributes);
     }
 
     /**

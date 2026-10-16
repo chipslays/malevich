@@ -7,7 +7,7 @@ enum Tone: string
     case Danger = 'danger';
 }
 
-it('resolves axis values straight from @props, no chaining required', function () {
+it('resolves option values straight from @props, no chaining required', function () {
     expect($this->render('<x-badge>New</x-badge>'))
         ->toBe('<span class="inline-flex border text-blue-500 text-base">New</span>');
 });
@@ -22,7 +22,7 @@ it('applies compound rules when every condition matches', function () {
         ->toContain('class="inline-flex font-bold text-red-500 text-base bg-red-500 text-white"');
 });
 
-it('accepts backed enums as axis values', function () {
+it('accepts backed enums as option values', function () {
     expect($this->render('<x-badge :color="$tone" />', ['tone' => Tone::Danger]))
         ->toContain('text-red-500');
 });
@@ -32,7 +32,7 @@ it('appends outside classes last and keeps other attributes', function () {
         ->toBe('<span class="inline-flex border text-blue-500 text-base ml-2" id="x" data-foo="bar"></span>');
 });
 
-it('does not render undeclared axis props as html attributes', function () {
+it('does not render undeclared option props as html attributes', function () {
     $html = $this->render('<x-button variant="ghost">Go</x-button>');
 
     expect($html)->toBe('<button class="btn btn-ghost" type="button"> Go </button>');

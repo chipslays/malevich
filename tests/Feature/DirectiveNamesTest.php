@@ -27,10 +27,10 @@ it('refuses a name that another package already registered', function (string $o
     reboot(['malevich.'.$option => 'taken']);
 })->with(['cases_directive', 'has_directive', 'render_directive'])->throws(InvalidArgumentException::class, 'by your application or another package');
 
-it('refuses an axis that another package already registered', function () {
+it('refuses an option that another package already registered', function () {
     Blade::directive('radius', fn () => '');
 
-    reboot(['malevich.directives' => ['radius']]);
+    reboot(['malevich.options' => ['radius']]);
 })->throws(InvalidArgumentException::class, 'by your application or another package');
 
 it('refuses invalid or doubled names', function (array $config, string $message) {
@@ -39,8 +39,8 @@ it('refuses invalid or doubled names', function (array $config, string $message)
     'cases invalid' => [['malevich.cases_directive' => 'my-theme'], 'is not a valid directive name'],
     'cases = render' => [['malevich.cases_directive' => 'ui'], 'used both as render_directive and cases_directive'],
     'has = cases' => [['malevich.has_directive' => 'cases'], 'used both as cases_directive and has_directive'],
-    'cases as axis' => [['malevich.directives' => ['variant', 'cases']], 'used both as cases_directive and in directives'],
-    'has as axis' => [['malevich.directives' => ['has']], 'used both as has_directive and in directives'],
+    'cases as option' => [['malevich.options' => ['variant', 'cases']], 'used both as cases_directive and in options'],
+    'has as option' => [['malevich.options' => ['has']], 'used both as has_directive and in options'],
 ])->throws(InvalidArgumentException::class);
 
 it('refuses a cases directive that is a fixed Malevich directive', function () {
@@ -85,6 +85,6 @@ it('leaves CSS alone when a directive has no expression', function () {
 });
 
 it('still compiles directives that have an expression', function () {
-    expect(Blade::compileString("@variant(['a' => 'b'])"))->toContain("->axis('variant', ['a' => 'b'])")
+    expect(Blade::compileString("@variant(['a' => 'b'])"))->toContain("->option('variant', ['a' => 'b'])")
         ->and(Blade::compileString("@cases('variant', [])"))->toContain("->cases('variant', [])");
 });

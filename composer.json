@@ -47,7 +47,7 @@
             "@analyse",
             "@test"
         ],
-        "bench": "@php -d opcache.enable_cli=1 benchmarks/run.php",
+        "bench": "@php -d opcache.enable_cli=1 -d opcache.file_update_protection=0 benchmarks/run.php",
         "serve": [
             "Composer\\Config::disableProcessTimeout",
             "@php vendor/bin/testbench serve --ansi"

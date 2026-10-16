@@ -5,7 +5,11 @@
  * hand-written Blade component, and print the cost per component.
  *
  *     composer bench
- *     php -d opcache.enable_cli=1 benchmarks/run.php 5000
+ *     php -d opcache.enable_cli=1 -d opcache.file_update_protection=0 benchmarks/run.php 5000
+ *
+ * opcache.file_update_protection=0 matters: by default opcache skips files
+ * younger than 2 seconds, so freshly compiled views would be parsed again
+ * on every include and the numbers would be several times too high.
  */
 
 declare(strict_types=1);

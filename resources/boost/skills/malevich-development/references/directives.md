@@ -7,9 +7,9 @@ All directives must be declared **before** `@ui`.
 | `@base('classes')` | Classes always present on the main element. |
 | `@base('target', 'classes')` | Always-on classes for inner element `@ui('target')`. Can be repeated, classes add up. |
 | `@variant([...])`, `@color([...])`, `@size([...])` | Class map for `$variant` / `$color` / `$size`. Identical behaviour, only the name differs. |
-| `@directive('radius', [...])` | Class map for any option name. |
-| `@directive('radius', 'target', [...])` / `@variant('target', [...])` | Same, for an inner element. |
-| `@cases('axis', [value => [target => classes]])` | The same class maps as `@variant('target', [...])` per element, grouped by value. |
+| `@option('radius', [...])` | Class map for any option name. |
+| `@option('radius', 'target', [...])` / `@variant('target', [...])` | Same, for an inner element. |
+| `@cases('option', [value => [target => classes]])` | The same class maps as `@variant('target', [...])` per element, grouped by value. |
 | `@compound([conds], 'classes')` | Classes when ALL conditions match. A list value means "any of". Added after all class maps. |
 | `@compound('target', [conds], 'classes')` | Same for an inner element. |
 | `@preset('name', [...])` | Named bundle of values, chosen with `preset="name"`. |
@@ -30,7 +30,7 @@ Key = option value, item = classes. Classes can be a string, a list, or `@class`
 
 - Unknown or `null` value: nothing is added, no error. With `Malevich::strict()` an unknown value throws (see below).
 - Keys are case-sensitive.
-- Booleans are looked up as `'true'` / `'false'`: `@directive('checked', ['true' => '...', 'false' => '...'])`.
+- Booleans are looked up as `'true'` / `'false'`: `@option('checked', ['true' => '...', 'false' => '...'])`.
 - Backed enums by value, plain enums by case name, numbers by string form (`:level="2"` -> `'2'`).
 - `'*'` key = always. Works, but prefer `@base`.
 - Order: classes are added in the order directives appear in the file. Duplicates removed.
@@ -46,7 +46,7 @@ Use it when one prop changes the classes of several elements and you want to rea
 ])
 ```
 
-- First argument: the option name (`variant`, `size`, any `@directive` name).
+- First argument: the option name (`variant`, `size`, any `@option` name).
 - Inner keys are targets, `default` is the main element. A plain string or list as a value styles the main element.
 - It fills the same slots as one `@variant('target', [...])` per element; several `@cases` calls add up. A later `@variant([...])` for the same element and option **replaces** the theme's classes.
 - Conditional classes (`['a', 'b' => $cond]`) go under a target key, never directly as a value.
@@ -108,7 +108,7 @@ Per-target values: pass an array keyed by target, main element is `default`:
 
 ## Directive names and collisions
 
-- `@ui`, `@cases`, `@has` are renamable: `render_directive`, `cases_directive`, `has_directive` in `config/malevich.php`. `@base`, `@compound`, `@preset`, `@defaults`, `@directive` are fixed.
+- `@ui`, `@cases`, `@has` are renamable: `render_directive`, `cases_directive`, `has_directive` in `config/malevich.php`. `@base`, `@compound`, `@preset`, `@defaults`, `@option` are fixed.
 - Boot throws if a configured name is a Blade built-in, is already registered by the app or another package, is a Malevich name, is a method of `$attributes`, or is invalid.
 - A directive written without parentheses is left as text, so Tailwind's `@variant dark` inside a template stay intact.
 
@@ -120,10 +120,10 @@ Per-target values: pass an array keyed by target, main element is `default`:
 
 ```php
 // config/malevich.php
-'directives' => ['variant', 'size', 'color', 'radius'],
+'options' => ['variant', 'size', 'color', 'radius'],
 ```
 
-Gives `@radius([...])` and `$attributes->radius()`; `make:malevich` will scaffold it too. Run `php artisan view:clear` afterwards. Boot throws if the name is a built-in Blade directive (`if`, `class`, `props`, ...), a Malevich directive (`base`, `compound`, `preset`, `defaults`, `directive`, the render directive), a method of `$attributes` (`merge`, `get`, `only`, ...), or contains anything but letters, digits, `_`. For one or two components use `@directive('name', [...])` instead of registering.
+Gives `@radius([...])` and `$attributes->radius()`; `make:malevich` will scaffold it too. Run `php artisan view:clear` afterwards. Boot throws if the name is a built-in Blade directive (`if`, `class`, `props`, ...), a Malevich directive (`base`, `compound`, `preset`, `defaults`, `option`, the render directive), a method of `$attributes` (`merge`, `get`, `only`, ...), or contains anything but letters, digits, `_`. For one or two components use `@option('name', [...])` instead of registering.
 
 ## Sharing class maps
 

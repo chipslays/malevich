@@ -31,7 +31,7 @@ it('lets an attribute on the tag win over the defaults, on every target', functi
         ->toBe('<button class="bg-transparent h-10"><svg class="size-4"></svg>Go</button>');
 });
 
-it('never renders the axes as HTML attributes', function () {
+it('never renders the options as HTML attributes', function () {
     expect($this->render('<x-defaulted variant="ghost" preset="ghost">Go</x-defaulted>'))
         ->not->toContain('variant=', 'preset=');
 });
@@ -44,7 +44,7 @@ it('keeps the old trap of a non-null @props default shadowing a preset', functio
 
 it('ranks the template scope above the defaults', function () {
     $recipe = (new Recipe)
-        ->axis('variant', ['primary' => 'a', 'ghost' => 'b'])
+        ->option('variant', ['primary' => 'a', 'ghost' => 'b'])
         ->defaults(['variant' => 'primary']);
 
     $element = new Element(new ComponentAttributeBag, null, ['variant' => 'ghost'], $recipe);
@@ -55,7 +55,7 @@ it('ranks the template scope above the defaults', function () {
 
 it('ranks an explicit call above everything', function () {
     $recipe = (new Recipe)
-        ->axis('variant', ['primary' => 'a', 'ghost' => 'b'])
+        ->option('variant', ['primary' => 'a', 'ghost' => 'b'])
         ->defaults(['variant' => 'primary']);
 
     expect((new Element(new ComponentAttributeBag, recipe: $recipe))->variant('ghost')->toClasses())->toBe('b');
@@ -63,8 +63,8 @@ it('ranks an explicit call above everything', function () {
 
 it('accepts a per-target value map, like a tag attribute', function () {
     $recipe = (new Recipe)
-        ->axis('size', ['sm' => 'h-8', 'md' => 'h-10'])
-        ->axis('size', 'icon', ['sm' => 'size-3', 'md' => 'size-4'])
+        ->option('size', ['sm' => 'h-8', 'md' => 'h-10'])
+        ->option('size', 'icon', ['sm' => 'size-3', 'md' => 'size-4'])
         ->defaults(['size' => ['default' => 'md', 'icon' => 'sm']]);
 
     $element = new Element(new ComponentAttributeBag, recipe: $recipe);
@@ -100,14 +100,14 @@ it('rejects malformed declarations', function (array $arguments) {
 ])->throws(InvalidArgumentException::class, '@defaults expects');
 
 it('reserves the @defaults name', function () {
-    config(['malevich.directives' => ['defaults']]);
+    config(['malevich.options' => ['defaults']]);
     (new MalevichServiceProvider(app()))->boot();
 })->throws(InvalidArgumentException::class, 'is already a Malevich directive');
 
 it('works through the attribute bag macros too', function () {
     $bag = new ComponentAttributeBag;
     Malevich::recipe($bag)
-        ->axis('color', ['gray' => 'text-gray-500', 'red' => 'text-red-500'])
+        ->option('color', ['gray' => 'text-gray-500', 'red' => 'text-red-500'])
         ->defaults(['color' => 'gray']);
 
     expect($bag->color(null)->toClasses())->toBe('text-gray-500')

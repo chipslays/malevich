@@ -95,8 +95,8 @@ final class ComponentScanner
     {
         $template = (string) preg_replace('/@verbatim.*?@endverbatim|\{\{--.*?--\}\}/s', '', $this->files->get($path));
 
-        $axes = Malevich::directives();
-        $names = ['directive', 'compound', 'preset', 'include', 'includeIf', 'includeWhen', 'includeUnless', 'includeFirst', 'each', Malevich::casesDirective(), ...$axes];
+        $options = Malevich::options();
+        $names = ['option', 'compound', 'preset', 'include', 'includeIf', 'includeWhen', 'includeUnless', 'includeFirst', 'each', Malevich::casesDirective(), ...$options];
         $pattern = '/(?<!@)@(?<name>'.implode('|', array_map(fn (string $name) => preg_quote($name, '/'), $names)).')\b\s*(?<arguments>'.TagScanner::PARENS.')?/';
 
         preg_match_all($pattern, $template, $matches, PREG_SET_ORDER | PREG_UNMATCHED_AS_NULL);
@@ -115,35 +115,35 @@ final class ComponentScanner
                 $name === 'include' => $this->include($arguments, $declarations, $depth),
                 // A partial that may or may not be there could declare anything.
                 str_starts_with($name, 'include'), $name === 'each' => throw new InvalidArgumentException('Conditional partial.'),
-                $name === 'directive' => $this->axis(null, $arguments, $declarations),
+                $name === 'option' => $this->option(null, $arguments, $declarations),
                 $name === 'compound' => $this->compound($arguments, $declarations),
                 $name === 'preset' => $this->preset($arguments, $declarations),
                 $name === Malevich::casesDirective() => $this->cases($arguments, $declarations),
-                default => $this->axis($name, $arguments, $declarations),
+                default => $this->option($name, $arguments, $declarations),
             };
         }
     }
 
     /**
-     * `@variant([...])`, `@size('icon', [...])`, `@directive('padding', [...])`.
+     * `@variant([...])`, `@size('icon', [...])`, `@option('padding', [...])`.
      */
-    private function axis(?string $axis, string $arguments, Declarations $declarations): void
+    private function option(?string $option, string $arguments, Declarations $declarations): void
     {
         $arguments = ConstantExpression::split($arguments);
 
-        // `@directive($name, ...)`: any option might be meant.
-        $axis ??= self::string(array_shift($arguments));
+        // `@option($name, ...)`: any option might be meant.
+        $option ??= self::string(array_shift($arguments));
 
         try {
             $map = ConstantExpression::evaluate((string) end($arguments));
         } catch (InvalidArgumentException) {
-            $declarations->unchecked($axis); // `@size($sizes)`
+            $declarations->unchecked($option); // `@size($sizes)`
 
             return;
         }
 
         // A string instead of a map styles every value alike: any value is fine.
-        is_array($map) ? $declarations->values($axis, array_keys($map)) : $declarations->unchecked($axis);
+        is_array($map) ? $declarations->values($option, array_keys($map)) : $declarations->unchecked($option);
     }
 
     /**
@@ -152,17 +152,17 @@ final class ComponentScanner
     private function cases(string $arguments, Declarations $declarations): void
     {
         $arguments = ConstantExpression::split($arguments);
-        $axis = self::string($arguments[0] ?? null);
+        $option = self::string($arguments[0] ?? null);
 
         try {
             $cases = ConstantExpression::evaluate($arguments[1] ?? '');
         } catch (InvalidArgumentException) {
-            $declarations->unchecked($axis);
+            $declarations->unchecked($option);
 
             return;
         }
 
-        is_array($cases) ? $declarations->values($axis, array_keys($cases)) : $declarations->unchecked($axis);
+        is_array($cases) ? $declarations->values($option, array_keys($cases)) : $declarations->unchecked($option);
     }
 
     /**
@@ -179,8 +179,8 @@ final class ComponentScanner
             throw new InvalidArgumentException('Unexpected @compound arguments.');
         }
 
-        foreach ($conditions as $axis => $expected) {
-            $declarations->values((string) $axis, is_array($expected) ? array_values($expected) : [$expected]);
+        foreach ($conditions as $option => $expected) {
+            $declarations->values((string) $option, is_array($expected) ? array_values($expected) : [$expected]);
         }
     }
 

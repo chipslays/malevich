@@ -95,7 +95,7 @@ class InstallCommand extends Command
 
     /**
      * The settings with Malevich's entries added, replacing an older Malevich
-     * entry (e.g. one written before a directive was added to the config).
+     * entry (e.g. one written before an option was added to the config).
      *
      * @param  array<array-key, mixed>  $settings
      * @return array<array-key, mixed>
@@ -122,10 +122,10 @@ class InstallCommand extends Command
      */
     public static function classRegex(): array
     {
-        $directives = array_unique(['base', 'directive', 'compound', Malevich::casesDirective(), ...Malevich::directives()]);
+        $names = array_unique(['base', 'option', 'compound', Malevich::casesDirective(), ...Malevich::options()]);
 
         return [
-            '@(?:'.implode('|', $directives).')\\s*\\(([\\s\\S]*?)\\)\\s*(?:\\n|$)',
+            '@(?:'.implode('|', $names).')\\s*\\(([\\s\\S]*?)\\)\\s*(?:\\n|$)',
             '(?:^|=>|[\\[(,])\\s*["\']([^"\']*)["\'](?!\\s*=>)',
         ];
     }

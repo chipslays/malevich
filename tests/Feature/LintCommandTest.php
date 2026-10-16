@@ -18,7 +18,7 @@ beforeEach(function () {
             <button @ui>{{ $slot }}</button>
             BLADE,
         'dynamic' => "@variant(\$variants)\n@size(['sm' => 'x'])\n<div @ui></div>",
-        'named' => "@directive(\$name, ['a' => 'b'])\n<div @ui></div>",
+        'named' => "@option(\$name, ['a' => 'b'])\n<div @ui></div>",
         'shared' => "@include('lint-partials.sizes', ['x' => \$y])\n<div @ui></div>",
         'conditional' => "@includeIf('lint-partials.sizes')\n@variant(['a' => 'b'])\n<div @ui></div>",
         'free' => "@color('text-red-500')\n<div @ui></div>",

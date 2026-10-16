@@ -7,39 +7,39 @@ use Malevich\Malevich;
 
 it('defaults to the configured default target', function () {
     $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->axis('color', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', ['red' => 'text-red-500']);
 
-    $Element = (new Element($bag))->directive('color', 'red');
+    $Element = (new Element($bag))->option('color', 'red');
 
     expect($Element->toClasses())->toBe('text-red-500');
 });
 
 it('for() switches the target without mutating the original Element', function () {
     $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->axis('color', 'icon', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', 'icon', ['red' => 'text-red-500']);
 
     $base = new Element($bag);
-    $forIcon = $base->for('icon')->directive('color', 'red');
+    $forIcon = $base->for('icon')->option('color', 'red');
 
     expect($forIcon->toClasses())->toBe('text-red-500')
-        ->and($base->directive('color', 'red')->toClasses())->toBe('');
+        ->and($base->option('color', 'red')->toClasses())->toBe('');
 });
 
 it('applies a wildcard rule regardless of the selected choice', function () {
     $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->axis('size', [
+    Malevich::recipe($bag)->option('size', [
         '*' => 'inline-flex items-center',
         'sm' => 'text-sm',
     ]);
 
-    $Element = (new Element($bag))->directive('size', 'sm');
+    $Element = (new Element($bag))->option('size', 'sm');
 
     expect($Element->toClasses())->toBe('inline-flex items-center text-sm');
 });
 
 it('applies only the wildcard rule when no matching choice was selected', function () {
     $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->axis('size', [
+    Malevich::recipe($bag)->option('size', [
         '*' => 'inline-flex',
         'sm' => 'text-sm',
     ]);
@@ -49,18 +49,18 @@ it('applies only the wildcard rule when no matching choice was selected', functi
     expect($Element->toClasses())->toBe('inline-flex');
 });
 
-it('ignores a selected choice that is not present in the directive map', function () {
+it('ignores a selected choice that is not present in the class map', function () {
     $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->axis('color', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', ['red' => 'text-red-500']);
 
-    $Element = (new Element($bag))->directive('color', 'blue');
+    $Element = (new Element($bag))->option('color', 'blue');
 
     expect($Element->toClasses())->toBe('');
 });
 
 it('use() sets a target and merges choices in one call', function () {
     $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->axis('color', 'btn', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', 'btn', ['red' => 'text-red-500']);
 
     $Element = (new Element($bag))->use('btn', ['color' => 'red']);
 
@@ -69,7 +69,7 @@ it('use() sets a target and merges choices in one call', function () {
 
 it('use() resolves per-target choice arrays against the current target', function () {
     $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->axis('color', 'icon', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', 'icon', ['red' => 'text-red-500']);
 
     $Element = (new Element($bag))
         ->for('icon')
@@ -80,29 +80,29 @@ it('use() resolves per-target choice arrays against the current target', functio
 
 it('use() merges an explicit extra choices array on top', function () {
     $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->axis('color', ['red' => 'text-red-500']);
-    Malevich::recipe($bag)->axis('size', ['lg' => 'text-lg']);
+    Malevich::recipe($bag)->option('color', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('size', ['lg' => 'text-lg']);
 
     $Element = (new Element($bag))->use(['color' => 'red'], ['size' => 'lg']);
 
     expect($Element->toClasses())->toBe('text-red-500 text-lg');
 });
 
-it('directive() resolves a per-target value array against the current target', function () {
+it('option() resolves a per-target value array against the current target', function () {
     $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->axis('color', 'icon', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', 'icon', ['red' => 'text-red-500']);
 
     $Element = (new Element($bag))
         ->for('icon')
-        ->directive('color', ['icon' => 'red', 'label' => 'blue']);
+        ->option('color', ['icon' => 'red', 'label' => 'blue']);
 
     expect($Element->toClasses())->toBe('text-red-500');
 });
 
 it('applies a preset registered for the current target', function () {
     $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->axis('color', ['red' => 'text-red-500']);
-    Malevich::recipe($bag)->axis('size', ['lg' => 'text-lg']);
+    Malevich::recipe($bag)->option('color', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('size', ['lg' => 'text-lg']);
     Malevich::recipe($bag)->preset('danger', ['default' => ['color' => 'red', 'size' => 'lg']]);
 
     $Element = (new Element($bag))->preset('danger');
@@ -112,7 +112,7 @@ it('applies a preset registered for the current target', function () {
 
 it('falls back to the flat preset shape when no per-target key matches', function () {
     $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->axis('color', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', ['red' => 'text-red-500']);
     Malevich::recipe($bag)->preset('danger', ['color' => 'red']);
 
     $Element = (new Element($bag))->preset('danger');
@@ -120,9 +120,9 @@ it('falls back to the flat preset shape when no per-target key matches', functio
     expect($Element->toClasses())->toBe('text-red-500');
 });
 
-it('supports magic method calls as directive shortcuts', function () {
+it('supports magic method calls as option shortcuts', function () {
     $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->axis('variant', ['solid' => 'bg-black']);
+    Malevich::recipe($bag)->option('variant', ['solid' => 'bg-black']);
 
     $Element = (new Element($bag))->variant('solid');
 
@@ -131,7 +131,7 @@ it('supports magic method calls as directive shortcuts', function () {
 
 it('forwards unknown methods to the attribute bag', function () {
     $bag = new ComponentAttributeBag(['id' => 'x', 'class' => 'own']);
-    Malevich::recipe($bag)->axis('color', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', ['red' => 'text-red-500']);
 
     $Element = (new Element($bag))->color('red');
 
@@ -142,18 +142,18 @@ it('forwards unknown methods to the attribute bag', function () {
 
 it('merges the component own class attribute for the default target', function () {
     $bag = new ComponentAttributeBag(['class' => 'own-class']);
-    Malevich::recipe($bag)->axis('color', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', ['red' => 'text-red-500']);
 
-    $Element = (new Element($bag))->directive('color', 'red');
+    $Element = (new Element($bag))->option('color', 'red');
 
     expect($Element->toClasses())->toBe('text-red-500 own-class');
 });
 
 it('does not leak the component class into a non-default target without an explicit slot', function () {
     $bag = new ComponentAttributeBag(['class' => 'own-class']);
-    Malevich::recipe($bag)->axis('color', 'icon', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', 'icon', ['red' => 'text-red-500']);
 
-    $Element = (new Element($bag))->for('icon')->directive('color', 'red');
+    $Element = (new Element($bag))->for('icon')->option('color', 'red');
 
     expect($Element->toClasses())->toBe('text-red-500');
 });
@@ -161,9 +161,9 @@ it('does not leak the component class into a non-default target without an expli
 it('merges the slot class when a slot is explicitly provided for a non-default target', function () {
     $bag = new ComponentAttributeBag(['class' => 'ignored']);
     $slotBag = new ComponentAttributeBag(['class' => 'slot-class']);
-    Malevich::recipe($bag)->axis('color', 'icon', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', 'icon', ['red' => 'text-red-500']);
 
-    $Element = (new Element($bag))->for('icon')->slot($slotBag)->directive('color', 'red');
+    $Element = (new Element($bag))->for('icon')->slot($slotBag)->option('color', 'red');
 
     expect($Element->toClasses())->toBe('text-red-500 slot-class');
 });
@@ -172,29 +172,29 @@ it('extracts attributes from a ComponentSlot instance passed to slot()', functio
     $bag = new ComponentAttributeBag;
     $slotAttributes = new ComponentAttributeBag(['class' => 'slot-class']);
     $slot = new ComponentSlot('content', $slotAttributes->getAttributes());
-    Malevich::recipe($bag)->axis('color', 'icon', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', 'icon', ['red' => 'text-red-500']);
 
-    $Element = (new Element($bag))->for('icon')->slot($slot)->directive('color', 'red');
+    $Element = (new Element($bag))->for('icon')->slot($slot)->option('color', 'red');
 
     expect($Element->toClasses())->toBe('text-red-500 slot-class');
 });
 
 it('ignores slot() when given a value it cannot recognise', function () {
     $bag = new ComponentAttributeBag(['class' => 'own-class']);
-    Malevich::recipe($bag)->axis('color', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', ['red' => 'text-red-500']);
 
     // On the default target, an unrecognised slot() falls back to the
     // component's own attributes rather than merging nothing.
-    $Element = (new Element($bag))->slot('not-an-attribute-bag')->directive('color', 'red');
+    $Element = (new Element($bag))->slot('not-an-attribute-bag')->option('color', 'red');
 
     expect($Element->toClasses())->toBe('text-red-500 own-class');
 });
 
 it('toHtml renders the resolved class together with passthrough attributes', function () {
     $bag = new ComponentAttributeBag(['id' => 'box', 'class' => 'own-class']);
-    Malevich::recipe($bag)->axis('color', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', ['red' => 'text-red-500']);
 
-    $html = (string) (new Element($bag))->directive('color', 'red');
+    $html = (string) (new Element($bag))->option('color', 'red');
 
     expect($html)->toContain('id="box"')
         ->and($html)->toContain('class="text-red-500 own-class"');
@@ -202,9 +202,9 @@ it('toHtml renders the resolved class together with passthrough attributes', fun
 
 it('toHtml renders only the resolved class when there are no own attributes to merge', function () {
     $bag = new ComponentAttributeBag(['id' => 'box']);
-    Malevich::recipe($bag)->axis('color', 'icon', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', 'icon', ['red' => 'text-red-500']);
 
-    $html = (string) (new Element($bag))->for('icon')->directive('color', 'red');
+    $html = (string) (new Element($bag))->for('icon')->option('color', 'red');
 
     expect($html)->toContain('class="text-red-500"')
         ->and($html)->not->toContain('id="box"');
@@ -212,9 +212,9 @@ it('toHtml renders only the resolved class when there are no own attributes to m
 
 it('__toString delegates to toHtml', function () {
     $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->axis('color', ['red' => 'text-red-500']);
+    Malevich::recipe($bag)->option('color', ['red' => 'text-red-500']);
 
-    $Element = (new Element($bag))->directive('color', 'red');
+    $Element = (new Element($bag))->option('color', 'red');
 
     expect($Element->__toString())->toBe($Element->toHtml());
 });
@@ -222,7 +222,7 @@ it('__toString delegates to toHtml', function () {
 it('applies compound rules with "any of" conditions', function () {
     $bag = new ComponentAttributeBag;
     Malevich::recipe($bag)
-        ->axis('size', ['sm' => 'p-1', 'md' => 'p-2'])
+        ->option('size', ['sm' => 'p-1', 'md' => 'p-2'])
         ->compound(['size' => ['sm', 'md']], 'rounded');
 
     expect((new Element($bag))->size('md')->toClasses())->toBe('p-2 rounded')
@@ -232,16 +232,16 @@ it('applies compound rules with "any of" conditions', function () {
 it('lets an explicit value override a preset, and ignores explicit nulls', function () {
     $bag = new ComponentAttributeBag;
     Malevich::recipe($bag)
-        ->axis('color', ['red' => 'text-red-500', 'blue' => 'text-blue-500'])
+        ->option('color', ['red' => 'text-red-500', 'blue' => 'text-blue-500'])
         ->preset('danger', ['color' => 'red']);
 
     expect((new Element($bag))->preset('danger')->color('blue')->toClasses())->toBe('text-blue-500')
         ->and((new Element($bag))->preset('danger')->color(null)->toClasses())->toBe('text-red-500');
 });
 
-it('accepts a plain string as a wildcard-only axis', function () {
+it('accepts a plain string as a wildcard-only option', function () {
     $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->axis('variant', 'inline-flex');
+    Malevich::recipe($bag)->option('variant', 'inline-flex');
 
     expect((new Element($bag))->toClasses())->toBe('inline-flex');
 });
@@ -249,7 +249,7 @@ it('accepts a plain string as a wildcard-only axis', function () {
 it('adds @base classes first, for the root and for targets', function () {
     $bag = new ComponentAttributeBag(['class' => 'own']);
     Malevich::recipe($bag)
-        ->axis('size', ['sm' => 'p-1'])
+        ->option('size', ['sm' => 'p-1'])
         ->base('inline-flex')
         ->base('items-center')
         ->base('title', 'font-semibold');

@@ -15,28 +15,28 @@ function bootWith(array $config): void
     (new MalevichServiceProvider(app()))->boot();
 }
 
-it('refuses directive names that would replace built-in Blade directives', function (string $name) {
-    bootWith(['malevich.directives' => [$name]]);
+it('refuses option names that would replace built-in Blade directives', function (string $name) {
+    bootWith(['malevich.options' => [$name]]);
 })->with(['if', 'class', 'foreach', 'props'])->throws(InvalidArgumentException::class, 'is a built-in Blade directive');
 
-it('refuses directive names that clash with Malevich directives', function () {
-    bootWith(['malevich.directives' => ['preset']]);
+it('refuses option names that clash with Malevich directives', function () {
+    bootWith(['malevich.options' => ['preset']]);
 })->throws(InvalidArgumentException::class, 'is already a Malevich directive');
 
-it('refuses directive names that are methods of $attributes', function () {
-    bootWith(['malevich.directives' => ['merge']]);
+it('refuses option names that are methods of $attributes', function () {
+    bootWith(['malevich.options' => ['merge']]);
 })->throws(InvalidArgumentException::class, 'is already a method of $attributes');
 
-it('refuses invalid directive names', function () {
-    bootWith(['malevich.directives' => ['my-size']]);
+it('refuses invalid option names', function () {
+    bootWith(['malevich.options' => ['my-size']]);
 })->throws(InvalidArgumentException::class, 'is not a valid directive name');
 
-it('refuses a render directive that is also an axis', function () {
-    bootWith(['malevich.directives' => ['variant', 'ui']]);
-})->throws(InvalidArgumentException::class, 'used both as render_directive and in directives');
+it('refuses a render directive that is also an option', function () {
+    bootWith(['malevich.options' => ['variant', 'ui']]);
+})->throws(InvalidArgumentException::class, 'used both as render_directive and in options');
 
 it('accepts the default and custom names', function () {
-    bootWith(['malevich.directives' => ['variant', 'size', 'color', 'radius', 'tone'], 'malevich.render_directive' => 'styles']);
+    bootWith(['malevich.options' => ['variant', 'size', 'color', 'radius', 'tone'], 'malevich.render_directive' => 'styles']);
 
     expect(true)->toBeTrue();
 });
@@ -116,7 +116,7 @@ it('does not escape the classes a second time', function () {
 
 it('keeps memoized results per element', function () {
     $bag = new ComponentAttributeBag;
-    Malevich::recipe($bag)->axis('size', ['sm' => 's', 'lg' => 'l']);
+    Malevich::recipe($bag)->option('size', ['sm' => 's', 'lg' => 'l']);
 
     $small = (new Element($bag))->size('sm');
 

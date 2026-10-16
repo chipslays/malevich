@@ -58,13 +58,13 @@ class MakeCommand extends Command
         $this->components->info($exists ? 'Component overwritten.' : 'Component created.');
         $this->components->twoColumnDetail('File', $this->relative($path));
         $this->components->twoColumnDetail('Tag', "<fg=cyan>{$tag}</>");
-        $this->components->twoColumnDetail('Directives', implode(', ', array_map(
-            fn (string $directive) => "<fg=yellow>{$directive}</>",
-            Malevich::directives(),
+        $this->components->twoColumnDetail('Options', implode(', ', array_map(
+            fn (string $option) => "<fg=yellow>{$option}</>",
+            Malevich::options(),
         )) ?: '<fg=gray>none</>');
 
         $this->newLine();
-        $this->line('  <fg=gray>Next:</> fill in the <comment>@base</comment> classes, the maps for each directive and their <comment>@defaults</comment>.');
+        $this->line('  <fg=gray>Next:</> fill in the <comment>@base</comment> classes, the maps for each option and their <comment>@defaults</comment>.');
         $this->newLine();
 
         return self::SUCCESS;
@@ -83,24 +83,24 @@ class MakeCommand extends Command
 
     /**
      * Fill the stub with one empty class map and one commented-out default
-     * per configured directive, so custom directives show up in new
+     * per configured option, so custom options show up in new
      * components too. Defaults go to @defaults, not @props, so they never
      * shadow a preset.
      */
     protected function render(string $stub): string
     {
-        $directives = Malevich::directives();
+        $options = Malevich::options();
 
-        $defaults = array_map(fn (string $directive) => "    // '{$directive}' => 'name',", $directives);
+        $defaults = array_map(fn (string $option) => "    // '{$option}' => 'name',", $options);
 
-        $maps = array_map(fn (string $directive) => implode("\n", [
-            "@{$directive}([",
+        $maps = array_map(fn (string $option) => implode("\n", [
+            "@{$option}([",
             "    // 'name' => 'classes',",
             '])',
-        ]), $directives);
+        ]), $options);
 
         return str_replace(
-            ['{{ directives }}', '{{ defaults }}', '{{ render }}'],
+            ['{{ options }}', '{{ defaults }}', '{{ render }}'],
             [implode("\n\n", $maps), implode("\n", $defaults), Malevich::renderDirective()],
             $stub,
         );

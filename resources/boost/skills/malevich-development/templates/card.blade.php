@@ -12,7 +12,7 @@
     'elevated' => 'shadow-xl shadow-zinc-200 ring-1 ring-zinc-100',
 ])
 
-@directive('padding', [
+@option('padding', [
     'sm' => 'p-3',
     'md' => 'p-6',
     'lg' => 'p-10',

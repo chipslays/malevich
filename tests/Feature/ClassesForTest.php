@@ -10,9 +10,9 @@ function switchable(array $attributes = []): Element
 
     Malevich::recipe($bag)
         ->base('btn')
-        ->axis('variant', ['primary' => 'bg-black', 'danger' => 'bg-red'])
-        ->axis('size', ['md' => 'h-10', 'lg' => 'h-12'])
-        ->axis('size', 'icon', ['xl' => 'size-6'])
+        ->option('variant', ['primary' => 'bg-black', 'danger' => 'bg-red'])
+        ->option('size', ['md' => 'h-10', 'lg' => 'h-12'])
+        ->option('size', 'icon', ['xl' => 'size-6'])
         ->compound(['variant' => 'danger', 'size' => 'lg'], 'shadow')
         ->compound(['loading' => true], 'cursor-wait');
 
@@ -50,4 +50,11 @@ it('is available on $attributes for Alpine', function () {
             'primary' => 'btn bg-black h-12',
             'danger' => 'btn bg-red h-12 shadow',
         ]);
+});
+
+it('can be called on $attributes directly', function () {
+    $bag = new ComponentAttributeBag;
+    Malevich::recipe($bag)->option('variant', ['primary' => 'a', 'danger' => 'b']);
+
+    expect($bag->classesFor('variant'))->toBe(['primary' => 'a', 'danger' => 'b']);
 });

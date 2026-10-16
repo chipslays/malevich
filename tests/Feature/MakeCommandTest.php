@@ -12,8 +12,8 @@ afterEach(function () {
     (new Filesystem)->deleteDirectory($this->path);
 });
 
-it('creates a component with every configured directive', function () {
-    config(['malevich.directives' => ['variant', 'size', 'color', 'radius']]);
+it('creates a component with every configured option', function () {
+    config(['malevich.options' => ['variant', 'size', 'color', 'radius']]);
 
     $this->artisan('make:malevich', ['name' => 'button'])->assertSuccessful();
 
@@ -21,7 +21,7 @@ it('creates a component with every configured directive', function () {
 
     expect($contents)
         ->toContain("@base('')", '@color([', '@radius([', '@defaults([', "// 'variant' => 'name',", "// 'radius' => 'name',", '<div @ui>')
-        ->not->toContain('@props', '{{ directives }}', '{{ defaults }}', '{{ render }}');
+        ->not->toContain('@props', '{{ options }}', '{{ defaults }}', '{{ render }}');
 });
 
 it('creates nested components and accepts the .blade.php suffix', function () {

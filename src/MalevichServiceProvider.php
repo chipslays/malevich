@@ -23,7 +23,7 @@ class MalevichServiceProvider extends ServiceProvider
     /**
      * Directives with a fixed name. Everything else is configurable.
      */
-    private const FIXED = ['directive', 'base', 'compound', 'preset', 'defaults'];
+    private const FIXED = ['option', 'base', 'compound', 'preset', 'defaults'];
 
     /**
      * Directive names Malevich registered, per Blade compiler. Tells our own
@@ -37,6 +37,9 @@ class MalevichServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/malevich.php', 'malevich');
+
+        $this->app->singleton(MalevichManager::class, fn ($app) => new MalevichManager($app['config']));
+        $this->app->alias(MalevichManager::class, 'malevich');
     }
 
     public function boot(): void
@@ -68,17 +71,17 @@ class MalevichServiceProvider extends ServiceProvider
 
         // The recipe is also kept in a template variable, so @ui still finds it
         // after Blade swaps $attributes for a new bag (e.g. inside <x-...> tags).
-        $recipe = '($'.Malevich::SCOPE_VARIABLE.' ??= \\'.Malevich::class.'::recipe($attributes ?? null))';
+        $recipe = '($'.MalevichManager::SCOPE_VARIABLE.' ??= \\'.Malevich::class.'::recipe($attributes ?? null))';
 
-        $this->declaration('directive', fn (string $expression) => "<?php {$recipe}->axis({$expression}); ?>");
+        $this->declaration('option', fn (string $expression) => "<?php {$recipe}->option({$expression}); ?>");
         $this->declaration('base', fn (string $expression) => "<?php {$recipe}->base({$expression}); ?>");
         $this->declaration('compound', fn (string $expression) => "<?php {$recipe}->compound({$expression}); ?>");
         $this->declaration('preset', fn (string $expression) => "<?php {$recipe}->preset({$expression}); ?>");
         $this->declaration('defaults', fn (string $expression) => "<?php {$recipe}->defaults({$expression}); ?>");
         $this->declaration(Malevich::casesDirective(), fn (string $expression) => "<?php {$recipe}->cases({$expression}); ?>");
 
-        foreach ($this->axes() as $axis) {
-            $this->declaration($axis, fn (string $expression) => "<?php {$recipe}->axis('{$axis}', {$expression}); ?>");
+        foreach ($this->options() as $option) {
+            $this->declaration($option, fn (string $expression) => "<?php {$recipe}->option('{$option}', {$expression}); ?>");
         }
 
         $this->registerDirective(Malevich::renderDirective(), function (string $expression) {
@@ -149,32 +152,32 @@ class MalevichServiceProvider extends ServiceProvider
             'render_directive' => Malevich::renderDirective(),
             'cases_directive' => Malevich::casesDirective(),
             'has_directive' => Malevich::hasDirective(),
-        ] as $option => $name) {
+        ] as $key => $name) {
             if (isset($names[$name])) {
-                throw new InvalidArgumentException("Malevich: [@{$name}] is used both as {$names[$name]} and {$option}. Pick another name in config/malevich.php.");
+                throw new InvalidArgumentException("Malevich: [@{$name}] is used both as {$names[$name]} and {$key}. Pick another name in config/malevich.php.");
             }
 
-            $names[$name] = $option;
+            $names[$name] = $key;
         }
 
         // The closing tag of the has-directive is a name of its own.
         $names['end'.Malevich::hasDirective()] = 'has_directive';
 
-        foreach ($this->axes() as $name) {
-            if (isset($names[$name]) && $names[$name] !== 'directives') {
-                throw new InvalidArgumentException("Malevich: [@{$name}] is used both as {$names[$name]} and in directives. Pick another name in config/malevich.php.");
+        foreach ($this->options() as $name) {
+            if (isset($names[$name]) && $names[$name] !== 'options') {
+                throw new InvalidArgumentException("Malevich: [@{$name}] is used both as {$names[$name]} and in options. Pick another name in config/malevich.php.");
             }
 
-            $names[$name] = 'directives';
+            $names[$name] = 'options';
         }
 
-        foreach ($names as $name => $option) {
+        foreach ($names as $name => $key) {
             $problem = match (true) {
                 ! preg_match('/^[A-Za-z_]\w*$/', $name) => 'is not a valid directive name',
                 in_array($name, self::FIXED, true) => 'is already a Malevich directive',
                 $this->isBuiltIn($name) => 'is a built-in Blade directive',
                 $this->isTakenByAnotherPackage($name) => 'is already registered as a Blade directive by your application or another package',
-                $option === 'directives' && method_exists(ComponentAttributeBag::class, $name) => 'is already a method of $attributes',
+                $key === 'options' && method_exists(ComponentAttributeBag::class, $name) => 'is already a method of $attributes',
                 default => null,
             };
 
@@ -200,12 +203,12 @@ class MalevichServiceProvider extends ServiceProvider
     {
         $this->macro('for', fn (Element $element, string $target) => $element->for($target));
         $this->macro('use', fn (Element $element, mixed ...$arguments) => $element->use(...$arguments));
-        $this->macro('directive', fn (Element $element, string $axis, mixed $value = null) => $element->directive($axis, $value));
+        $this->macro('option', fn (Element $element, string $option, mixed $value = null) => $element->option($option, $value));
         $this->macro('preset', fn (Element $element, ?string $name) => $element->preset($name));
-        $this->macro('classesFor', fn (Element $element, string $axis, ?array $values = null) => $element->classesFor($axis, $values));
+        $this->macro('classesFor', fn (Element $element, string $option, ?array $values = null) => $element->classesFor($option, $values));
 
-        foreach ($this->axes() as $axis) {
-            $this->macro($axis, fn (Element $element, mixed $value = null) => $element->directive($axis, $value));
+        foreach ($this->options() as $option) {
+            $this->macro($option, fn (Element $element, mixed $value = null) => $element->option($option, $value));
         }
     }
 
@@ -221,7 +224,7 @@ class MalevichServiceProvider extends ServiceProvider
             return;
         }
 
-        ComponentAttributeBag::macro($name, function (mixed ...$arguments) use ($callback): Element {
+        ComponentAttributeBag::macro($name, function (mixed ...$arguments) use ($callback): mixed {
             return $callback(new Element($this), ...$arguments);
         });
     }
@@ -250,8 +253,8 @@ class MalevichServiceProvider extends ServiceProvider
     /**
      * @return list<string>
      */
-    protected function axes(): array
+    protected function options(): array
     {
-        return Malevich::directives();
+        return Malevich::options();
     }
 }

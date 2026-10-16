@@ -29,7 +29,7 @@
 - Declaring `href`/`disabled` in `@props` of a primitive-based component without forwarding.
 - `@ui` in layouts/pages.
 - Using `'*'` keys where `@base` is clearer.
-- Registering a global directive for an option used in one component (use `@directive`).
+- Registering a global directive for an option used in one component (use `@option`).
 - Custom directive names that collide with Blade, Malevich or `$attributes` methods.
 - Assuming Tailwind conflicts resolve themselves: without tailwind-merge installed (or with `'merge_classes' => false`), `px-4` + user `px-8` both remain.
 - Forgetting `php artisan view:clear` after changing `config/malevich.php` or upgrading the package.

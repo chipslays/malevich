@@ -40,11 +40,11 @@ it('publishes the config, configures VS Code and adds the chosen components', fu
         ]);
 });
 
-it('builds the IntelliSense pattern from the configured directives', function () {
-    config(['malevich.directives' => ['variant', 'radius'], 'malevich.cases_directive' => 'palette']);
+it('builds the IntelliSense pattern from the configured options', function () {
+    config(['malevich.options' => ['variant', 'radius'], 'malevich.cases_directive' => 'palette']);
     Malevich\Malevich::flushConfig();
 
-    expect(InstallCommand::classRegex()[0])->toStartWith('@(?:base|directive|compound|palette|variant|radius)\s*\(');
+    expect(InstallCommand::classRegex()[0])->toStartWith('@(?:base|option|compound|palette|variant|radius)\s*\(');
 });
 
 it('keeps existing VS Code settings and replaces an older Malevich entry', function () {

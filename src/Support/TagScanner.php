@@ -112,7 +112,7 @@ final class TagScanner
     }
 
     /**
-     * Find `@directive` or `@directive(...)` among the attributes of a tag,
+     * Find `@name` or `@name(...)` (e.g. `@ui`) among the attributes of a tag,
      * skipping quoted values and echoes.
      *
      * @return array{offset: int, length: int, arguments: string}|null

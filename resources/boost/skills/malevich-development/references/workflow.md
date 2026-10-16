@@ -2,7 +2,7 @@
 
 ## Before writing a component
 
-1. Read `config/malevich.php` (`directives`, `components.path`, `components.prefix`) and the existing components in that folder. Match naming, option and value names, palette, token style (`zinc` vs `gray`).
+1. Read `config/malevich.php` (`options`, `components.path`, `components.prefix`) and the existing components in that folder. Match naming, option and value names, palette, token style (`zinc` vs `gray`).
 2. Check whether a similar component exists; extend it instead of duplicating.
 3. Check the Tailwind major version (v3/v4 syntax differences) and match it.
 4. Scaffold: `php artisan make:malevich name` (or by hand). Delete unused blocks.
@@ -17,7 +17,7 @@ php artisan make:malevich forms/input     # forms/input.blade.php (forms.input a
 php artisan make:malevich button --force  # overwrite
 ```
 
-Scaffolds empty `@base`, an empty map for every directive in config (including custom) and a `@defaults` block with a commented-out line per directive (no `@props`). Never overwrites without `--force`. Tag depends on `components.prefix`:
+Scaffolds empty `@base`, an empty map for every option in config (including custom) and a `@defaults` block with a commented-out line per option (no `@props`). Never overwrites without `--force`. Tag depends on `components.prefix`:
 
 | prefix | file | tag |
 |---|---|---|
@@ -92,14 +92,14 @@ Tailwind IntelliSense `.vscode/settings.json`:
     "tailwindCSS.includeLanguages": { "blade": "html" },
     "tailwindCSS.experimental.classRegex": [
         [
-            "@(?:base|variant|color|size|directive|compound|cases)\\s*\\(([\\s\\S]*?)\\)\\s*(?:\\n|$)",
+            "@(?:base|variant|color|size|option|compound|cases)\\s*\\(([\\s\\S]*?)\\)\\s*(?:\\n|$)",
             "(?:^|=>|[\\[(,])\\s*[\"']([^\"']*)[\"'](?!\\s*=>)"
         ]
     ]
 }
 ```
 
-Add custom directive names to the first pattern.
+Add custom option names to the first pattern.
 
 ## Verification checklist
 

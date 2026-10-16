@@ -39,31 +39,31 @@ it('fills the same slots as one declaration per target', function () {
         'dark' => ['title' => 'c'],
     ]);
 
-    expect($recipe->axesFor('default'))->toBe(['variant' => ['teal' => 'a']])
-        ->and($recipe->axesFor('title'))->toBe(['variant' => ['teal' => 'b', 'dark' => 'c']]);
+    expect($recipe->optionsFor('default'))->toBe(['variant' => ['teal' => 'a']])
+        ->and($recipe->optionsFor('title'))->toBe(['variant' => ['teal' => 'b', 'dark' => 'c']]);
 });
 
 it('treats a plain value as classes of the root element', function () {
     $recipe = (new Recipe)->cases('variant', ['teal' => 'a b', 'dark' => ['c', 'd']]);
 
-    expect($recipe->axesFor('default'))->toBe(['variant' => ['teal' => 'a b', 'dark' => ['c', 'd']]]);
+    expect($recipe->optionsFor('default'))->toBe(['variant' => ['teal' => 'a b', 'dark' => ['c', 'd']]]);
 });
 
-it('merges several declarations of the same axis and value', function () {
+it('merges several declarations of the same option and value', function () {
     $recipe = (new Recipe)
         ->cases('variant', ['teal' => ['title' => ['a', 'hidden' => false]]])
         ->cases('variant', ['teal' => ['title' => 'b'], 'dark' => ['title' => 'c']]);
 
-    expect($recipe->axesFor('title'))->toBe(['variant' => ['teal' => 'a b', 'dark' => 'c']]);
+    expect($recipe->optionsFor('title'))->toBe(['variant' => ['teal' => 'a b', 'dark' => 'c']]);
 });
 
 it('keeps a catch-all value working', function () {
     $recipe = (new Recipe)->cases('variant', ['*' => ['title' => 'always']]);
 
-    expect($recipe->axesFor('title'))->toBe(['variant' => ['*' => 'always']]);
+    expect($recipe->optionsFor('title'))->toBe(['variant' => ['*' => 'always']]);
 });
 
-it('is picked up as an axis, so the value never renders as an attribute', function () {
+it('is picked up as an option, so the value never renders as an attribute', function () {
     expect($this->render('<x-cased variant="graphite">Hi</x-cased>'))->not->toContain('variant=');
 });
 
@@ -72,17 +72,17 @@ it('declares cases on the bag when the template runs', function () {
 
     Blade::render("@php(\$attributes = \$bag)\n@cases('size', ['sm' => ['icon' => 'size-3']])", ['bag' => $bag]);
 
-    expect(Malevich::recipe($bag)->axesFor('icon'))->toBe(['size' => ['sm' => 'size-3']]);
+    expect(Malevich::recipe($bag)->optionsFor('icon'))->toBe(['size' => ['sm' => 'size-3']]);
 });
 
 it('adds to an earlier @variant, but is replaced by a later one', function () {
     $recipe = (new Recipe)
-        ->axis('variant', ['*' => 'base', 'teal' => 'a'])
+        ->option('variant', ['*' => 'base', 'teal' => 'a'])
         ->cases('variant', ['teal' => ['default' => 'b']]);
 
-    expect($recipe->axesFor('default'))->toBe(['variant' => ['*' => 'base', 'teal' => 'a b']]);
+    expect($recipe->optionsFor('default'))->toBe(['variant' => ['*' => 'base', 'teal' => 'a b']]);
 
-    $recipe->axis('variant', ['teal' => 'c']);
+    $recipe->option('variant', ['teal' => 'c']);
 
-    expect($recipe->axesFor('default'))->toBe(['variant' => ['teal' => 'c']]);
+    expect($recipe->optionsFor('default'))->toBe(['variant' => ['teal' => 'c']]);
 });

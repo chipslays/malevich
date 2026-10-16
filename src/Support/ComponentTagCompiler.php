@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Malevich\Support;
 
 use Malevich\Malevich;
+use Malevich\MalevichManager;
 
 /**
  * Makes `@ui` work inside component tags:
@@ -38,7 +39,7 @@ final class ComponentTagCompiler
                 return $tag[0];
             }
 
-            $variable = '$'.Malevich::UI_VARIABLE;
+            $variable = '$'.MalevichManager::UI_VARIABLE;
             $arguments = $found['arguments'] === '' ? '' : ", {$found['arguments']}";
             $attributes = substr_replace($tag['attributes'], ":attributes=\"{$variable}->toAttributeBag()\"", $found['offset'], $found['length']);
 

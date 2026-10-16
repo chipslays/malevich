@@ -9,7 +9,7 @@ use InvalidArgumentException;
 
 /**
  * Everything a single component instance declared about its styling:
- * the class map of every axis (@variant, @color, @size, ...), compound
+ * the class map of every option (@variant, @color, @size, ...), compound
  * rules (@compound), presets (@preset) and default values (@defaults),
  * grouped by target.
  *
@@ -20,9 +20,9 @@ use InvalidArgumentException;
 final class Recipe
 {
     /**
-     * @var array<string, array<string, mixed>> [target][axis] => class map
+     * @var array<string, array<string, mixed>> [target][option] => class map
      */
-    private array $axes = [];
+    private array $options = [];
 
     /**
      * @var array<string, list<array{0: array<string, mixed>, 1: mixed}>> [target][] => [conditions, classes]
@@ -40,14 +40,19 @@ final class Recipe
     private array $base = [];
 
     /**
-     * @var array<string, mixed> [axis] => value, for every target
+     * @var array<string, mixed> [option] => value, for every target
      */
     private array $defaults = [];
 
     /**
-     * @var array<string, array<string, mixed>> [target][axis] => value
+     * @var array<string, array<string, mixed>> [target][option] => value
      */
     private array $targetDefaults = [];
+
+    /**
+     * @param  string  $defaultTarget  The name of the component's main element.
+     */
+    public function __construct(private readonly string $defaultTarget = 'default') {}
 
     /**
      * Classes an element always has. Accepts `(classes)` or `(target, classes)`.
@@ -55,7 +60,7 @@ final class Recipe
     public function base(mixed ...$args): self
     {
         [$target, $classes] = match (count($args)) {
-            1 => [Malevich::defaultTarget(), $args[0]],
+            1 => [$this->defaultTarget, $args[0]],
             2 => [$args[0], $args[1]],
             default => throw new InvalidArgumentException("@base expects ('classes') or ('target', 'classes')."),
         };
@@ -68,46 +73,46 @@ final class Recipe
     /**
      * Accepts `(map)` or `(target, map)`.
      */
-    public function axis(string $axis, mixed ...$args): self
+    public function option(string $option, mixed ...$args): self
     {
         [$target, $map] = match (count($args)) {
-            1 => [Malevich::defaultTarget(), $args[0]],
+            1 => [$this->defaultTarget, $args[0]],
             2 => [$args[0], $args[1]],
-            default => throw new InvalidArgumentException("@{$axis} expects ([map]) or ('target', [map])."),
+            default => throw new InvalidArgumentException("@{$option} expects ([map]) or ('target', [map])."),
         };
 
-        $this->axes[$target][$axis] = is_array($map) ? $map : ['*' => $map];
+        $this->options[$target][$option] = is_array($map) ? $map : ['*' => $map];
 
         return $this;
     }
 
     /**
-     * Declare an axis grouped by its values instead of by targets:
+     * Declare an option grouped by its values instead of by targets:
      *
      *     ->cases('variant', [
      *         'teal' => ['default' => 'bg-teal-600', 'title' => 'text-teal-100'],
      *         'dark' => ['default' => 'bg-gray-900', 'title' => 'text-white'],
      *     ])
      *
-     * It fills the same [target][axis][value] slots as one `axis()` call per
-     * target would, and merges into what is already declared for the axis.
+     * It fills the same [target][option][value] slots as one `option()` call per
+     * target would, and merges into what is already declared for the option.
      * A value may also be plain classes (a string or a list), which style
      * the root element.
      *
-     * @param  array<string, mixed>  $cases  [axis value] => [target => classes]
+     * @param  array<string, mixed>  $cases  [option value] => [target => classes]
      */
-    public function cases(string $axis, array $cases): self
+    public function cases(string $option, array $cases): self
     {
         foreach ($cases as $value => $targets) {
             if (! is_array($targets) || array_is_list($targets)) {
-                $targets = [Malevich::defaultTarget() => $targets];
+                $targets = [$this->defaultTarget => $targets];
             }
 
             foreach ($targets as $target => $classes) {
                 $target = (string) $target;
-                $existing = $this->axes[$target][$axis][$value] ?? null;
+                $existing = $this->options[$target][$option][$value] ?? null;
 
-                $this->axes[$target][$axis][$value] = $existing === null
+                $this->options[$target][$option][$value] = $existing === null
                     ? $classes
                     : trim(Arr::toCssClasses($existing).' '.Arr::toCssClasses($classes));
             }
@@ -122,7 +127,7 @@ final class Recipe
     public function compound(mixed ...$args): self
     {
         [$target, $conditions, $classes] = match (count($args)) {
-            2 => [Malevich::defaultTarget(), $args[0], $args[1]],
+            2 => [$this->defaultTarget, $args[0], $args[1]],
             3 => $args,
             default => throw new InvalidArgumentException("@compound expects ([conditions], classes) or ('target', [conditions], classes)."),
         };
@@ -133,7 +138,7 @@ final class Recipe
     }
 
     /**
-     * @param  array<string, mixed>  $values  Axis values, either flat or keyed by target.
+     * @param  array<string, mixed>  $values  Option values, either flat or keyed by target.
      */
     public function preset(string $name, array $values): self
     {
@@ -143,7 +148,7 @@ final class Recipe
     }
 
     /**
-     * The value an axis takes when nothing else picks one: not the template,
+     * The value an option takes when nothing else picks one: not the template,
      * not the tag, not a preset. Accepts `(values)`, which applies to every
      * target, or `(target, values)`, which applies to that target only.
      * Later calls add to earlier ones.
@@ -180,9 +185,9 @@ final class Recipe
     /**
      * @return array<string, mixed>
      */
-    public function axesFor(string $target): array
+    public function optionsFor(string $target): array
     {
-        return $this->axes[$target] ?? [];
+        return $this->options[$target] ?? [];
     }
 
     /**
@@ -218,24 +223,24 @@ final class Recipe
     }
 
     /**
-     * Every value the axis knows about, on any target: the keys of its class
+     * Every value the option knows about, on any target: the keys of its class
      * maps and the values its @compound conditions test for. Used to tell a
      * typo apart from a value that only styles some of the elements.
      *
      * @return list<mixed>
      */
-    public function valuesOf(string $axis): array
+    public function valuesOf(string $option): array
     {
         $values = [];
 
-        foreach ($this->axes as $axes) {
-            $values = [...$values, ...array_keys($axes[$axis] ?? [])];
+        foreach ($this->options as $options) {
+            $values = [...$values, ...array_keys($options[$option] ?? [])];
         }
 
         foreach ($this->compounds as $compounds) {
             foreach ($compounds as [$conditions]) {
-                if (array_key_exists($axis, $conditions)) {
-                    $expected = $conditions[$axis];
+                if (array_key_exists($option, $conditions)) {
+                    $expected = $conditions[$option];
                     $values = [...$values, ...(is_array($expected) ? array_values($expected) : [$expected])];
                 }
             }
@@ -249,10 +254,10 @@ final class Recipe
         return $this->presets !== [];
     }
 
-    public function hasAxis(string $axis): bool
+    public function hasOption(string $option): bool
     {
-        foreach ($this->axes as $axes) {
-            if (array_key_exists($axis, $axes)) {
+        foreach ($this->options as $options) {
+            if (array_key_exists($option, $options)) {
                 return true;
             }
         }
@@ -261,13 +266,13 @@ final class Recipe
     }
 
     /**
-     * Names of every axis declared on any target - these are the
+     * Names of every option declared on any target - these are the
      * attributes the component consumes and must not render as HTML.
      *
      * @return list<string>
      */
-    public function axisNames(): array
+    public function optionNames(): array
     {
-        return array_values(array_unique(array_merge([], ...array_map(array_keys(...), array_values($this->axes)))));
+        return array_values(array_unique(array_merge([], ...array_map(array_keys(...), array_values($this->options)))));
     }
 }

@@ -14,8 +14,8 @@ use Stringable;
  * class string.
  *
  * Instances are immutable: add() returns a new instance rather than
- * mutating the current one, which lets a Element resolve several
- * directives against the same starting builder without them interfering
+ * mutating the current one, which lets an Element resolve several
+ * options against the same starting builder without them interfering
  * with one another.
  */
 final class ClassList implements Stringable

@@ -90,4 +90,4 @@ Same engine as methods. They **cannot see template variables**, pass values your
 <div x-bind:class="'{{ $attributes->for('panel')->toClasses() }}'">
 ```
 
-`->variant()/->color()/->size()/custom()`, `->directive('name', 'x')`, `->use([...])`, `->use('target', [...])`, `->for('target')`, `->preset('name')`, `->slot($slot)`, `->merge([...])`, `->toClasses()`, plus regular `$attributes` methods. Each call returns a new object. Explicit values win over `@props`. Call option methods **before** `->merge()` (merge returns a bag that doesn't know your class maps).
+`->variant()/->color()/->size()/custom()`, `->option('name', 'x')`, `->use([...])`, `->use('target', [...])`, `->for('target')`, `->preset('name')`, `->slot($slot)`, `->merge([...])`, `->toClasses()`, plus regular `$attributes` methods. Each call returns a new object. Explicit values win over `@props`. Call option methods **before** `->merge()` (merge returns a bag that doesn't know your class maps).

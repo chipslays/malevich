@@ -4,18 +4,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Axes
+    | Options
     |--------------------------------------------------------------------------
     |
-    | Every name listed here becomes a Blade directive that declares a class
-    | map (@variant([...])) and a fluent method on the attribute bag
-    | ($attributes->variant('solid')). Add your own: 'radius', 'shadow', ...
+    | An option is a prop that picks classes: <x-button variant="ghost">.
+    | Every name listed here gets its own Blade directive that declares the
+    | class map (@variant([...])) and a method on the attribute bag
+    | ($attributes->variant('ghost')). Add your own: 'radius', 'shadow', ...
     |
-    | Any other name still works through @directive('name', [...]).
+    | Any other name works through @option('name', [...]).
     |
     */
 
-    'directives' => [
+    'options' => [
         'variant',
         'size',
         'color',
@@ -39,7 +40,7 @@ return [
     | Cases Directive
     |--------------------------------------------------------------------------
     |
-    | Name of the directive that declares an axis grouped by its values:
+    | Name of the directive that declares an option grouped by its values:
     | @cases('variant', ['teal' => ['default' => '...', 'title' => '...']]).
     | Change it if 'cases' collides with a directive of your own.
     |

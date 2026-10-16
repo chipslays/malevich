@@ -54,7 +54,7 @@ No ternaries, no `{{ $attributes->merge(['class' => ...]) }}`, no JavaScript, no
 5. [`@base` - classes that are always there](#base---classes-that-are-always-there)
 6. [Class maps](#class-maps)
 7. [`@variant`, `@color`, `@size`](#variant-color-size)
-8. [`@directive` - the universal form](#directive---the-universal-form)
+8. [`@option` - the universal form](#option---the-universal-form)
 9. [`@compound` - classes for a combination](#compound---classes-for-a-combination)
 10. [`@preset` - saved combinations](#preset---saved-combinations)
 11. [`@defaults` - default values](#defaults---default-values)
@@ -76,7 +76,7 @@ No ternaries, no `{{ $attributes->merge(['class' => ...]) }}`, no JavaScript, no
 
 **More**
 
-21. [Your own directives](#your-own-directives)
+21. [Your own options](#your-own-options)
 22. [Sharing styles between components](#sharing-styles-between-components)
 23. [Fixing Tailwind conflicts](#fixing-tailwind-conflicts)
 24. [Data attributes](#data-attributes)
@@ -131,7 +131,7 @@ It works, but every new option makes it harder to read. Malevich splits it into 
 
 ## Installation
 
-Needs Laravel 12 (PHP 8.2+) or Laravel 13 (PHP 8.3+). The service provider is registered automatically.
+Needs Laravel 12 (PHP 8.2+) or Laravel 13 (PHP 8.3+). The service provider is registered automatically. Upgrading from 1.x? See [UPGRADE.md](UPGRADE.md).
 
 ```bash
 composer require malevich/malevich
@@ -153,7 +153,7 @@ php artisan malevich:install --force                                  # overwrit
 
 Existing files are never overwritten without `--force`.
 
-Publishing the config by hand works too. You need it only to add your own directives or change paths:
+Publishing the config by hand works too. You need it only to add your own options or change paths:
 
 ```bash
 php artisan vendor:publish --tag malevich:config
@@ -173,7 +173,7 @@ php artisan vendor:publish --tag malevich:components
 php artisan make:malevich badge
 ```
 
-This creates `resources/views/components/badge.blade.php` with an empty block for every directive:
+This creates `resources/views/components/badge.blade.php` with an empty block for every option:
 
 ```blade
 @base('')
@@ -372,24 +372,24 @@ Each of them also accepts a target name as the first argument - see [Inner eleme
 @size('icon', ['sm' => 'size-3', 'md' => 'size-4'])
 ```
 
-Need `@radius`, `@shadow` or `@tone`? Either use [`@directive`](#directive---the-universal-form) or [register your own](#your-own-directives).
+Need `@radius`, `@shadow` or `@tone`? Either use [`@option`](#option---the-universal-form) or [register your own](#your-own-options).
 
-## `@directive` - the universal form
+## `@option` - the universal form
 
-`@variant`, `@color` and `@size` are just shortcuts. Under the hood each of them is `@directive` with the name filled in:
+`@variant`, `@color` and `@size` are just shortcuts. Under the hood each of them is `@option` with the name filled in:
 
 ```blade
 @variant(['primary' => '...'])
 {{-- is exactly the same as --}}
-@directive('variant', ['primary' => '...'])
+@option('variant', ['primary' => '...'])
 ```
 
-So `@directive` lets you create an option with **any name**, right in the component, without touching the config:
+So `@option` lets you create an option with **any name**, right in the component, without touching the config:
 
 ```blade
 @props(['radius' => 'md'])
 
-@directive('radius', [
+@option('radius', [
     'none' => 'rounded-none',
     'md' => 'rounded-md',
     'full' => 'rounded-full',
@@ -404,19 +404,19 @@ All the forms it accepts:
 
 | Form | Meaning |
 |---|---|
-| `@directive('radius', [...])` | Class map for option `radius` on the main element. |
-| `@directive('radius', 'icon', [...])` | Same, for the inner element `icon`. |
+| `@option('radius', [...])` | Class map for option `radius` on the main element. |
+| `@option('radius', 'icon', [...])` | Same, for the inner element `icon`. |
 
 The first argument is always the **option name** - the prop that picks the value. The optional second one is the **element**.
 
-**When to use `@directive` instead of a named directive:**
+**When to use `@option` instead of a named directive:**
 
 - The option exists in one or two components only (`radius`, `padding`, `orientation`). Not worth adding to the config.
-- The option name comes from a variable: `@directive($name, [...])`.
+- The option name comes from a variable: `@option($name, [...])`.
 
 **When not to:** for classes that don't depend on any option, use [`@base`](#base---classes-that-are-always-there).
 
-If an option shows up in many components, [register it](#your-own-directives) to get a short `@radius([...])` instead.
+If an option shows up in many components, [register it](#your-own-options) to get a short `@radius([...])` instead.
 
 ## `@compound` - classes for a combination
 
@@ -511,7 +511,7 @@ A preset gives a **name to a set of values**, so the user can write one word ins
     'elevated' => 'shadow-xl',
 ])
 
-@directive('padding', [
+@option('padding', [
     'sm' => 'p-3',
     'md' => 'p-6',
     'lg' => 'p-10',
@@ -614,7 +614,7 @@ A default is the **last** fallback: a value on the tag, in your `@props` or in a
 
 `@cases('variant', [...])` fills exactly the same slots as one `@variant('target', [...])` per element: `variant="teal"` styles the main element, `icon` and `title`, each with its own classes. Everything else (`@ui`, presets, `@compound`, [named slots](#named-slots)) works as before.
 
-- The first argument is the option name: `@cases('size', [...])`, `@cases('color', [...])`, any [`@directive`](#directive---the-universal-form) name.
+- The first argument is the option name: `@cases('size', [...])`, `@cases('color', [...])`, any [`@option`](#option---the-universal-form) name.
 - Keys of the inner array are targets. `default` is the main element, like in presets and per-target values.
 - A value can also be plain classes (a string or a list) - they style the main element: `'teal' => 'bg-teal-600'`.
 - Several `@cases` calls for one option add up. A `@variant([...])` written **after** `@cases('variant', ...)` for the same element replaces it, so keep one style per option.
@@ -628,7 +628,7 @@ The name `@cases` can be changed with the `cases_directive` [config option](#con
 
 | I want to... | Use |
 |---|---|
-| Change classes depending on one prop | [`@variant` / `@color` / `@size`](#variant-color-size), or [`@directive('name', ...)`](#directive---the-universal-form) for any other name |
+| Change classes depending on one prop | [`@variant` / `@color` / `@size`](#variant-color-size), or [`@option('name', ...)`](#option---the-universal-form) for any other name |
 | Add classes that are always there | [`@base('...')`](#base---classes-that-are-always-there) |
 | Add fixed classes to an inner element | [`@base('title', '...')`](#base---classes-that-are-always-there) |
 | Style many elements at once, grouped by the value of one prop | [`@cases`](#cases---one-declaration-per-value) |
@@ -642,7 +642,7 @@ The name `@cases` can be changed with the `cases_directive` [config option](#con
 | Add default attributes (`type`, `role`, `aria-*`) | [`@ui(merge: [...])`](#ui---full-reference) |
 | Build a component on top of another one | [`<x-other @ui />`](#building-on-other-components) |
 | Get correct button/link/disabled behaviour for free | [`<x-malevich::primitive>`](#unstyled-primitive) |
-| Use the same option in many components | [register it in the config](#your-own-directives) |
+| Use the same option in many components | [register it in the config](#your-own-options) |
 | Reuse the same class maps in many components | an [`@include` partial](#sharing-styles-between-components) |
 
 ---
@@ -707,7 +707,7 @@ For the **main element** (`@ui`, `@ui(merge: ...)`):
 2. All other attributes from the tag: `id`, `wire:click`, `x-data`, `data-*`, `aria-*`, ...
 3. Attributes from `merge:` that the tag didn't set.
 
-**Not** printed: option names (`variant`, `color`, `size`, any `@directive` name) and `preset`. They were consumed by Malevich, so you won't get `<button variant="outline">` - even if you forgot to list them in `@props`.
+**Not** printed: option names (`variant`, `color`, `size`, any `@option` name) and `preset`. They were consumed by Malevich, so you won't get `<button variant="outline">` - even if you forgot to list them in `@props`.
 
 For an **inner element** (`@ui('icon')`): only its own classes, plus `merge:` attributes and the attributes of its [slot](#named-slots). Attributes from the component tag never go to inner elements.
 
@@ -897,7 +897,7 @@ How the matching works:
 
 @base('h-6 w-11 rounded-full')
 
-@directive('checked', [
+@option('checked', [
     'true' => 'bg-green-500',
     'false' => 'bg-gray-300',
 ])
@@ -1069,13 +1069,13 @@ The files land in `resources/views/vendor/malevich/components`. Malevich always 
 > [!NOTE]
 > A published file no longer receives updates from the package. Publish only what you actually want to change, and compare it with the package version after upgrading Malevich.
 
-## Your own directives
+## Your own options
 
 If an option appears in many components, give it its own short directive. Publish the config and add the name:
 
 ```php
 // config/malevich.php
-'directives' => ['variant', 'size', 'color', 'radius'],
+'options' => ['variant', 'size', 'color', 'radius'],
 ```
 
 Now `@radius` works exactly like `@variant` (including the target form), and `$attributes->radius()` exists in the [`$attributes` API](#the-attributes-api):
@@ -1092,13 +1092,13 @@ Now `@radius` works exactly like `@variant` (including the target form), and `$a
 New components created with [`make:malevich`](#makemalevich-command) will include a `@radius` block too.
 
 > [!NOTE]
-> Blade compiles views once and caches them. After changing the `directives` list, run `php artisan view:clear`.
+> Blade compiles views once and caches them. After changing the `options` list, run `php artisan view:clear`.
 
 Not every name is allowed. Malevich throws an exception on boot if a name:
 
 - is a built-in Blade directive (`if`, `class`, `foreach`, `props`, ...) - it would replace that directive in your whole app;
 - is already registered as a Blade directive by your application or another package (a Blade directive is global, the last one wins and silently breaks the other);
-- is a Malevich directive (`base`, `compound`, `preset`, `defaults`, `directive`, or your `render_directive`, `cases_directive`, `has_directive`);
+- is a Malevich directive (`base`, `compound`, `preset`, `defaults`, `option`, or your `render_directive`, `cases_directive`, `has_directive`);
 - is already a method of `$attributes` (`merge`, `get`, `only`, ...) - the fluent call `$attributes->merge(...)` could never reach it;
 - contains anything but letters, digits and `_`.
 
@@ -1107,7 +1107,7 @@ Not every name is allowed. Malevich throws an exception on boot if a name:
 The names of Malevich's own directives are rarely a problem, but they are all configurable or checked:
 
 - `@ui`, `@cases` and `@has` can be renamed with `render_directive`, `cases_directive` and `has_directive`.
-- `@base`, `@compound`, `@preset`, `@defaults` and `@directive` are fixed. On boot Malevich checks that Blade or another package has not taken them and throws a clear exception if so.
+- `@base`, `@compound`, `@preset`, `@defaults` and `@option` are fixed. On boot Malevich checks that Blade or another package has not taken them and throws a clear exception if so.
 - A directive that needs an expression (`@variant([...])`, `@cases('x', [...])`, `@base('...')`) and is written **without parentheses** is left alone. So CSS inside a template survives: Tailwind's `@variant dark (...)` is not touched.
 
 ## Sharing styles between components
@@ -1235,16 +1235,28 @@ php artisan make:malevich button --force    # overwrite an existing file
 
 - Without `--force` it never overwrites an existing component.
 - The `.blade.php` suffix is optional; `forms.input` and `forms/input` are the same.
-- The file gets an empty `@base`, an empty class map for **every directive in your config** (including your own) and a `@defaults` block with a commented-out line for each. Delete what you don't need.
+- The file gets an empty `@base`, an empty class map for **every option in your config** (including your own) and a `@defaults` block with a commented-out line for each. Delete what you don't need.
 - The folder is `components.path` from the [config](#configuration). After creating, the command tells you the tag to use.
 
 Which tag? It depends on `components.prefix`:
 
-| `prefix` | File | Tag |
+| `prefix` | File in `components.path` | Tag |
 |---|---|---|
 | `null` (default) | `button.blade.php` | `<x-button>` |
 | `null` | `forms/input.blade.php` | `<x-forms.input>` |
-| `'ui'` | `ui/button.blade.php` | `<x-ui::button>` or `<x-ui.button>` |
+| `'ui'` | `button.blade.php` | `<x-ui::button>` |
+| `'ui'` | `forms/input.blade.php` | `<x-ui::forms.input>` |
+
+The prefix adds a tag, it doesn't take the plain one away: while `components.path` is `resources/views/components`, Laravel itself still serves `button.blade.php` as `<x-button>` too. To have **only** prefixed tags, give the components a folder of their own:
+
+```php
+'components' => [
+    'path' => resource_path('views/ui'),
+    'prefix' => 'ui',
+],
+```
+
+Now `resources/views/ui/button.blade.php` is `<x-ui::button>` and nothing else.
 
 ## The `$attributes` API
 
@@ -1259,7 +1271,7 @@ Which tag? It depends on `components.prefix`:
 | Method | What it does |
 |---|---|
 | `->variant('x')`, `->color('x')`, `->size('x')`, your own | Set the value of an option. |
-| `->directive('name', 'x')` | Set the value of any option by name. |
+| `->option('name', 'x')` | Set the value of any option by name. |
 | `->use(['size' => 'lg', 'color' => 'red'])` | Set several values at once. |
 | `->use('icon', ['size' => 'lg'])` | Switch to a target and set values. |
 | `->for('icon')` | Switch to a target. |
@@ -1335,7 +1347,7 @@ php artisan malevich:lint resources/views/admin          # only some folders or 
 **It never guesses.** Only what it can read for sure is checked, everything else is skipped:
 
 - Values written as literals are checked: `variant="primary"`. Bound and echoed ones are not: `:variant="$v"`, `variant="{{ $v }}"`.
-- A class map that isn't a literal (`@variant($variants)`) turns off the check for that option; a `@directive($name, ...)`, an unreadable `@compound` or a conditional partial (`@includeIf`) turns it off for the whole component.
+- A class map that isn't a literal (`@variant($variants)`) turns off the check for that option; an `@option($name, ...)`, an unreadable `@compound` or a conditional partial (`@includeIf`) turns it off for the whole component.
 - An option whose map is a plain string (`@color('text-red-500')`) accepts any value.
 - `loading="false"` next to a `['true' => '...']` map is fine, like in strict mode.
 
@@ -1347,7 +1359,7 @@ So a clean run doesn't prove there are no typos at all - it proves there are non
 
 | Key | Default | What it does |
 |---|---|---|
-| `directives` | `['variant', 'size', 'color']` | Option directives: `@variant`, `@size`, ... Add your own here. |
+| `options` | `['variant', 'size', 'color']` | Options with a directive of their own: `@variant`, `@size`, ... Add your own here. |
 | `render_directive` | `'ui'` | The name of `@ui`. Change it if it clashes with another package. |
 | `cases_directive` | `'cases'` | The name of [`@cases`](#cases---one-declaration-per-value). |
 | `has_directive` | `'has'` | The name of [`@has`](#parts-that-exist-only-in-some-variants-has). |
@@ -1387,7 +1399,7 @@ Keep it off in production: there an unstyled element is better than an error pag
 
 ## Editor support (Tailwind IntelliSense)
 
-The [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss) extension only looks for classes in `class="..."` and a few known places. To get autocomplete, hover previews and color swatches inside `@base`, `@variant` & co., tell it where the classes are. `php artisan malevich:install` does it for you (with your own directives included), or add this to `.vscode/settings.json` by hand:
+The [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss) extension only looks for classes in `class="..."` and a few known places. To get autocomplete, hover previews and color swatches inside `@base`, `@variant` & co., tell it where the classes are. `php artisan malevich:install` does it for you (with your own options included), or add this to `.vscode/settings.json` by hand:
 
 ```json
 {
@@ -1396,7 +1408,7 @@ The [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemN
     },
     "tailwindCSS.experimental.classRegex": [
         [
-            "@(?:base|variant|color|size|directive|compound|cases)\\s*\\(([\\s\\S]*?)\\)\\s*(?:\\n|$)",
+            "@(?:base|variant|color|size|option|compound|cases)\\s*\\(([\\s\\S]*?)\\)\\s*(?:\\n|$)",
             "(?:^|=>|[\\[(,])\\s*[\"']([^\"']*)[\"'](?!\\s*=>)"
         ]
     ]
@@ -1405,7 +1417,7 @@ The [Tailwind CSS IntelliSense](https://marketplace.visualstudio.com/items?itemN
 
 How it works: the first pattern finds the directive and its arguments, the second picks the strings inside that hold classes - values, not the `'primary' =>` keys.
 
-- Added [your own directives](#your-own-directives)? Add their names to the first pattern: `(?:base|variant|color|size|directive|compound|cases|radius)`.
+- Added [your own options](#your-own-options)? Add their names to the first pattern: `(?:base|variant|color|size|option|compound|cases|radius)`.
 - Reload the window after changing the settings (**Developer: Reload Window**).
 - The same `classRegex` setting works in other editors that use the Tailwind language server (e.g. PhpStorm's Tailwind plugin, Zed, Neovim).
 
@@ -1508,7 +1520,7 @@ Yes. Malevich just puts strings into `class`. BEM, Bootstrap, your own CSS - any
 Yes. `wire:*`, `x-*` and `@click`-style attributes on the tag are passed through untouched.
 
 **Is it fast? Is it safe with Octane?**
-Directives compile to plain PHP once, like any Blade directive. At render time it's a few array lookups: a button with variants, sizes, a combination and an icon costs about 15% more than the same button written by hand with `$attributes->class([...])` (run `composer bench` to measure on your machine). Class maps belong to the component instance and are freed with it, so nothing leaks between requests or Octane workers.
+Directives compile to plain PHP once, like any Blade directive. At render time it's a few array lookups: a button with variants, sizes, a combination and an icon costs about 12 µs more than the same button written by hand with `$attributes->class([...])` (25 µs instead of 13 µs) - around 12 ms for a page with a thousand such buttons. Run `composer bench` to measure on your machine. Class maps belong to the component instance and are freed with it, so nothing leaks between requests or Octane workers. `Malevich` is a facade for the `Malevich\MalevichManager` singleton, so settings like `Malevich::strict()` live with the application and tests start fresh.
 
 **Can two components use the same preset name?**
 Yes. Presets, like class maps, belong to the component that declares them.
@@ -1529,7 +1541,7 @@ No, only in Blade components - it needs the component's `$attributes`.
 @size(['sm' => '...', 'md' => '...'])
 
 {{-- any option name --}}
-@directive('radius', ['md' => 'rounded-md', 'full' => 'rounded-full'])
+@option('radius', ['md' => 'rounded-md', 'full' => 'rounded-full'])
 
 {{-- inner element "icon" --}}
 @size('icon', ['sm' => 'size-3', 'md' => 'size-4'])

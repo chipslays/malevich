@@ -33,7 +33,7 @@ final class Declarations
     /**
      * @param  list<mixed>  $values
      */
-    public function values(string $axis, array $values): void
+    public function values(string $option, array $values): void
     {
         foreach ($values as $value) {
             $value = match (true) {
@@ -44,19 +44,19 @@ final class Declarations
             };
 
             if ($value !== null && $value !== '*') {
-                $this->values[$axis][$value] = true;
+                $this->values[$option][$value] = true;
             }
         }
 
-        $this->values[$axis] ??= [];
+        $this->values[$option] ??= [];
     }
 
     /**
      * Never check this option: its map is unknown, or any value is fine.
      */
-    public function unchecked(string $axis): void
+    public function unchecked(string $option): void
     {
-        $this->unchecked[$axis] = true;
+        $this->unchecked[$option] = true;
     }
 
     /**
@@ -68,9 +68,9 @@ final class Declarations
     {
         $options = [];
 
-        foreach ($this->values as $axis => $values) {
-            if (! isset($this->unchecked[$axis]) && $values !== []) {
-                $options[$axis] = array_map(strval(...), array_keys($values));
+        foreach ($this->values as $option => $values) {
+            if (! isset($this->unchecked[$option]) && $values !== []) {
+                $options[$option] = array_map(strval(...), array_keys($values));
             }
         }
 
