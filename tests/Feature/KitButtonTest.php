@@ -23,15 +23,23 @@ it('renders every combination of button variant and color', function () {
                 'solid' => 'bg-'.$hue.'-'.match ($color) {
                     'neutral' => '100',
                     'contrast' => '950',
-                    'success', 'warning' => '700',
+                    'success', 'warning', 'danger', 'info' => '500',
                     default => '600',
                 },
-                'soft' => $color === 'contrast' ? 'bg-gray-950/10' : 'bg-'.$hue.'-50',
+                'soft' => $color === 'contrast' ? 'bg-gray-950/10' : 'bg-'.$hue.'-'.(in_array($color, ['success', 'warning', 'danger', 'info'], true) ? '100' : '50'),
                 'outline' => $color === 'contrast' ? 'border-gray-950' : 'border-'.$hue.'-300',
-                'ghost', 'link' => $color === 'contrast' ? 'text-gray-950' : 'text-'.$hue.'-'.(in_array($color, ['neutral', 'warning'], true) ? '800' : '700'),
+                'ghost', 'link' => $color === 'contrast' ? 'text-gray-950' : 'text-'.$hue.'-'.(in_array($color, ['neutral', 'success', 'warning'], true) ? '800' : '700'),
             };
 
-            expect($html)->toContain($expected);
+            expect($html)->toHaveClasses($expected);
+
+            if (in_array($color, ['success', 'warning', 'danger', 'info'], true)) {
+                if ($variant === 'solid') {
+                    expect($html)->toHaveClasses(['hover:bg-'.$hue.'-600', $color === 'warning' ? 'text-black' : 'text-white']);
+                } elseif ($variant === 'soft') {
+                    expect($html)->toHaveClasses(['hover:bg-'.$hue.'-200', 'dark:bg-'.$hue.'-950', 'dark:hover:bg-'.$hue.'-900']);
+                }
+            }
         }
     }
 });
@@ -118,12 +126,12 @@ it('styles named slots and passes user attributes through to the right elements'
 
 it('uses literal Tailwind palettes for the requested treatment and color', function () {
     expect($this->render('<x-kit::button variant="solid" color="danger">Delete</x-kit::button>'))
-        ->toContain('bg-danger-600', 'text-white', 'hover:bg-danger-700')
+        ->toHaveClasses(['bg-danger-500', 'text-white', 'hover:bg-danger-600'])
         ->not->toContain('text-danger-700', 'border-danger-300');
 
     expect($this->render('<x-kit::button variant="outline" color="danger">Delete</x-kit::button>'))
         ->toContain('border-danger-300', 'text-danger-700', 'dark:text-danger-300', 'hover:bg-danger-50')
-        ->not->toContain('bg-danger-600', 'text-white');
+        ->not->toContain('bg-danger-500', 'text-white');
 });
 
 it('keeps original content in layout and absolutely overlays only a spinner for explicitly empty loading labels', function (string $loadingLabel) {
