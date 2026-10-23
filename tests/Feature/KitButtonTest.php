@@ -17,7 +17,7 @@ it('renders every combination of button variant and color', function () {
 
             expect($html)
                 ->toContain('<button', 'type="button"', 'focus-visible:outline-')
-                ->not->toContain(' variant=', ' color=', 'var(', '--button-', 'style=');
+                ->not->toContain(' variant=')->not->toContain(' color=')->not->toContain('var(')->not->toContain('--button-')->not->toContain('style=');
 
             $expected = match ($variant) {
                 'solid' => 'bg-'.$hue.'-'.match ($color) {
@@ -48,7 +48,7 @@ it('gives contrast its own theme-aware styles for every transparent treatment', 
     $html = $this->render('<x-kit::button color="contrast" :variant="$variant">Continue</x-kit::button>', compact('variant'));
 
     expect($html)->toContain('text-gray-950 dark:text-gray-50', 'focus-visible:outline-gray-950 dark:focus-visible:outline-gray-100', ...$expected)
-        ->not->toContain('text-gray-800', 'dark:text-gray-200', 'border-gray-300');
+        ->not->toContain('text-gray-800')->not->toContain('dark:text-gray-200')->not->toContain('border-gray-300');
 })->with([
     'soft' => ['soft', ['bg-gray-950/10 hover:bg-gray-950/15', 'dark:bg-gray-100/15 dark:hover:bg-gray-100/20']],
     'outline' => ['outline', ['border-gray-950 dark:border-gray-100', 'hover:bg-gray-950/10 dark:hover:bg-gray-100/15']],
@@ -94,7 +94,7 @@ it('preserves native button and link behavior', function () {
         ->not->toContain('href=');
 
     expect($this->render('<x-kit::button as="span">Label</x-kit::button>'))
-        ->toContain('<span ')->not->toContain('<button', 'type=');
+        ->toContain('<span ')->not->toContain('<button')->not->toContain('type=');
 });
 
 it('forwards Livewire and Alpine namespaces unchanged through the primitive', function () {
@@ -114,7 +114,7 @@ it('disables loading buttons and links even when disabled is explicitly false', 
         ->not->toContain('href=');
 
     expect($this->render('<x-kit::button :loading="false" :disabled="false">Save</x-kit::button>'))
-        ->not->toContain('aria-busy=', 'disabled=', 'animate-spin', 'opacity-0', '<svg');
+        ->not->toContain('aria-busy=')->not->toContain('disabled=')->not->toContain('animate-spin')->not->toContain('opacity-0')->not->toContain('<svg');
 });
 
 it('styles named slots and passes user attributes through to the right elements', function () {
@@ -127,11 +127,11 @@ it('styles named slots and passes user attributes through to the right elements'
 it('uses literal Tailwind palettes for the requested treatment and color', function () {
     expect($this->render('<x-kit::button variant="solid" color="danger">Delete</x-kit::button>'))
         ->toHaveClasses(['bg-danger-500', 'text-white', 'hover:bg-danger-600'])
-        ->not->toContain('text-danger-700', 'border-danger-300');
+        ->not->toContain('text-danger-700')->not->toContain('border-danger-300');
 
     expect($this->render('<x-kit::button variant="outline" color="danger">Delete</x-kit::button>'))
         ->toContain('border-danger-300', 'text-danger-700', 'dark:text-danger-300', 'hover:bg-danger-50')
-        ->not->toContain('bg-danger-500', 'text-white');
+        ->not->toContain('bg-danger-500')->not->toContain('text-white');
 });
 
 it('keeps original content in layout and absolutely overlays only a spinner for explicitly empty loading labels', function (string $loadingLabel) {
@@ -140,7 +140,8 @@ it('keeps original content in layout and absolutely overlays only a spinner for 
     expect($html)
         ->toMatch('/<span class="[^"]*opacity-0[^"]*"> Save changes <\/span>/')
         ->toContain('relative inline-flex', 'h-10', 'px-4', 'absolute inset-0', 'aria-busy="true"', 'animate-spin')
-        ->not->toContain('hidden', 'invisible', 'loading:label=', 'truncate');
+        ->not->toMatch('/class="[^"]*(?<![\w-])(hidden|invisible)(?![\w-])/')
+        ->not->toContain('loading:label=')->not->toContain('truncate');
 })->with(['empty' => '', 'whitespace' => '   ']);
 
 it('shows a replacement label only while loading without removing the original sizing content', function () {
@@ -153,13 +154,13 @@ it('shows a replacement label only while loading without removing the original s
 
     expect($this->render('<x-kit::button><x-slot:loadingLabel>Saving changes</x-slot:loadingLabel> Save </x-kit::button>'))
         ->toContain('Save')
-        ->not->toContain('Saving changes', 'animate-spin', 'absolute inset-0');
+        ->not->toContain('Saving changes')->not->toContain('animate-spin')->not->toContain('absolute inset-0');
 });
 
 it('keeps icon-only loading buttons square and hides their loading text', function () {
     expect($this->render('<x-kit::button loading aria-label="Save"><x-slot:loadingLabel>Saving</x-slot:loadingLabel><x-slot:icon><svg></svg></x-slot:icon></x-kit::button>'))
         ->toContain('aspect-square', 'p-0', 'aria-label="Save"', 'absolute inset-0', 'animate-spin')
-        ->not->toContain('Saving', 'truncate');
+        ->not->toContain('Saving')->not->toContain('truncate');
 });
 
 it('sizes leading and trailing icon slots independently and accepts targeted spinner size', function () {
@@ -167,14 +168,14 @@ it('sizes leading and trailing icon slots independently and accepts targeted spi
 
     expect($html)->toContain('h-8', 'text-sm', '[&>svg]:size-5.5', '[&>svg]:size-5')
         ->toMatch('/<svg class="[^"]*size-3\.5[^"]*"/')
-        ->not->toContain('spinner:size=', 'size="xl"', 'size="lg"');
+        ->not->toContain('spinner:size=')->not->toContain('size="xl"')->not->toContain('size="lg"');
 });
 
 it('keeps the default label and trailing icon while replacing only the leading icon with a spinner', function () {
     $html = $this->render('<x-kit::button loading><x-slot:icon><svg data-icon="leading"></svg></x-slot:icon> Save changes <x-slot:trailing><svg data-icon="trailing"></svg></x-slot:trailing></x-kit::button>');
 
     expect($html)->toContain('Save changes', 'animate-spin', 'data-icon="trailing"')
-        ->not->toContain('data-icon="leading"', 'opacity-0', 'absolute inset-0');
+        ->not->toContain('data-icon="leading"')->not->toContain('opacity-0')->not->toContain('absolute inset-0');
     expect(strpos($html, 'animate-spin'))->toBeLessThan(strpos($html, 'Save changes'));
 });
 
@@ -193,7 +194,7 @@ it('renders rich loading slot content and forwards slot attributes to its wrappe
 it('treats comments in a loading slot as an explicit empty override', function () {
     expect($this->render('<x-kit::button loading><x-slot:loadingLabel><!-- no replacement label --></x-slot:loadingLabel> Save </x-kit::button>'))
         ->toContain('opacity-0', 'animate-spin')
-        ->not->toContain('truncate', 'no replacement label');
+        ->not->toContain('truncate')->not->toContain('no replacement label');
 });
 
 it('compensates transparent button padding for every size and leaves the hit area padded', function () {

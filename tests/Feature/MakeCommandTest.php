@@ -21,7 +21,7 @@ it('creates a component with every configured option', function () {
 
     expect($contents)
         ->toContain('@props([', "'variant' => null,", "'radius' => null,", "@base('')", '@color([', '@radius([', '<div @attributes>')
-        ->not->toContain('{{ props }}', '{{ options }}', '{{ render }}');
+        ->not->toContain('{{ props }}')->not->toContain('{{ options }}')->not->toContain('{{ render }}');
 });
 
 it('creates nested components and accepts the .blade.php suffix', function () {

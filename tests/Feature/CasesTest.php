@@ -94,7 +94,7 @@ it('adds to an earlier @variant, but is replaced by a later one', function () {
 it('adds conditional cases only when all shared conditions match', function () {
     expect($this->render('<x-conditional-cases variant="ghost" inset>Go</x-conditional-cases>'))
         ->toContain('<button class="h-8 -mx-2">', '<i class="size-3"></i>')
-        ->not->toContain('inset=', 'variant=', '-mx-2=');
+        ->not->toContain('inset=')->not->toContain('variant=')->not->toContain('-mx-2=');
 
     expect($this->render('<x-conditional-cases variant="link" size="lg" inset>Go</x-conditional-cases>'))
         ->toContain('<button class="h-12 -mx-5">', '<i class="size-5"></i>');
@@ -104,13 +104,13 @@ it('adds conditional cases only when all shared conditions match', function () {
         ->not->toContain('-mx-');
 
     expect($this->render('<x-conditional-cases variant="ghost">Go</x-conditional-cases>'))
-        ->toContain('<button class="h-8">')->not->toContain('-mx-', '<i');
+        ->toContain('<button class="h-8">')->not->toContain('-mx-')->not->toContain('<i');
 });
 
 it('supports root boolean class maps and independently targeted conditional cases', function () {
     expect($this->render('<x-conditional-cases variant="ghost" inset icon-only icon:size="lg">Go</x-conditional-cases>'))
         ->toContain('<button class="h-8">', '<i class="size-5"></i>')
-        ->not->toContain('-mx-', 'icon:size=');
+        ->not->toContain('-mx-')->not->toContain('icon:size=');
 });
 
 it('resolves shared conditions per target and lets slot options override them', function () {
@@ -143,7 +143,7 @@ it('keeps conditional-only options consumable and known in strict mode', functio
     $bag = new ComponentAttributeBag(['density' => 'compact', 'active' => false]);
     Malevich::recipe($bag)->cases('density', ['compact' => ['px-2' => true]], when: ['active' => true]);
 
-    expect((new Element($bag))->toHtml())->not->toContain('density=', 'px-2')
+    expect((new Element($bag))->toHtml())->not->toContain('density=')->not->toContain('px-2')
         ->and((new Element($bag))->classesFor('density'))->toBe(['compact' => '']);
 });
 

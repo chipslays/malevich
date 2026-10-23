@@ -28,7 +28,7 @@ it('renders the complete inner-element documentation examples', function () {
 
         expect($this->render('<x-guide::caption text:value.uppercase.limit[12]="Account settings" />'))
             ->toContain('ACCOUNT SET…')
-            ->not->toContain('text:value', 'malevich-target-');
+            ->not->toContain('text:value')->not->toContain('malevich-target-');
 
         expect($this->render('<x-guide::caption text:value.uppercase[false].limit[]="Account settings" />'))
             ->toContain('Account settings');

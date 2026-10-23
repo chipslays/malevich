@@ -6,7 +6,7 @@ use Malevich\Support\ScopedProps;
 it('maps scoped attributes to explicitly declared camel-case props', function () {
     expect($this->render('<x-scoped-props icon:only icon:trailing="heart" loading:label="Saving" />'))
         ->toContain('<b>true</b>', '<i>heart</i>', '<label>Saving</label>', '<small>heart</small>')
-        ->not->toContain('icon:only=', 'icon:trailing=', 'loading:label=', 'icon-only=');
+        ->not->toContain('icon:only=')->not->toContain('icon:trailing=')->not->toContain('loading:label=')->not->toContain('icon-only=');
 });
 
 it('preserves bound values and empty labels', function () {
@@ -23,7 +23,7 @@ it('retains all modifier types after Blade consumes the prop', function () {
 it('supports bound decorated props and escapes the value', function () {
     expect($this->render('<x-scoped-props :icon:trailing.filled[false]="$icon" />', ['icon' => '<script>alert(1)</script>']))
         ->toContain('&lt;script&gt;alert(1)&lt;/script&gt;', '&quot;filled&quot;:false')
-        ->not->toContain('<script>', 'malevich-target-');
+        ->not->toContain('<script>')->not->toContain('malevich-target-');
 });
 
 it('keeps ordinary camel-case and kebab-case input compatible', function () {
@@ -94,5 +94,5 @@ it('can prepare a template more than once without wrapping props again', functio
 it('preserves target class choices when the same input is also a declared prop', function () {
     expect($this->render('<x-scoped-props icon:size="lg" />'))
         ->toContain('<u class="large-icon"></u>')
-        ->not->toContain('icon:size=', 'iconSize=');
+        ->not->toContain('icon:size=')->not->toContain('iconSize=');
 });

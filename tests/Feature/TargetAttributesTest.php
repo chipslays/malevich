@@ -18,7 +18,7 @@ it('passes arbitrary unowned namespaces and their modifiers through unchanged', 
     $html = $this->render('<x-'.$component.' wire:loading.attr="disabled" x:custom.flag[false]="x" x-on:click.once="open" analytics:track.once.rate[24].empty[]="save" :custom:event.enabled[false]="$value" />', ['value' => '<saved>']);
 
     expect($html)->toContain('wire:loading.attr="disabled"', 'x:custom.flag[false]="x"', 'x-on:click.once="open"', 'analytics:track.once.rate[24].empty[]="save"', 'custom:event.enabled[false]="&lt;saved&gt;"')
-        ->not->toContain('malevich-target-', 'malevichTarget');
+        ->not->toContain('malevich-target-')->not->toContain('malevichTarget');
 })->with(['target-props', 'scoped-props', 'passthrough']);
 
 it('allows any explicitly declared target namespace', function (string $target) {
@@ -32,19 +32,19 @@ it('allows any explicitly declared target namespace', function (string $target) 
 it('overrides a global option only on its target including compound conditions', function () {
     expect($this->render('<x-target-props size="xs" icon:size="xl" />'))
         ->toContain('<button class="root-xs">', '<i class="icon-xl large-icon">')
-        ->not->toContain('icon:size=', 'size="xs"');
+        ->not->toContain('icon:size=')->not->toContain('size="xs"');
 });
 
 it('supports bound values and target attributes without a class map', function () {
     expect($this->render('<x-target-props :icon:size="$size" icon:trailing="heart" icon:aria-label="Favorite" />', ['size' => 'xl']))
         ->toContain('icon-xl large-icon', 'trailing="heart"', 'aria-label="Favorite"', '<b>heart</b>')
-        ->not->toContain('icon:trailing=', 'icon:aria-label=');
+        ->not->toContain('icon:trailing=')->not->toContain('icon:aria-label=');
 });
 
 it('parses boolean and valued modifiers without including them in HTML names', function () {
     expect($this->render('<x-target-props icon:trailing.mod1.mod2[value]="heart" />'))
         ->toContain('<b>heart</b>', '&quot;mod1&quot;:true', '&quot;mod2&quot;:&quot;value&quot;')
-        ->not->toContain('mod1=', 'malevich-target-');
+        ->not->toContain('mod1=')->not->toContain('malevich-target-');
 });
 
 it('converts only lowercase boolean modifier literals and preserves other strings', function (string $argument, string $expected) {
@@ -109,7 +109,7 @@ it('keeps generated root data attributes global', function () {
 it('uses slot options before targeted and global options including compounds', function () {
     expect($this->render('<x-target-props size="xs" icon:size="xs"><x-slot:icon size="xl">Icon</x-slot:icon></x-target-props>'))
         ->toContain('<button class="root-xs">', '<i class="icon-xl large-icon">')
-        ->not->toContain('size="xl"', 'icon:size=');
+        ->not->toContain('size="xl"')->not->toContain('icon:size=');
 });
 
 it('supports bound slot options and reports their source', function () {
