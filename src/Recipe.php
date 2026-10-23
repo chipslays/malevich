@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Malevich;
 
+use BackedEnum;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
+use Stringable;
+use UnitEnum;
 
 /**
  * Everything a single component instance declared about its styling:
@@ -80,20 +83,38 @@ final class Recipe
      *
      * It fills the same [target][option][value] slots as one `option()` call per
      * target would, and merges into what is already declared for the option.
-     * A value may also be plain classes (a string or a list), which style
-     * the root element.
+     * A value may also be plain classes (a string, list or boolean class map),
+     * which style the root element. With when:, cases add compound rules
+     * instead of unconditional classes, preserving existing option maps.
      *
      * @param  array<string, mixed>  $cases  [option value] => [target => classes]
+     * @param  array<string, mixed>  $when  Additional conditions, all must match.
      */
-    public function cases(string $option, array $cases): self
+    public function cases(string $option, array $cases, array $when = []): self
     {
         foreach ($cases as $value => $targets) {
-            if (! is_array($targets) || array_is_list($targets)) {
+            if (! is_array($targets) || array_is_list($targets) || self::isConditionalClassMap($targets)) {
                 $targets = [$this->defaultTarget => $targets];
             }
 
             foreach ($targets as $target => $classes) {
                 $target = (string) $target;
+
+                if ($when !== []) {
+                    $this->options[$target][$option][$value] ??= [];
+                    $conditions = $when;
+
+                    if ($value !== '*') {
+                        $conditions[$option] = array_key_exists($option, $when)
+                            ? array_values(array_filter((array) $when[$option], fn (mixed $expected) => self::conditionKey($expected) === (string) $value))
+                            : $value;
+                    }
+
+                    $this->compound($target, $conditions, $classes);
+
+                    continue;
+                }
+
                 $existing = $this->options[$target][$option][$value] ?? null;
 
                 $this->options[$target][$option][$value] = $existing === null
@@ -103,6 +124,29 @@ final class Recipe
         }
 
         return $this;
+    }
+
+    /** @param array<array-key, mixed> $classes */
+    private static function isConditionalClassMap(array $classes): bool
+    {
+        foreach ($classes as $key => $value) {
+            if (! is_int($key) && ! is_bool($value)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static function conditionKey(mixed $value): ?string
+    {
+        return match (true) {
+            $value instanceof BackedEnum => (string) $value->value,
+            $value instanceof UnitEnum => $value->name,
+            is_bool($value) => $value ? 'true' : 'false',
+            is_scalar($value), $value instanceof Stringable => (string) $value,
+            default => null,
+        };
     }
 
     /**

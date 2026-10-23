@@ -70,7 +70,7 @@ Loading disables keyboard activation and navigation as well as pointer interacti
 <x-button variant="link" size="sm" inset>Read more</x-button>
 ```
 
-`inset` applies negative horizontal margins matching the button's horizontal padding. This compensates the transparent padding when placing the label alongside surrounding content, while retaining the padded hit area. It applies to `ghost` and `link` with a text label, regardless of color. Treatments with a visible background or border and automatically detected square icon buttons do not receive the adjustment. Use `:inset="false"` to disable it dynamically.
+`inset` applies negative horizontal margins matching the button's horizontal padding. This compensates the transparent padding when placing the label alongside surrounding content, while retaining the padded hit area. It applies to `ghost` and `link` with a text label, regardless of color. The component expresses this as one `@cases('size', ..., when: [...])` map, adding margins without replacing the normal dimensions. Treatments with a visible background or border and automatically detected square icon buttons do not receive the adjustment. Use `:inset="false"` to disable it dynamically.
 
 ### Colors
 

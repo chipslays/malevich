@@ -208,17 +208,60 @@ final class ComponentScanner
 
         $declarations->values($option, array_keys($cases));
 
+        if (isset($arguments[2])) {
+            $conditions = ConstantExpression::evaluate((string) preg_replace('/^when\s*:\s*/', '', $arguments[2]));
+
+            if (! is_array($conditions)) {
+                throw new InvalidArgumentException('Unexpected @cases when conditions.');
+            }
+
+            foreach ($conditions as $condition => $expected) {
+                $declarations->values((string) $condition, is_array($expected) ? array_values($expected) : [$expected]);
+            }
+        }
+
         foreach ($cases as $source) {
             try {
                 $targets = ConstantExpression::entries($source);
 
-                if (! array_is_list($targets)) {
+                if (self::hasTargetClasses($targets)) {
                     $declarations->targets = [...$declarations->targets, ...array_map(strval(...), array_keys($targets))];
                 }
             } catch (InvalidArgumentException) {
                 // Classes may be dynamic even when the option values are known.
             }
         }
+    }
+
+    /**
+     * Boolean class maps belong to the root. A known non-boolean value under
+     * a named key identifies a target map; dynamic-only maps remain unknown.
+     *
+     * @param  array<array-key, string>  $entries
+     */
+    private static function hasTargetClasses(array $entries): bool
+    {
+        foreach ($entries as $key => $source) {
+            if (is_int($key)) {
+                continue;
+            }
+
+            try {
+                if (! is_bool(ConstantExpression::evaluate($source))) {
+                    return true;
+                }
+            } catch (InvalidArgumentException) {
+                try {
+                    ConstantExpression::entries($source);
+
+                    return true;
+                } catch (InvalidArgumentException) {
+                    // The value's type cannot be established without executing it.
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

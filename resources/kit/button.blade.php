@@ -225,11 +225,16 @@
 ])
 
 {{-- Transparent treatments can align their label with adjacent content. --}}
-@compound(['inset' => true, 'variant' => ['ghost', 'link'], 'size' => 'xs'], ['-mx-2' => ! $iconOnly])
-@compound(['inset' => true, 'variant' => ['ghost', 'link'], 'size' => 'sm'], ['-mx-3' => ! $iconOnly])
-@compound(['inset' => true, 'variant' => ['ghost', 'link'], 'size' => 'md'], ['-mx-4' => ! $iconOnly])
-@compound(['inset' => true, 'variant' => ['ghost', 'link'], 'size' => 'lg'], ['-mx-5' => ! $iconOnly])
-@compound(['inset' => true, 'variant' => ['ghost', 'link'], 'size' => 'xl'], ['-mx-6' => ! $iconOnly])
+@cases('size', [
+    'xs' => ['-mx-2' => ! $iconOnly],
+    'sm' => ['-mx-3' => ! $iconOnly],
+    'md' => ['-mx-4' => ! $iconOnly],
+    'lg' => ['-mx-5' => ! $iconOnly],
+    'xl' => ['-mx-6' => ! $iconOnly],
+], when: [
+    'inset' => true,
+    'variant' => ['ghost', 'link'],
+])
 
 @option('radius', [
     'brand' => 'rounded-lg',

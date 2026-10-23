@@ -2,12 +2,16 @@
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\View\ComponentAttributeBag;
+use Malevich\Element;
 use Malevich\Malevich;
 use Malevich\Recipe;
 
 it('compiles @cases into a recipe declaration', function () {
     expect(Blade::compileString("@cases('variant', ['a' => ['default' => 'x']])"))
         ->toContain("->cases('variant', ['a' => ['default' => 'x']])");
+
+    expect(Blade::compileString("@cases('size', ['sm' => 'px-2'], when: ['inset' => true])"))
+        ->toContain("->cases('size', ['sm' => 'px-2'], when: ['inset' => true])");
 });
 
 it('styles every element of the chosen value from one declaration', function () {
@@ -85,4 +89,69 @@ it('adds to an earlier @variant, but is replaced by a later one', function () {
     $recipe->option('variant', ['teal' => 'c']);
 
     expect($recipe->optionsFor('default'))->toBe(['variant' => ['teal' => 'c']]);
+});
+
+it('adds conditional cases only when all shared conditions match', function () {
+    expect($this->render('<x-conditional-cases variant="ghost" inset>Go</x-conditional-cases>'))
+        ->toContain('<button class="h-8 -mx-2">', '<i class="size-3"></i>')
+        ->not->toContain('inset=', 'variant=', '-mx-2=');
+
+    expect($this->render('<x-conditional-cases variant="link" size="lg" inset>Go</x-conditional-cases>'))
+        ->toContain('<button class="h-12 -mx-5">', '<i class="size-5"></i>');
+
+    expect($this->render('<x-conditional-cases inset>Go</x-conditional-cases>'))
+        ->toContain('<button class="h-8">', '<i class="size-3"></i>')
+        ->not->toContain('-mx-');
+
+    expect($this->render('<x-conditional-cases variant="ghost">Go</x-conditional-cases>'))
+        ->toContain('<button class="h-8">')->not->toContain('-mx-', '<i');
+});
+
+it('supports root boolean class maps and independently targeted conditional cases', function () {
+    expect($this->render('<x-conditional-cases variant="ghost" inset icon-only icon:size="lg">Go</x-conditional-cases>'))
+        ->toContain('<button class="h-8">', '<i class="size-5"></i>')
+        ->not->toContain('-mx-', 'icon:size=');
+});
+
+it('resolves shared conditions per target and lets slot options override them', function () {
+    $bag = new ComponentAttributeBag(['size' => 'sm', 'icon:size' => 'lg', 'active' => false]);
+    $recipe = Malevich::recipe($bag)->cases('size', [
+        'sm' => ['icon' => 'small'],
+        'lg' => ['icon' => 'large'],
+    ], when: ['active' => false]);
+    $icon = new Element($bag, 'icon', recipe: $recipe);
+
+    expect($icon->toClasses())->toBe('large')
+        ->and($icon->slot(new ComponentAttributeBag(['size' => 'sm']))->toClasses())->toBe('small')
+        ->and($icon->use(['active' => true])->toClasses())->toBe('');
+});
+
+it('combines wildcard conditional cases with conditions on the same option', function () {
+    $bag = new ComponentAttributeBag(['size' => 'sm', 'active' => true]);
+    $recipe = Malevich::recipe($bag)
+        ->cases('size', ['*' => 'shared'], when: ['active' => true])
+        ->cases('size', ['sm' => 'small', 'lg' => 'large'], when: ['size' => ['sm'], 'active' => true]);
+    $element = new Element($bag, recipe: $recipe);
+
+    expect($element->toClasses())->toBe('shared small')
+        ->and($element->use(['size' => 'lg'])->toClasses())->toBe('shared')
+        ->and($element->use(['active' => false])->toClasses())->toBe('');
+});
+
+it('keeps conditional-only options consumable and known in strict mode', function () {
+    Malevich::strict();
+    $bag = new ComponentAttributeBag(['density' => 'compact', 'active' => false]);
+    Malevich::recipe($bag)->cases('density', ['compact' => ['px-2' => true]], when: ['active' => true]);
+
+    expect((new Element($bag))->toHtml())->not->toContain('density=', 'px-2')
+        ->and((new Element($bag))->classesFor('density'))->toBe(['compact' => '']);
+});
+
+it('treats an empty when map as an ordinary additive cases declaration', function () {
+    $recipe = (new Recipe)
+        ->option('size', ['sm' => 'h-8'])
+        ->cases('size', ['sm' => ['px-2' => true, 'hidden' => false]], when: []);
+
+    expect($recipe->optionsFor('default')['size']['sm'])->toBe('h-8 px-2')
+        ->and($recipe->compoundsFor('default'))->toBe([]);
 });

@@ -31,6 +31,13 @@ beforeEach(function () {
             ])
             <div @attributes></div>
             BLADE,
+        'when-cased' => <<<'BLADE'
+            @cases('size', ['sm' => ['-mx-2' => ! $iconOnly]], when: [
+                'inset' => true,
+                'variant' => ['ghost', 'link'],
+            ])
+            <div @attributes></div>
+            BLADE,
     ];
 
     foreach ($components as $name => $source) {
@@ -115,6 +122,19 @@ it('checks cases with literal option values and dynamic classes', function () {
 
     $this->artisan('malevich:lint', ['paths' => [$views]])
         ->expectsOutputToContain('icon:size [typo] is not defined; expected one of: sm, lg.')
+        ->assertFailed();
+});
+
+it('checks shared cases conditions without mistaking root class keys for targets', function () {
+    $views = page($this->dir, '<x-lint::when-cased size="sm" variant="ghost" -mx-2:size="external" />');
+
+    $this->artisan('malevich:lint', ['paths' => [$views]])
+        ->expectsOutputToContain('No problems')->assertSuccessful();
+
+    $views = page($this->dir, '<x-lint::when-cased size="sm" variant="typo" />');
+
+    $this->artisan('malevich:lint', ['paths' => [$views]])
+        ->expectsOutputToContain('variant [typo] is not defined; expected one of: ghost, link.')
         ->assertFailed();
 });
 

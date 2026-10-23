@@ -118,8 +118,31 @@ Read it as: *"when variant is teal, the card is `bg-teal-600`, the title is `tex
 - The first argument is the option: `@cases('size', [...])`, `@cases('color', [...])` or any other name.
 - The inner keys are elements; `default` is the main one.
 - A value can also be plain classes - they style the main element: `'teal' => 'bg-teal-600'`.
-- Write conditional classes under an element key, never directly as the value.
+- A boolean class map also styles the main element: `'sm' => ['px-2' => ! $iconOnly]`. In mixed lists, named class keys must have boolean values. For a target map, put conditional classes under a target key: `'sm' => ['icon' => ['size-3' => $showIcon]]`.
 - It is exactly the same as one `@variant('element', [...])` per element, so everything else (`@compound`, [named slots](05-inner-elements.md#named-slots)) works as usual. Pick one style per option and stick to it.
+
+### Conditional cases with `when:`
+
+Use `when:` when several cases share additional conditions. All conditions must match; a list accepts any of its values, just like `@compound`:
+
+```blade
+@cases('size', [
+    'xs' => ['-mx-2' => ! $iconOnly],
+    'sm' => ['-mx-3' => ! $iconOnly],
+    'md' => ['-mx-4' => ! $iconOnly],
+    'lg' => ['-mx-5' => ! $iconOnly],
+    'xl' => ['-mx-6' => ! $iconOnly],
+], when: [
+    'inset' => true,
+    'variant' => ['ghost', 'link'],
+])
+```
+
+This adds negative margins only for inset ghost or link buttons with text. It preserves the existing size map: height, padding and typography still apply. An empty `when: []` behaves like ordinary `@cases`.
+
+Conditional cases add compound classes after the ordinary option maps. They also accept target maps, and each target resolves both its case value and the shared conditions independently. Slot options and targeted attributes retain their usual priority. A conditional target stays empty until its conditions match, so it can be guarded with `@styled`.
+
+Root class maps are recognized by boolean values under their named keys. To express a conditional class for an explicitly named target, wrap it in that target's array. Catalog and lint tools read literal case values and `when:` conditions without evaluating the class expressions.
 
 ## Which tool should I use?
 
@@ -131,6 +154,7 @@ Read it as: *"when variant is teal, the card is `bg-teal-600`, the title is `tex
 | Classes when two props have certain values | `@compound` |
 | React to a flag (`loading`, `active`) | `@compound(['loading' => true], '...')` or a [`'true'`/`'false'` map](02-classes.md#booleans) |
 | Many elements change together per value | `@cases` |
+| Several cases share additional conditions | `@cases(..., when: [...])` |
 | An element that exists only in some variants | [`@styled`](05-inner-elements.md#parts-that-exist-only-in-some-variants) |
 | A default value | the `@props` default |
 | Default HTML attributes (`type`, `role`, `aria-*`) | [`@attributes(merge: [...])`](04-attributes.md#default-attributes-merge) |

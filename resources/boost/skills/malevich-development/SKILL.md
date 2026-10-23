@@ -47,6 +47,7 @@ Never write `$color` in the markup: `@attributes` reads the option from `@props`
 @size('icon', ['sm' => 'size-3', 'md' => 'size-4'])       {{-- inner element "icon" --}}
 @base('title', 'font-semibold')                           {{-- always-on for inner element --}}
 @cases('variant', ['teal' => ['default' => '...', 'title' => '...'], 'dark' => [...]])   {{-- same maps, grouped by value --}}
+@cases('size', ['sm' => ['-mx-2' => ! $iconOnly]], when: ['inset' => true, 'variant' => ['ghost', 'link']])
 @compound(['variant' => 'primary', 'size' => 'lg'], 'shadow-lg')   {{-- ALL conditions; list = any of --}}
 @compound(['loading' => true], 'cursor-wait')             {{-- flag --}}
 @compound(['size' => 'sm'], targets: ['default' => 'px-2', 'icon' => 'size-3'])   {{-- one combination, several elements --}}

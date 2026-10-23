@@ -47,7 +47,8 @@ Use it when one prop changes the classes of several elements and you want to rea
 - First argument: the option name (`variant`, `size`, any `@option` name).
 - Inner keys are targets, `default` is the main element. A plain string or list as a value styles the main element.
 - It fills the same slots as one `@variant('target', [...])` per element; several `@cases` calls add up. A later `@variant([...])` for the same element and option **replaces** the theme's classes.
-- Conditional classes (`['a', 'b' => $cond]`) go under a target key, never directly as a value.
+- Conditional class maps (`['a', 'b' => $cond]`) can style the root directly when named class keys have boolean values. For named targets, nest them under the target key.
+- `@cases('size', [...], when: ['inset' => true, 'variant' => ['ghost', 'link']])` adds compound classes only when all shared conditions match. It preserves ordinary option maps and supports independent target choices. An empty `when` behaves like ordinary cases.
 - An optional part: no `@base` for it, all classes in the variants, render it inside `@styled('target') ... @endstyled`.
 
 ## `@compound`
