@@ -44,7 +44,8 @@
     <script>
         try {
             const root = document.documentElement;
-            root.dataset.mlvUi = localStorage.getItem('malevich.theme') || 'light';
+            // Until a theme is picked: the system's, like a media-based dark mode of the app.
+            root.dataset.mlvUi = localStorage.getItem('malevich.theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
             root.dataset.mlvStage = localStorage.getItem('malevich.stage') || 'dots';
             root.dataset.mlvSize = localStorage.getItem('malevich.size') || 'l';
         } catch (e) {}

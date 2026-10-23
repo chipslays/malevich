@@ -1,5 +1,5 @@
 # Playground: `composer serve` boots a real Laravel app with Malevich installed
-# and opens workbench/resources/views/playground.blade.php at http://127.0.0.1:8000/playground
+# and opens the component catalog with the kit (resources/kit) at http://127.0.0.1:8000/malevich
 
 laravel: '@testbench'
 
@@ -11,7 +11,7 @@ env:
   - APP_DEBUG=true
 
 workbench:
-  start: '/playground'
+  start: '/malevich'
   install: true
   discovers:
     web: true

@@ -1,6 +1,6 @@
 # Examples
 
-Complete components to copy and adapt. Each one shows a few features at once; the comments point to the chapter that explains them. More live in [`workbench/resources/views/components`](../workbench/resources/views/components) - run `composer serve` in the repository to see them in a browser.
+Complete components to copy and adapt. Each one shows a few features at once; the comments point to the chapter that explains them. Ready-made components live in [`resources/kit`](../resources/kit) - run `composer serve` in the repository to see them in the catalog.
 
 ## Button
 

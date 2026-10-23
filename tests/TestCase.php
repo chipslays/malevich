@@ -33,7 +33,7 @@ abstract class TestCase extends Orchestra
         Malevich::flush();
         Blade::anonymousComponentPath(__DIR__.'/fixtures/components');
 
-        // The workbench playground ships components with the same names (`button`,
+        // A view path may ship components with the same names (`button`,
         // `badge`, ...) and Blade looks `components.*` up in the view paths first,
         // so the fixtures have to come before them.
         $this->app['view']->getFinder()->prependLocation(__DIR__.'/fixtures');

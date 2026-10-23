@@ -98,14 +98,14 @@ Upgrading from 1.x? See [UPGRADE.md](UPGRADE.md).
 
 ## Playground and contributing
 
-The repository ships a small Laravel app with example components:
+The repository ships a small Laravel app with the ready-made components in the component catalog:
 
 ```bash
 composer install
 composer serve
 ```
 
-Open http://127.0.0.1:8000/playground, or the component catalog at http://127.0.0.1:8000/malevich. Components live in `workbench/resources/views/components`. The playground has no Vite build, so it loads Tailwind from a CDN; in your app the catalog uses your own build.
+Open http://127.0.0.1:8000/malevich. The components live in `resources/kit` - edit one and refresh. The playground has no Vite build, so it loads Tailwind from a CDN; in your app the catalog uses your own build.
 
 Before sending a pull request:
 
