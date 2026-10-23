@@ -15,7 +15,7 @@ php artisan vendor:publish --tag malevich:config
 |---|---|---|
 | `options` | `['variant', 'size', 'color']` | Options with a directive of their own: `@variant`, `@size`, ... [Add yours](#your-own-options). |
 | `directives` | `attributes`, `base`, `option`, `compound`, `cases`, `styled` | The name of every Malevich directive. [Rename](#renaming-directives) on a clash. |
-| `components.path` | `resource_path('views/components')` | Where `make:malevich` creates components. |
+| `components.path` | `resource_path('views/components')` | Where `make:malevich` creates components and `malevich:add` copies kit components. |
 | `components.prefix` | `null` | Tag prefix: `null` -> `<x-button>`, `'ui'` -> `<x-ui::button>`. See [Which tag?](12-commands.md#which-tag) |
 | `default_target` | `'default'` | The name of the main element in per-element arrays and `@cases`. |
 | `data_attributes` | `false` | Put `data-component`, `data-variant`, ... on the main element. See [Data attributes](08-javascript.md#data-attributes). |
@@ -69,7 +69,7 @@ Every directive name can be changed, so a clash with another package is always s
     'option' => 'option',           // @option('radius', [...])
     'compound' => 'compound',       // @compound([...], '...')
     'cases' => 'cases',             // @cases('variant', [...])
-    'styled' => 'styled',                 // @styled('glow') ... @endstyled
+    'styled' => 'styled',           // @styled('glow') ... @endstyled
 ],
 ```
 

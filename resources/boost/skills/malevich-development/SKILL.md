@@ -55,7 +55,7 @@ Never write `$color` in the markup: `@attributes` reads the option from `@props`
 <button @attributes(merge: ['type' => 'button'])>                 {{-- default attributes, user wins --}}
     <svg @attributes('icon')></svg>
     <span @attributes('title')>{{ $title }}</span>                {{-- picks up <x-slot:title class="..."> --}}
-    @styled('badge')<i @attributes('badge')></i>@endstyled             {{-- only when that element has classes --}}
+    @styled('badge')<i @attributes('badge')></i>@endstyled       {{-- only when that element has classes --}}
     {{ $slot }}
 </button>
 ```

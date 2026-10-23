@@ -102,7 +102,6 @@ The command uses your configured components directory and preserves existing fil
 
 Start with [Getting started](docs/01-getting-started.md), then read on in order - each chapter builds on the previous one. The full table of contents is in [docs/README.md](docs/README.md).
 
-
 ## Playground and contributing
 
 The repository ships a small Laravel app with the ready-made components in the component catalog:

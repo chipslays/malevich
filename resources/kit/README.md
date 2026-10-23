@@ -14,7 +14,7 @@ php artisan malevich:add button --force
 
 Include the destination in Tailwind's source scanning and configure the named color scales and `brand` radius described below. No JavaScript or additional components are needed beyond the Malevich primitive. `make:malevich` creates an empty scaffold; `malevich:add` copies a complete kit component.
 
-The repository playground registers this directory automatically: run `composer serve` and open `/malevich`.
+The repository playground registers this directory automatically and defines the theme tokens below: run `composer serve` and open `/malevich`.
 
 ## Button
 
@@ -33,9 +33,9 @@ The repository playground registers this directory automatically: run `composer 
 | `size` | `xs`, `sm`, `md`, `lg`, `xl` | `md` |
 | `radius` | `brand`, `none`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`, `4xl`, `full`, `squircle` | `brand` |
 | `inset` | boolean; compensate horizontal padding for text buttons with `ghost` or `link` treatment | `false` |
-| `loading` | boolean | `false` |
+| `loading` | boolean; `loading="false"` counts as `false` | `false` |
 | `loadingLabel` | named slot with replacement text, HTML or components; empty slot hides content | omitted |
-| `disabled` | boolean | `false` |
+| `disabled` | boolean; `disabled="false"` counts as `false` | `false` |
 | `icon` | leading icon content, usually a named slot | `null` |
 | `trailing` | trailing icon content, usually a named slot | `null` |
 | `as` | HTML tag | `button` |
@@ -102,6 +102,23 @@ Variant and color are independent. Colors describe semantic roles:
 
 The component uses your application's named Tailwind color scales: for example, `bg-primary-600`, `text-danger-700` and `border-success-300`. Define the seven semantic scales in your Tailwind theme, including the shades used by the component. `neutral` and `contrast` both use `gray-*` utilities. Backgrounds, text, borders, hover and focus styles all use the same named scales; the component does not assign them to built-in hues.
 
+For example, mapping the roles onto Tailwind's built-in palette in your `app.css` (repeat the lines for every shade from `50` to `950`):
+
+```css
+@theme inline {
+    --radius-brand: var(--radius-lg);
+
+    --color-primary-50: var(--color-indigo-50);
+    /* ... */
+    --color-primary-950: var(--color-indigo-950);
+
+    --color-secondary-50: var(--color-slate-50);
+    /* ... secondary, accent, success, warning, danger and info likewise */
+}
+```
+
+Without these tokens the button renders without colors or rounded corners: Tailwind silently skips utilities such as `bg-primary-600` it has no theme value for.
+
 ```blade
 <x-button color="neutral">Cancel</x-button>
 <x-button color="contrast">Continue</x-button>
@@ -109,7 +126,7 @@ The component uses your application's named Tailwind color scales: for example, 
 
 `contrast` has its own styling for every variant. `solid` reverses the theme's surface brightness; `soft` uses a translucent dark tint on light themes and a light tint on dark themes. `outline` uses a stronger border, while `ghost` and `link` use stronger foreground colors. Soft, outline and ghost treatments also have their own theme-aware hover colors. Text remains readable against each treatment's background.
 
-Customize a color's literal classes in its `$palette` entry and its focus outline in `@color`. One palette loop registers the compound rules without repeating color classes. Sizes use `@cases('size', ...)`: each size groups the root's dimensions and padding with the content, loading, icon and spinner classes. Each target still resolves its own size independently. No custom CSS variables, inline styles or generated class names are used.
+Customize a color's literal classes in its `$palette` entry and its focus outline in `@color`. One palette loop registers the compound rules without repeating color classes. Sizes use `@cases('size', ...)`: each size groups the root's dimensions and padding with the content, loading, icon, trailing and spinner classes. Each target still resolves its own size independently. No custom CSS variables, inline styles or generated class names are used.
 
 ### Radius
 

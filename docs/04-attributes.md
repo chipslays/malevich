@@ -56,7 +56,7 @@ On the **main element**:
 
 Option names (`variant`, `size`, any `@option` name) are **not** printed - Malevich used them to pick classes.
 
-On an **inner element** (`@attributes('icon')`): only its own classes, its `merge:` attributes and the attributes of its [slot](05-inner-elements.md#named-slots). Attributes from the component tag always go to the main element.
+On an **inner element** (`@attributes('icon')`): only its own classes, its `merge:` attributes and the attributes of its [slot](05-inner-elements.md#named-slots), plus [targeted attributes](05-inner-elements.md#internal-elements-configure-them-from-the-component-tag) such as `icon:class="..."` from the component tag. Plain attributes from the component tag always go to the main element.
 
 ## Rules
 

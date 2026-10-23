@@ -48,7 +48,8 @@ return [
     | Components
     |--------------------------------------------------------------------------
     |
-    | The directory where `php artisan make:malevich` writes new components.
+    | The directory where `php artisan make:malevich` writes new components
+    | and `php artisan malevich:add` copies kit components.
     | If it exists, Malevich registers it with Blade as anonymous components.
     | Subfolders become dots: forms/input.blade.php is <x-forms.input>.
     |

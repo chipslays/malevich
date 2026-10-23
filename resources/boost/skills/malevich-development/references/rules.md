@@ -7,7 +7,7 @@
 3. Write full literal class names in maps. Never build them: `'bg-'.$color.'-500'`, `bg-{{ $color }}-500`. Tailwind cannot see them.
 4. Option defaults go in `@props([...])`, and each must be an existing key of that option's map (case-sensitive).
 5. Primitive-based components: `as` is a prop forwarded with `:as="$as"`; do not declare `href`, `target`, `disabled`, `type` in `@props` unless forwarding them.
-6. Inner elements: each `@attributes('x')` needs matching target declarations if it should be styled; tag `class` never reaches it.
+6. Inner elements: each `@attributes('x')` needs matching target declarations if it should be styled; a plain tag `class` never reaches it (callers use `x:class="..."` or `<x-slot:x class="...">`).
 9. Match the project: option names, value names, size scale, palette, prefix (`components.prefix`), Tailwind version.
 10. Optional parts (drawn in some variants only): no `@base` for them, all classes in the variants, rendered in `@styled('target') ... @endstyled`. No `hidden` placeholders.
 11. Keep public prop names and values stable when refactoring; do not change rendered classes unless asked.

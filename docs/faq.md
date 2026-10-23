@@ -19,7 +19,7 @@ The directive for that option is missing or written after `@attributes`. Malevic
 
 ### `class` from the tag isn't applied to my icon
 
-By design: attributes from the tag go to the main element only. Use a [named slot](05-inner-elements.md#named-slots) or a separate prop.
+By design: plain attributes from the tag go to the main element only. Address the inner element with a [targeted attribute](05-inner-elements.md#internal-elements-configure-them-from-the-component-tag) (`icon:class="..."`, `icon:size="lg"`) or put the attributes on its [named slot](05-inner-elements.md#named-slots). A targeted attribute only works for a target the component declares (`@base('icon', ...)`, an option map or a compound rule).
 
 ### An optional element renders as an empty `<div>`
 

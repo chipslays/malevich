@@ -38,9 +38,9 @@ For an internal spinner, `spinner:size="lg"` is useful because there is no calle
 
 If both forms specify the same option or HTML attribute, the slot's value wins. See [Which value wins?](#which-value-wins) for the complete precedence rules.
 
-## Named slots: configure the content you provide
+## Named slots
 
-Here is a complete card with a title slot. Both elements respond to `size`, using their own class maps:
+Use a named slot to configure the content you provide. Here is a complete card with a title slot. Both elements respond to `size`, using their own class maps:
 
 ```blade
 {{-- card.blade.php --}}
