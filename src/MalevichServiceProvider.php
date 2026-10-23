@@ -12,6 +12,7 @@ use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\View\ComponentAttributeBag;
 use InvalidArgumentException;
 use Malevich\Catalog\Catalog;
+use Malevich\Console\Commands\AddCommand;
 use Malevich\Console\Commands\InstallCommand;
 use Malevich\Console\Commands\LintCommand;
 use Malevich\Console\Commands\MakeCommand;
@@ -52,7 +53,7 @@ class MalevichServiceProvider extends ServiceProvider
                 __DIR__.'/../resources/views/components' => resource_path('views/vendor/malevich/components'),
             ], 'malevich:components');
 
-            $this->commands([InstallCommand::class, LintCommand::class, MakeCommand::class]);
+            $this->commands([AddCommand::class, InstallCommand::class, LintCommand::class, MakeCommand::class]);
 
             // Tests run in the console too: ->assertSeeClasses() and expect()->toHaveClasses().
             ClassAssertions::register();
