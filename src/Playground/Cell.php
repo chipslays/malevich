@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Malevich\Catalog;
+namespace Malevich\Playground;
 
 /**
- * One rendering in the catalog: the tag, and its HTML or why it failed.
+ * One rendering in the playground: the tag, and its HTML or why it failed.
  *
  * @internal
  */

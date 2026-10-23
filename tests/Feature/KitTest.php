@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Blade;
-use Malevich\Catalog\Catalog;
+use Malevich\Playground\Playground;
 
 function kitFiles(): array
 {
@@ -15,7 +15,7 @@ beforeEach(function () {
 describe('every component', function () {
     it('renders every value of every option', function (string $file) {
         $name = basename($file, '.blade.php');
-        $component = Catalog::make()->components()['kit::'.$name] ?? null;
+        $component = Playground::make()->components()['kit::'.$name] ?? null;
 
         expect($component)->not->toBeNull();
 
@@ -29,8 +29,8 @@ describe('every component', function () {
         }
     })->with(fn () => kitFiles());
 
-    it('has a usage example for the catalog', function (string $file) {
-        expect(Catalog::make()->example($file))->not->toBeNull();
+    it('has a usage example for the playground', function (string $file) {
+        expect(Playground::make()->example($file))->not->toBeNull();
     })->with(fn () => kitFiles());
 });
 

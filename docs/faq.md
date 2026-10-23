@@ -33,9 +33,9 @@ It has a `@base`, which makes it non-empty in every variant. Move its classes in
 
 Text and `{{ }}` are fine there. With `{!! !!}` or a Blade directive inside the class, pass the classes as an argument: `@attributes(class: $classes)`.
 
-### The catalog looks unstyled
+### The playground looks unstyled
 
-The catalog loads your app's Vite entries. Run `npm run dev` or `npm run build`. CSS from elsewhere goes into `catalog.head`. See [Component catalog](09-catalog.md#your-styles-and-scripts).
+The playground loads your app's Vite entries. Run `npm run dev` or `npm run build`. CSS from elsewhere goes into `playground.head`. See [Component playground](09-playground.md#your-styles-and-scripts).
 
 ### I changed something and the output didn't change
 

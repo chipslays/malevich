@@ -22,7 +22,7 @@ it('rejects an empty element name in a target key', function () {
         ->toThrow(InvalidArgumentException::class, 'Empty element name');
 });
 
-it('reads shared target keys for lint and the catalog', function () {
+it('reads shared target keys for lint and the playground', function () {
     $component = (new ComponentScanner(new Filesystem, app('view')->getFinder()))->component(__DIR__.'/../fixtures/components/shared-targets.blade.php');
 
     expect($component['targets'])->toContain('a', 'b')->not->toContain('a,b');

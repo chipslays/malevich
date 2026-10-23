@@ -145,7 +145,7 @@ Because of step 1 -> 2 there is one rule to remember:
 
 ## Try it in a browser
 
-Open `/malevich` in your local app: the [component catalog](09-catalog.md) shows every component with every value of every option, without any setup.
+Open `/malevich` in your local app: the [component playground](09-playground.md) shows every component with every value of every option, without any setup.
 
 ---
 

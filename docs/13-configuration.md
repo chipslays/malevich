@@ -22,10 +22,10 @@ php artisan vendor:publish --tag malevich:config
 | `merge_classes` | `'auto'` | `'auto'`: use tailwind-merge when it's installed. `false`: only remove duplicates. See [Class conflicts](07-tailwind.md#class-conflicts). |
 | `strict` | `env('MALEVICH_STRICT', false)` | Throw on unknown option values. See [Strict mode](10-debugging.md#strict-mode). |
 | `debug` | `env('MALEVICH_DEBUG', false)` | An HTML comment explaining every element. See [Debug mode](10-debugging.md#debug-mode). |
-| `catalog.enabled` | `env('MALEVICH_CATALOG')` | The [component catalog](09-catalog.md). Empty: only in the `local` environment. |
-| `catalog.path` | `'malevich'` | The catalog's URL. |
-| `catalog.middleware` | `['web']` | Middleware for the catalog, e.g. `['web', 'auth']`. |
-| `catalog.head` | `null` | HTML for the catalog's `<head>`. Empty: your app's Vite entries. |
+| `playground.enabled` | `env('MALEVICH_PLAYGROUND')` | The [component playground](09-playground.md). Empty: only in the `local` environment. |
+| `playground.path` | `'malevich'` | The playground's URL. |
+| `playground.middleware` | `['web']` | Middleware for the playground, e.g. `['web', 'auth']`. |
+| `playground.head` | `null` | HTML for the playground's `<head>`. Empty: your app's Vite entries. |
 
 ## Your own options
 

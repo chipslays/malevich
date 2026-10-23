@@ -15,6 +15,8 @@ use Illuminate\View\ComponentAttributeBag;
  * @method static bool isStrict()
  * @method static void debug(bool $debug = true)
  * @method static bool isDebugging()
+ * @method static void playground(bool $playground = true)
+ * @method static ?bool playgroundOverride()
  * @method static Recipe recipe(?ComponentAttributeBag $attributes)
  * @method static Element attributes(?ComponentAttributeBag $attributes, array<string, mixed> $scope, ?string $target = null, mixed $slot = null, array<string, mixed> $merge = [], string $class = '', array<string, mixed> $override = [])
  * @method static bool styled(?ComponentAttributeBag $attributes, array<string, mixed> $scope, ?string $target = null, mixed $slot = null, array<string, mixed> $merge = [], array<string, mixed> $override = [])

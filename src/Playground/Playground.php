@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Malevich\Catalog;
+namespace Malevich\Playground;
 
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Blade;
@@ -18,14 +18,14 @@ use Malevich\Support\TagScanner;
 use Throwable;
 
 /**
- * The component catalog: every component of the app rendered with every
+ * The component playground: every component of the app rendered with every
  * value of its options. Built from the same static scan as malevich:lint,
  * so it needs no setup - a component shows up as soon as it declares a
  * class map.
  *
  * @internal
  */
-final class Catalog
+final class Playground
 {
     public function __construct(
         private readonly ComponentScanner $scanner,
@@ -37,7 +37,7 @@ final class Catalog
         $finder = app('view')->getFinder();
 
         if (! $finder instanceof FileViewFinder) {
-            throw new LogicException('The Malevich catalog needs Laravel\'s file view finder to locate components.');
+            throw new LogicException('The Malevich playground needs Laravel\'s file view finder to locate components.');
         }
 
         return new self(new ComponentScanner(new Filesystem, $finder), new Filesystem);
@@ -45,26 +45,32 @@ final class Catalog
 
     public static function enabled(): bool
     {
-        $enabled = config('malevich.catalog.enabled');
+        $override = Malevich::playgroundOverride();
+
+        if ($override !== null) {
+            return $override;
+        }
+
+        $enabled = config('malevich.playground.enabled');
 
         return $enabled === null || $enabled === '' ? app()->isLocal() : filter_var($enabled, FILTER_VALIDATE_BOOLEAN);
     }
 
     public static function routes(): void
     {
-        $path = trim((string) config('malevich.catalog.path', 'malevich'), '/');
+        $path = trim((string) config('malevich.playground.path', 'malevich'), '/');
 
-        Route::middleware((array) config('malevich.catalog.middleware', ['web']))->group(function () use ($path) {
-            Route::get($path, CatalogController::class)->name('malevich.catalog');
+        Route::middleware((array) config('malevich.playground.middleware', ['web']))->group(function () use ($path) {
+            Route::get($path, PlaygroundController::class)->name('malevich.playground');
             // POST, so the web middleware checks the CSRF token: another site can't make the
             // developer's browser render Blade here.
-            Route::post($path.'/preview', [CatalogController::class, 'preview'])->name('malevich.catalog.preview');
+            Route::post($path.'/preview', [PlaygroundController::class, 'preview'])->name('malevich.playground.preview');
         });
     }
 
     /**
      * Whether the playground may run typed content as Blade. That is running
-     * code, so only on a developer's machine - wherever else the catalog is
+     * code, so only on a developer's machine - wherever else the playground is
      * turned on, the slot fields still work.
      */
     public static function bladeAllowed(): bool
@@ -229,7 +235,7 @@ final class Catalog
             [$template, $display] = match ($value) {
                 'true', '' => [$template." {$attribute}", $display." {$attribute}"],
                 'false' => [$template." :{$attribute}=\"false\"", $display." :{$attribute}=\"false\""],
-                default => [$template." {$attribute}=\"{{ \$__catalogAttributes['{$attribute}'] }}\"", $display." {$attribute}=\"".str_replace('"', '&quot;', $value).'"'],
+                default => [$template." {$attribute}=\"{{ \$__playgroundAttributes['{$attribute}'] }}\"", $display." {$attribute}=\"".str_replace('"', '&quot;', $value).'"'],
             };
         }
 
@@ -249,7 +255,7 @@ final class Catalog
             return new Cell($tag, $values, null, 'Blade content runs only in the local environment. Use the slot fields instead.');
         }
 
-        return $this->render(self::tag($name, $values, $blade, $template), $tag, $values, ['__catalogAttributes' => $attributes]);
+        return $this->render(self::tag($name, $values, $blade, $template), $tag, $values, ['__playgroundAttributes' => $attributes]);
     }
 
     /**
@@ -278,14 +284,14 @@ final class Catalog
             }
 
             $classes[$slot] = $class;
-            $template[] = "<x-slot:{$slot}".($class === '' ? '' : " class=\"{{ \$__catalogSlotClasses['{$slot}'] }}\"").">{{ \$__catalogSlots['{$slot}'] }}</x-slot:{$slot}>";
+            $template[] = "<x-slot:{$slot}".($class === '' ? '' : " class=\"{{ \$__playgroundSlotClasses['{$slot}'] }}\"").">{{ \$__playgroundSlots['{$slot}'] }}</x-slot:{$slot}>";
             $display[] = "<x-slot:{$slot}".($class === '' ? '' : ' class="'.str_replace('"', '&quot;', $class).'"').">{$text}</x-slot:{$slot}>";
         }
 
         $default = trim($texts['default'] ?? '');
 
         if ($default !== '') {
-            $template[] = "{{ \$__catalogSlots['default'] }}";
+            $template[] = "{{ \$__playgroundSlots['default'] }}";
             $display[] = $default;
         }
 
@@ -300,7 +306,7 @@ final class Catalog
             self::tag($name, $values, $inner($template), $attributeTemplate),
             self::tag($name, $values, $inner($display), $attributeDisplay),
             $values,
-            ['__catalogSlots' => $texts, '__catalogSlotClasses' => $classes, '__catalogAttributes' => $attributes],
+            ['__playgroundSlots' => $texts, '__playgroundSlotClasses' => $classes, '__playgroundAttributes' => $attributes],
         );
     }
 
@@ -472,7 +478,7 @@ final class Catalog
      */
     public function head(): string
     {
-        $head = config('malevich.catalog.head');
+        $head = config('malevich.playground.head');
 
         if (is_string($head)) {
             return Blade::render($head);

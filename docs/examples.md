@@ -1,6 +1,6 @@
 # Examples
 
-Complete components to copy and adapt. Each one shows a few features at once; the comments point to the chapter that explains them. Ready-made components live in [`resources/kit`](../resources/kit) - run `composer serve` in the repository to see them in the catalog.
+Complete components to copy and adapt. Each one shows a few features at once; the comments point to the chapter that explains them. Ready-made components live in [`resources/kit`](../resources/kit) - run `composer serve` in the repository to see them in the playground.
 
 ## Button
 

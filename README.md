@@ -92,7 +92,7 @@ The command uses your configured components directory and preserves existing fil
 - **Combinations** - classes for "primary *and* large" with [`@compound`](docs/03-combinations.md).
 - **Inner elements** - style the icon, the title, the spinner, and let users style them through [named slots](docs/05-inner-elements.md).
 - **A smart primitive** - links, buttons and `disabled` done right, [unstyled](docs/06-building-components.md#the-unstyled-primitive).
-- **Component catalog** - every component with every variant at [`/malevich`](docs/09-catalog.md), styled by your own CSS.
+- **Component playground** - every component with every variant at [`/malevich`](docs/09-playground.md), styled by your own CSS.
 - **Debug mode** - an HTML comment that [explains every class](docs/10-debugging.md#debug-mode).
 - **Strict mode and lint** - typos like `variant="primay"` caught [while rendering](docs/10-debugging.md#strict-mode) or [in CI](docs/11-testing.md#catching-typos-before-the-page-is-rendered).
 - **Test helpers** - `->assertSeeClasses('bg-red-600 text-white')` in [any order](docs/11-testing.md).
@@ -104,14 +104,14 @@ Start with [Getting started](docs/01-getting-started.md), then read on in order 
 
 ## Playground and contributing
 
-The repository ships a small Laravel app with the ready-made components in the component catalog:
+The repository ships a small Laravel app with the ready-made components in the component playground:
 
 ```bash
 composer install
 composer serve
 ```
 
-Open http://127.0.0.1:8000/malevich. The components live in `resources/kit` - edit one and refresh. The playground has no Vite build, so it loads Tailwind from a CDN; in your app the catalog uses your own build.
+Open http://127.0.0.1:8000/malevich. The components live in `resources/kit` - edit one and refresh. The repository app has no Vite build, so it loads Tailwind from a CDN; in your app the playground uses your own build.
 
 Before sending a pull request:
 

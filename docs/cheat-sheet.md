@@ -72,7 +72,7 @@ php artisan view:clear                                # after config changes or 
 
 | | |
 |---|---|
-| `/malevich` | the [component catalog](09-catalog.md) (local only) |
+| `/malevich` | the [component playground](09-playground.md) (local only) |
 | `MALEVICH_DEBUG=true` | an HTML comment explaining every element |
 | `MALEVICH_STRICT=true` | an exception on unknown values |
 | `->assertSeeClasses('a b')` | test classes in any order |

@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\View\ViewException;
-use Malevich\Catalog\Catalog;
+use Malevich\Playground\Playground;
 use Malevich\Malevich;
 
 beforeEach(function () {
@@ -242,16 +242,16 @@ it('does not inset visible treatments ordinary buttons or icon-only buttons', fu
         ->toContain('aspect-square')->not->toContain('-mx-');
 });
 
-it('is discoverable in the catalog with a working example', function () {
-    $catalog = Catalog::make();
-    $component = $catalog->components()['kit::button'];
+it('is discoverable in the playground with a working example', function () {
+    $playground = Playground::make();
+    $component = $playground->components()['kit::button'];
 
     expect($component['options']['variant'])->toBe(['solid', 'soft', 'surface', 'elevated', 'outline', 'ghost', 'link']);
     expect($component['options']['color'])->toBe(['primary', 'secondary', 'accent', 'neutral', 'contrast', 'success', 'warning', 'danger', 'info']);
     expect($component['options']['size'])->toBe(['xs', 'sm', 'md', 'lg', 'xl']);
     expect($component['options'])->not->toHaveKey('iconOnly');
-    expect($catalog->example($component['file']))->not->toBeNull();
-    expect($catalog->sheet('kit::button', $component)['default']->error)->toBeNull();
+    expect($playground->example($component['file']))->not->toBeNull();
+    expect($playground->sheet('kit::button', $component)['default']->error)->toBeNull();
 });
 
 it('detects icon buttons from missing text even with whitespace comments or a default-slot SVG', function (string $content) {

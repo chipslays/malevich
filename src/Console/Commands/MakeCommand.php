@@ -85,7 +85,7 @@ class MakeCommand extends Command
     /**
      * Fill the stub with one prop and one empty class map per configured
      * option, so custom options show up in new components too. The usage
-     * example on top is what the component catalog renders.
+     * example on top is what the component playground renders.
      */
     protected function render(string $stub, string $name): string
     {

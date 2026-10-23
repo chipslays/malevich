@@ -143,7 +143,7 @@ This adds negative margins only for inset ghost or link buttons with text. It pr
 
 Conditional cases add compound classes after the ordinary option maps. They also accept target maps, and each target resolves both its case value and the shared conditions independently. Slot options and targeted attributes retain their usual priority. A conditional target stays empty until its conditions match, so it can be guarded with `@styled`.
 
-Root class maps are recognized by boolean values under their named keys. To express a conditional class for an explicitly named target, wrap it in that target's array. Catalog and lint tools read literal case values and `when:` conditions without evaluating the class expressions.
+Root class maps are recognized by boolean values under their named keys. To express a conditional class for an explicitly named target, wrap it in that target's array. Playground and lint tools read literal case values and `when:` conditions without evaluating the class expressions.
 
 ## Which tool should I use?
 

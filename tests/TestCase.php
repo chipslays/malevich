@@ -16,7 +16,7 @@ abstract class TestCase extends Orchestra
     }
 
     /**
-     * HTTP tests (the catalog) go through the web middleware, which encrypts
+     * HTTP tests (the playground) go through the web middleware, which encrypts
      * cookies. Locally the playground's .env has a key; CI has none.
      */
     protected function defineEnvironment($app): void

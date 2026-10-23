@@ -90,4 +90,4 @@ For `<x-button size="lg">` Alpine gets:
 
 ---
 
-Next: [Component catalog](09-catalog.md)
+Next: [Component playground](09-playground.md)

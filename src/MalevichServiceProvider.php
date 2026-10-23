@@ -11,7 +11,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\View\ComponentAttributeBag;
 use InvalidArgumentException;
-use Malevich\Catalog\Catalog;
+use Malevich\Playground\Playground;
 use Malevich\Console\Commands\AddCommand;
 use Malevich\Console\Commands\InstallCommand;
 use Malevich\Console\Commands\LintCommand;
@@ -67,9 +67,12 @@ class MalevichServiceProvider extends ServiceProvider
         $this->registerAttributeBagMacros();
         $this->registerComponentPath();
 
-        if (Catalog::enabled() && ! App::routesAreCached()) {
-            Catalog::routes();
-        }
+        // After every provider has booted, so Malevich::playground() in the app's provider counts.
+        $this->app->booted(function () {
+            if (Playground::enabled() && ! App::routesAreCached()) {
+                Playground::routes();
+            }
+        });
     }
 
     protected function registerBladeDirectives(): void

@@ -35,7 +35,7 @@ New to Malevich? Read these three pages in order. Twenty minutes, and you know e
 
 ## Tools
 
-9. [Component catalog](09-catalog.md) - every component with every variant on one page.
+9. [Component playground](09-playground.md) - every component with every variant on one page.
 10. [Debugging](10-debugging.md) - debug mode and strict mode.
 11. [Testing and CI](11-testing.md) - class assertions and `malevich:lint`.
 12. [Artisan commands](12-commands.md) - `malevich:install`, `make:malevich`, `malevich:lint`.

@@ -7,7 +7,7 @@ use Illuminate\Support\ServiceProvider;
 
 /**
  * The playground (`composer serve`): the ready-made components from
- * resources/kit in the component catalog. Its settings live here, so the
+ * resources/kit in the component playground. Its settings live here, so the
  * package config keeps its documented defaults and the tests don't depend
  * on them.
  */
@@ -18,10 +18,10 @@ class WorkbenchServiceProvider extends ServiceProvider
         config([
             'malevich.data_attributes' => true,
             'malevich.debug' => true,
-            'malevich.catalog.enabled' => true,
-            // No Vite build here, so Tailwind comes from a CDN. In an app the catalog loads its own Vite entries.
-            // Class-based dark mode, so the catalog's dark / light buttons switch the components too.
-            'malevich.catalog.head' => '<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>'
+            'malevich.playground.enabled' => true,
+            // No Vite build here, so Tailwind comes from a CDN. In an app the playground loads its own Vite entries.
+            // Class-based dark mode, so the playground's dark / light buttons switch the components too.
+            'malevich.playground.head' => '<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>'
                 // The same theme tokens an app gets from `vendor:publish --tag=malevich:theme`.
                 .'<style type="text/tailwindcss">@custom-variant dark (&:where(.dark, .dark *));'
                 .file_get_contents(__DIR__.'/../../../resources/kit/theme.css').'</style>',

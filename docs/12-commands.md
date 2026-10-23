@@ -62,7 +62,7 @@ php artisan make:malevich forms/input       # resources/views/components/forms/i
 php artisan make:malevich button --force    # overwrite an existing file
 ```
 
-The new file has everything to fill in: a usage example on top (the [catalog](09-catalog.md) uses it), a `@props` entry and an empty class map for every option in your config, and an empty `@base`. Delete what you don't need:
+The new file has everything to fill in: a usage example on top (the [playground](09-playground.md) uses it), a `@props` entry and an empty class map for every option in your config, and an empty `@base`. Delete what you don't need:
 
 ```blade
 {{--

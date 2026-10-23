@@ -30,7 +30,7 @@ it('creates nested components and accepts the .blade.php suffix', function () {
     expect($this->path.'/forms/input.blade.php')->toBeFile();
 });
 
-it('starts the component with a usage example for the catalog', function () {
+it('starts the component with a usage example for the playground', function () {
     $this->artisan('make:malevich', ['name' => 'forms/text-field'])->assertSuccessful();
 
     expect(file_get_contents($this->path.'/forms/text-field.blade.php'))

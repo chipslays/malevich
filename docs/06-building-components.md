@@ -139,7 +139,7 @@ Class maps are plain Blade, so you can move them into a partial and `@include` i
 Now buttons, inputs and selects always have the same heights.
 
 > [!TIP]
-> Keep partials outside `resources/views/components`, otherwise Laravel treats them as components too (`<x-partials.sizes>`) and they show up in the [catalog](09-catalog.md).
+> Keep partials outside `resources/views/components`, otherwise Laravel treats them as components too (`<x-partials.sizes>`) and they show up in the [playground](09-playground.md).
 
 ---
 

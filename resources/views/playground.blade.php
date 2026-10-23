@@ -40,7 +40,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ rescue(fn () => csrf_token(), '', false) }}">
-    <title>@if ($name)&lt;x-{{ $name }}&gt; · @endif Malevich catalog</title>
+    <title>@if ($name)&lt;x-{{ $name }}&gt; · @endif Malevich playground</title>
     <script>
         try {
             const root = document.documentElement;
@@ -73,7 +73,7 @@
         html[data-mlv-size="l"] .mlv { --card: 440px; --stage-h: 280px; }
         .mlv { display: grid; grid-template-columns: 264px minmax(0, 1fr); min-height: 100vh; background: var(--bg); color: var(--text); }
 
-        /* The catalog's own UI. Previews are left alone: they keep the app's font and styles. */
+        /* The playground's own UI. Previews are left alone: they keep the app's font and styles. */
         .mlv-side, .mlv-top, .mlv-hero, .mlv-section-head, .mlv-foot, .mlv-controls, .mlv-play-tag, .mlv-matrix th,
         .mlv-notice, .mlv-empty, .mlv-toast, .mlv-error, .mlv-dialog {
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -367,7 +367,7 @@
                 {!! $icon('alert') !!}
                 <div>
                     <b>Your CSS isn't loaded</b>, so the components look unstyled. Run <code>npm run dev</code> (or <code>npm run build</code>):
-                    the catalog loads the same Vite entries as your app. CSS from elsewhere goes into <code>catalog.head</code> in <code>config/malevich.php</code>.
+                    the playground loads the same Vite entries as your app. CSS from elsewhere goes into <code>playground.head</code> in <code>config/malevich.php</code>.
                 </div>
             </div>
         @endif
@@ -530,7 +530,7 @@
                     </div>
                     <div class="mlv-grid">
                         @foreach ($cells as $cell)
-                            @include('malevich::catalog-cell', ['cell' => $cell, 'icon' => $icon])
+                            @include('malevich::playground-cell', ['cell' => $cell, 'icon' => $icon])
                         @endforeach
                     </div>
                 </section>

@@ -56,6 +56,8 @@ class MalevichManager
 
     private ?bool $debug = null;
 
+    private ?bool $playground = null;
+
     /**
      * Config values read on every render, resolved once.
      *
@@ -143,6 +145,27 @@ class MalevichManager
     public function isDebugging(): bool
     {
         return $this->debug ?? $this->config()['debug'];
+    }
+
+    /**
+     * Turn the component playground on or off, in a service provider's boot():
+     *
+     *     Malevich::playground(app()->isLocal());
+     *
+     * A call here wins over the `playground.enabled` config option.
+     */
+    public function playground(bool $playground = true): void
+    {
+        $this->playground = $playground;
+    }
+
+    /**
+     * Whether the playground was turned on or off from code; null when it
+     * is left to the config.
+     */
+    public function playgroundOverride(): ?bool
+    {
+        return $this->playground;
     }
 
     /**
@@ -310,6 +333,7 @@ class MalevichManager
         $this->classMerger = null;
         $this->strict = null;
         $this->debug = null;
+        $this->playground = null;
         $this->recipes = new WeakMap;
         $this->componentNames = [];
         $this->flushConfig();

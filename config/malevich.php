@@ -136,12 +136,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Component Catalog
+    | Component Playground
     |--------------------------------------------------------------------------
     |
     | A page that renders every component with every value of its options:
     | http://your-app.test/malevich. Off unless the app runs locally; set
-    | MALEVICH_CATALOG=true or false to decide yourself.
+    | MALEVICH_PLAYGROUND=true or false to decide yourself.
     |
     | head - HTML (Blade) for the page's <head>. When null, the page loads the
     |        same Vite entries as your app (the `input` of vite.config.js), so
@@ -151,8 +151,8 @@ return [
     |
     */
 
-    'catalog' => [
-        'enabled' => env('MALEVICH_CATALOG', false),
+    'playground' => [
+        'enabled' => env('MALEVICH_PLAYGROUND', false),
         'path' => 'malevich',
         'middleware' => ['web'],
         'head' => null,

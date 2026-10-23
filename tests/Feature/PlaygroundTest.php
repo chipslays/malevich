@@ -2,28 +2,41 @@
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\File;
-use Malevich\Catalog\Catalog;
+use Malevich\Playground\Playground;
 
 beforeEach(function () {
-    Blade::anonymousComponentPath(__DIR__.'/../fixtures/catalog', 'cat');
+    Blade::anonymousComponentPath(__DIR__.'/../fixtures/playground', 'cat');
 });
 
 it('is off by default outside the local environment', function () {
-    expect(Catalog::enabled())->toBeFalse();
+    expect(Playground::enabled())->toBeFalse();
 
-    config(['malevich.catalog.enabled' => true]);
-    expect(Catalog::enabled())->toBeTrue();
+    config(['malevich.playground.enabled' => true]);
+    expect(Playground::enabled())->toBeTrue();
 
-    config(['malevich.catalog.enabled' => 'false']);
-    expect(Catalog::enabled())->toBeFalse();
+    config(['malevich.playground.enabled' => 'false']);
+    expect(Playground::enabled())->toBeFalse();
 
-    config(['malevich.catalog.enabled' => null]);
+    config(['malevich.playground.enabled' => null]);
     app()->detectEnvironment(fn () => 'local');
-    expect(Catalog::enabled())->toBeTrue();
+    expect(Playground::enabled())->toBeTrue();
 });
 
+
+it('can be turned on or off from code, which wins over the config', function () {
+    config(['malevich.playground.enabled' => false]);
+    Malevich\Malevich::playground();
+    expect(Playground::enabled())->toBeTrue();
+
+    config(['malevich.playground.enabled' => true]);
+    Malevich\Malevich::playground(false);
+    expect(Playground::enabled())->toBeFalse();
+
+    Malevich\Malevich::flush();
+    expect(Playground::enabled())->toBeTrue();
+});
 it('lists the components with options, without the package ones', function () {
-    $components = Catalog::make()->components();
+    $components = Playground::make()->components();
 
     expect($components)->toHaveKeys(['cat::chip', 'cat::broken', 'button'])
         ->not->toHaveKey('malevich::primitive')
@@ -31,23 +44,23 @@ it('lists the components with options, without the package ones', function () {
 });
 
 it('lists a component with empty class maps too, but not plain Blade components', function () {
-    $catalog = Catalog::make();
-    $components = $catalog->components();
+    $playground = Playground::make();
+    $components = $playground->components();
 
     expect($components)->toHaveKey('cat::fresh')
         ->not->toHaveKey('cat::plain')
         ->and($components['cat::fresh']['options'])->toBe([])
-        ->and($catalog->sheet('cat::fresh', $components['cat::fresh'])['default']->html)->toBe('<div class="fresh">Fresh</div>');
+        ->and($playground->sheet('cat::fresh', $components['cat::fresh'])['default']->html)->toBe('<div class="fresh">Fresh</div>');
 
-    config(['malevich.catalog.enabled' => true]);
-    Catalog::routes();
+    config(['malevich.playground.enabled' => true]);
+    Playground::routes();
 
     $this->get('/malevich?component=cat::fresh')->assertOk()->assertSee('No option values yet');
 });
 
 it('renders the default, every value of every option and a matrix of the first two', function () {
-    $catalog = Catalog::make();
-    $sheet = $catalog->sheet('cat::chip', $catalog->components()['cat::chip']);
+    $playground = Playground::make();
+    $sheet = $playground->sheet('cat::chip', $playground->components()['cat::chip']);
 
     expect($sheet['default']->tag)->toBe('<x-cat::chip>New</x-cat::chip>')
         ->and($sheet['default']->html)->toBe('<span class="chip-solid chip-md">New</span>')
@@ -60,27 +73,27 @@ it('renders the default, every value of every option and a matrix of the first t
 });
 
 it('writes boolean values as a flag or a bound false', function () {
-    $catalog = Catalog::make();
+    $playground = Playground::make();
 
-    expect($catalog->cell('toggle', ['checked' => 'true'], null)->tag)->toBe('<x-toggle checked />')
-        ->and($catalog->cell('toggle', ['checked' => 'false'], null)->tag)->toBe('<x-toggle :checked="false" />')
-        ->and($catalog->cell('toggle', ['checked' => 'false'], null)->html)->toBe('<span class="bg-gray-200"></span>')
-        ->and($catalog->cell('toggle', ['checked' => 'false'], null)->label())->toBe(':checked="false"');
+    expect($playground->cell('toggle', ['checked' => 'true'], null)->tag)->toBe('<x-toggle checked />')
+        ->and($playground->cell('toggle', ['checked' => 'false'], null)->tag)->toBe('<x-toggle :checked="false" />')
+        ->and($playground->cell('toggle', ['checked' => 'false'], null)->html)->toBe('<span class="bg-gray-200"></span>')
+        ->and($playground->cell('toggle', ['checked' => 'false'], null)->label())->toBe(':checked="false"');
 });
 
 it('shows why a component failed instead of breaking the page', function () {
-    $cell = Catalog::make()->cell('cat::broken', ['color' => 'blue'], 'Hi');
+    $cell = Playground::make()->cell('cat::broken', ['color' => 'blue'], 'Hi');
 
     expect($cell->html)->toBeNull()
         ->and($cell->error)->toContain('$missing');
 });
 
 it('takes the slot from the usage example in the leading comment', function () {
-    $catalog = Catalog::make();
+    $playground = Playground::make();
 
-    expect($catalog->example(__DIR__.'/../fixtures/catalog/chip.blade.php'))->toBe('New')
-        ->and($catalog->example(__DIR__.'/../fixtures/catalog/broken.blade.php'))->toBeNull()
-        ->and($catalog->sheet('cat::broken', $catalog->components()['cat::broken'])['default']->tag)->toBe('<x-cat::broken>Broken</x-cat::broken>');
+    expect($playground->example(__DIR__.'/../fixtures/playground/chip.blade.php'))->toBe('New')
+        ->and($playground->example(__DIR__.'/../fixtures/playground/broken.blade.php'))->toBeNull()
+        ->and($playground->sheet('cat::broken', $playground->components()['cat::broken'])['default']->tag)->toBe('<x-cat::broken>Broken</x-cat::broken>');
 });
 
 it('loads the project\'s own Vite entries, so its theme and JS apply', function () {
@@ -90,20 +103,20 @@ it('loads the project\'s own Vite entries, so its theme and JS apply', function 
     File::put("{$base}/resources/css/site.css", '');
     File::put("{$base}/resources/js/app.js", '');
 
-    expect(Catalog::viteEntries($base))->toBe(['resources/js/app.js']);
+    expect(Playground::viteEntries($base))->toBe(['resources/js/app.js']);
 
     File::put("{$base}/vite.config.js", "laravel({\n    input: ['resources/css/site.css', 'resources/js/app.js', 'resources/js/missing.js'],\n    refresh: true,\n})");
-    expect(Catalog::viteEntries($base))->toBe(['resources/css/site.css', 'resources/js/app.js']);
+    expect(Playground::viteEntries($base))->toBe(['resources/css/site.css', 'resources/js/app.js']);
 
     File::put("{$base}/vite.config.js", "laravel({ input: 'resources/css/site.css' })");
-    expect(Catalog::viteEntries($base))->toBe(['resources/css/site.css']);
+    expect(Playground::viteEntries($base))->toBe(['resources/css/site.css']);
 
     File::deleteDirectory($base);
 });
 
 it('serves the page when enabled', function () {
-    config(['malevich.catalog.enabled' => true, 'malevich.catalog.head' => '<link rel="stylesheet" href="/app.css">']);
-    Catalog::routes();
+    config(['malevich.playground.enabled' => true, 'malevich.playground.head' => '<link rel="stylesheet" href="/app.css">']);
+    Playground::routes();
 
     $this->get('/malevich?component=cat::chip')
         ->assertOk()
@@ -114,8 +127,8 @@ it('serves the page when enabled', function () {
 });
 
 it('warns when the app CSS is not loaded', function () {
-    config(['malevich.catalog.enabled' => true]);
-    Catalog::routes();
+    config(['malevich.playground.enabled' => true]);
+    Playground::routes();
 
     $this->get('/malevich')->assertOk()->assertSee('Your CSS isn\'t loaded', false);
 });
@@ -124,11 +137,11 @@ it('never writes a component tag into its own views', function (string $view) {
     // Blade (and Livewire on top of it) compiles an opening x- tag anywhere in a view,
     // even inside a PHP string, so `"<x-{$name}>"` broke the page in some apps.
     expect(file_get_contents(__DIR__."/../../resources/views/{$view}.blade.php"))->not->toMatch('/<\s*x[-:]/');
-})->with(['catalog', 'catalog-cell']);
+})->with(['playground', 'playground-cell']);
 
 it('renders the playground with the picked values and the usage example', function () {
-    config(['malevich.catalog.enabled' => true]);
-    Catalog::routes();
+    config(['malevich.playground.enabled' => true]);
+    Playground::routes();
 
     $this->postJson('/malevich/preview', ['component' => 'cat::chip', 'values' => ['variant' => 'outline', 'size' => 'bogus']])
         ->assertOk()
@@ -146,8 +159,8 @@ it('renders the playground with the picked values and the usage example', functi
 });
 
 it('fills default and named slots from the slot fields, as plain text', function () {
-    config(['malevich.catalog.enabled' => true]);
-    Catalog::routes();
+    config(['malevich.playground.enabled' => true]);
+    Playground::routes();
 
     $this->postJson('/malevich/preview', [
         'component' => 'cat::card',
@@ -160,8 +173,8 @@ it('fills default and named slots from the slot fields, as plain text', function
 });
 
 it('passes attributes and slot classes from the fields, never as code', function () {
-    config(['malevich.catalog.enabled' => true]);
-    Catalog::routes();
+    config(['malevich.playground.enabled' => true]);
+    Playground::routes();
 
     $this->postJson('/malevich/preview', [
         'component' => 'cat::card',
@@ -181,8 +194,8 @@ it('passes attributes and slot classes from the fields, never as code', function
 });
 
 it('offers the declared props as buttons in the playground', function () {
-    config(['malevich.catalog.enabled' => true]);
-    Catalog::routes();
+    config(['malevich.playground.enabled' => true]);
+    Playground::routes();
 
     $this->get('/malevich?component=cat::card')
         ->assertOk()
@@ -191,21 +204,21 @@ it('offers the declared props as buttons in the playground', function () {
 });
 
 it('finds the props a component declares, without its options', function () {
-    $catalog = Catalog::make();
+    $playground = Playground::make();
 
-    expect($catalog->props($catalog->components()['cat::card']))->toBe(['title' => ''])
-        ->and($catalog->props($catalog->components()['cat::chip']))->toBe([])
-        ->and($catalog->slotClassesOf('<x-slot:title class="a b">T</x-slot:title><x-slot:footer>F</x-slot:footer>'))->toBe(['title' => 'a b']);
+    expect($playground->props($playground->components()['cat::card']))->toBe(['title' => ''])
+        ->and($playground->props($playground->components()['cat::chip']))->toBe([])
+        ->and($playground->slotClassesOf('<x-slot:title class="a b">T</x-slot:title><x-slot:footer>F</x-slot:footer>'))->toBe(['title' => 'a b']);
 });
 
 it('splits a usage example into slot fields', function () {
-    expect(Catalog::make()->slotsOf("<x-slot:title class=\"a\">Payment failed</x-slot:title>\nYour card\nwas declined.<x-slot name=\"footer\">Retry</x-slot>"))
+    expect(Playground::make()->slotsOf("<x-slot:title class=\"a\">Payment failed</x-slot:title>\nYour card\nwas declined.<x-slot name=\"footer\">Retry</x-slot>"))
         ->toBe(['default' => 'Your card was declined.', 'title' => 'Payment failed', 'footer' => 'Retry']);
 });
 
 it('runs Blade content only in the local environment', function () {
-    config(['malevich.catalog.enabled' => true]);
-    Catalog::routes();
+    config(['malevich.playground.enabled' => true]);
+    Playground::routes();
     $blade = '<x-slot:title>{{ 6 * 7 }}</x-slot:title><x-cat::chip size="sm">Inner</x-cat::chip>';
 
     $this->postJson('/malevich/preview', ['component' => 'cat::card', 'mode' => 'blade', 'blade' => $blade])
@@ -222,8 +235,8 @@ it('runs Blade content only in the local environment', function () {
 });
 
 it('protects the playground with a POST and a CSRF token', function () {
-    config(['malevich.catalog.enabled' => true]);
-    Catalog::routes();
+    config(['malevich.playground.enabled' => true]);
+    Playground::routes();
 
     // Another site could make the browser send a GET or a POST - but never with the token.
     $this->get('/malevich/preview?component=cat::chip&mode=blade&blade=x')->assertStatus(405);
@@ -235,7 +248,7 @@ it('protects the playground with a POST and a CSRF token', function () {
 });
 
 it('is a 404 when disabled', function () {
-    Catalog::routes();
+    Playground::routes();
 
     $this->get('/malevich')->assertNotFound();
 });
