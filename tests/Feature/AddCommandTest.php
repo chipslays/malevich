@@ -83,3 +83,36 @@ it('does not replace a directory even when forced', function () {
 
     expect(is_dir($this->kitDestination.'/button.blade.php'))->toBeTrue();
 });
+
+it('asks which kit component to add when no name is given', function () {
+    $this->artisan('malevich:add')
+        ->expectsChoice('Which kit component do you want to add?', 'button', ['button'])
+        ->expectsOutputToContain('Kit component added.')
+        ->assertSuccessful();
+
+    expect($this->kitDestination.'/button.blade.php')->toBeFile();
+});
+
+it('points to the theme tokens until they are published', function () {
+    $this->artisan('malevich:add', ['name' => 'button'])
+        ->expectsOutputToContain('vendor:publish --tag=malevich:theme')
+        ->assertSuccessful();
+});
+
+it('publishes the kit theme tokens', function () {
+    $published = resource_path('css/malevich-theme.css');
+
+    try {
+        $this->artisan('vendor:publish', ['--tag' => 'malevich:theme'])->assertSuccessful();
+
+        expect(file_get_contents($published))
+            ->toBe(file_get_contents(dirname(__DIR__, 2).'/resources/kit/theme.css'))
+            ->toContain('@theme inline', '--radius-brand', '--color-primary-600', '--color-info-950');
+
+        $this->artisan('malevich:add', ['name' => 'button', '--force' => true])
+            ->doesntExpectOutputToContain('vendor:publish --tag=malevich:theme')
+            ->assertSuccessful();
+    } finally {
+        @unlink($published);
+    }
+});

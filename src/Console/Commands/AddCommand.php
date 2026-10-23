@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace Malevich\Console\Commands;
 
+use Closure;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use Malevich\Malevich;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 
+use function Laravel\Prompts\select;
+
 #[AsCommand(name: 'malevich:add')]
-class AddCommand extends Command
+class AddCommand extends Command implements PromptsForMissingInput
 {
     protected $signature = 'malevich:add
         {name : Kit component name, e.g. "button"}
@@ -31,21 +35,11 @@ class AddCommand extends Command
         }
 
         $name = str_replace('.', '/', $name);
-        $kit = dirname(__DIR__, 3).'/resources/kit';
-        $source = $kit.'/'.$name.'.blade.php';
+        $source = self::kit().'/'.$name.'.blade.php';
 
         if (! $files->isFile($source)) {
             $this->components->error("Kit component [{$name}] does not exist.");
-            $available = [];
-
-            foreach ($files->allFiles($kit) as $file) {
-                if (str_ends_with($file->getFilename(), '.blade.php')) {
-                    $available[] = substr(str_replace('\\', '/', $file->getRelativePathname()), 0, -10);
-                }
-            }
-
-            sort($available);
-            $this->line('Available: '.OutputFormatter::escape(implode(', ', $available)));
+            $this->line('Available: '.OutputFormatter::escape(implode(', ', self::available($files))));
 
             return self::FAILURE;
         }
@@ -87,6 +81,54 @@ class AddCommand extends Command
         $this->components->twoColumnDetail('File', OutputFormatter::escape($path));
         $this->components->twoColumnDetail('Tag', OutputFormatter::escape('<'.Malevich::componentTag($name).'>'));
 
+        // Kit components use the theme tokens; without them Tailwind skips their colors.
+        if (! $files->exists(resource_path('css/malevich-theme.css'))) {
+            $this->newLine();
+            $this->line('  <fg=gray>Next:</> publish the theme tokens the kit uses and import them after Tailwind:');
+            $this->line('  <info>php artisan vendor:publish --tag=malevich:theme</info>');
+            $this->line("  <info>@import './malevich-theme.css';</info> <fg=gray>in resources/css/app.css</>");
+        }
+
         return self::SUCCESS;
+    }
+
+    /**
+     * Without a name, pick one of the kit's components from a list.
+     *
+     * @return array<string, Closure(): string>
+     */
+    protected function promptForMissingArgumentsUsing(): array
+    {
+        return [
+            'name' => fn (): string => (string) select(
+                label: 'Which kit component do you want to add?',
+                options: self::available(new Filesystem),
+            ),
+        ];
+    }
+
+    private static function kit(): string
+    {
+        return dirname(__DIR__, 3).'/resources/kit';
+    }
+
+    /**
+     * Names of every kit component, e.g. `button` or `forms/input`.
+     *
+     * @return list<string>
+     */
+    private static function available(Filesystem $files): array
+    {
+        $available = [];
+
+        foreach ($files->allFiles(self::kit()) as $file) {
+            if (str_ends_with($file->getFilename(), '.blade.php')) {
+                $available[] = substr(str_replace('\\', '/', $file->getRelativePathname()), 0, -10);
+            }
+        }
+
+        sort($available);
+
+        return $available;
     }
 }
