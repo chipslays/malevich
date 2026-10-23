@@ -112,22 +112,22 @@
         ],
         'success' => [
             'solid' => [
-                'bg-success-700 text-white hover:bg-success-800',
+                'bg-success-500 text-white hover:bg-success-600',
             ],
             'soft' => [
-                'bg-success-50 hover:bg-success-100',
+                'bg-success-100 hover:bg-success-200',
                 'dark:bg-success-950 dark:hover:bg-success-900',
             ],
-            'foreground' => 'text-success-700 dark:text-success-300',
+            'foreground' => 'text-success-800 dark:text-success-300',
             'outline' => 'border-success-300 dark:border-success-700',
             'hover' => 'hover:bg-success-50 dark:hover:bg-success-950',
         ],
         'warning' => [
             'solid' => [
-                'bg-warning-700 text-white hover:bg-warning-800',
+                'bg-warning-500 text-black hover:bg-warning-600',
             ],
             'soft' => [
-                'bg-warning-50 hover:bg-warning-100',
+                'bg-warning-100 hover:bg-warning-200',
                 'dark:bg-warning-950 dark:hover:bg-warning-900',
             ],
             'foreground' => 'text-warning-800 dark:text-warning-300',
@@ -136,10 +136,10 @@
         ],
         'danger' => [
             'solid' => [
-                'bg-danger-600 text-white hover:bg-danger-700',
+                'bg-danger-500 text-white hover:bg-danger-600',
             ],
             'soft' => [
-                'bg-danger-50 hover:bg-danger-100',
+                'bg-danger-100 hover:bg-danger-200',
                 'dark:bg-danger-950 dark:hover:bg-danger-900',
             ],
             'foreground' => 'text-danger-700 dark:text-danger-300',
@@ -148,10 +148,10 @@
         ],
         'info' => [
             'solid' => [
-                'bg-info-600 text-white hover:bg-info-700',
+                'bg-info-500 text-white hover:bg-info-600',
             ],
             'soft' => [
-                'bg-info-50 hover:bg-info-100',
+                'bg-info-100 hover:bg-info-200',
                 'dark:bg-info-950 dark:hover:bg-info-900',
             ],
             'foreground' => 'text-info-700 dark:text-info-300',
@@ -255,7 +255,6 @@
 @base([
     'relative inline-flex shrink-0 items-center justify-center align-middle',
     'border font-medium whitespace-nowrap select-none',
-    'transition-colors motion-reduce:transition-none',
     'focus-visible:outline-2 focus-visible:outline-offset-2',
     'data-disabled:pointer-events-none data-disabled:opacity-50',
     'aspect-square p-0' => $iconOnly,
