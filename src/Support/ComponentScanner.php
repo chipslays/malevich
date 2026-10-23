@@ -225,7 +225,7 @@ final class ComponentScanner
                 $targets = ConstantExpression::entries($source);
 
                 if (self::hasTargetClasses($targets)) {
-                    $declarations->targets = [...$declarations->targets, ...array_map(strval(...), array_keys($targets))];
+                    $declarations->targets = [...$declarations->targets, ...self::targetNames(array_keys($targets))];
                 }
             } catch (InvalidArgumentException) {
                 // Classes may be dynamic even when the option values are known.
@@ -276,6 +276,16 @@ final class ComponentScanner
         if (count($arguments) === 3) {
             $this->target([$arguments[0], $arguments[2]], $declarations);
         }
+
+        // `@compound([...], targets: ['default' => ..., 'leading,trailing' => ...])`.
+        if (count($arguments) === 2 && preg_match('/^targets\s*:\s*(.*)$/s', $arguments[1], $named)) {
+            try {
+                $declarations->targets = [...$declarations->targets, ...self::targetNames(array_keys(ConstantExpression::entries($named[1])))];
+            } catch (InvalidArgumentException) {
+                // Dynamic target keys can't justify consuming a namespace.
+            }
+        }
+
         $conditions = ConstantExpression::evaluate($arguments[count($arguments) === 3 ? 1 : 0] ?? '');
 
         if (! is_array($conditions)) {
@@ -285,6 +295,25 @@ final class ComponentScanner
         foreach ($conditions as $option => $expected) {
             $declarations->values((string) $option, is_array($expected) ? array_values($expected) : [$expected]);
         }
+    }
+
+    /**
+     * Element names of target-map keys: `'leading,trailing'` is two of them.
+     *
+     * @param  list<int|string>  $keys
+     * @return list<string>
+     */
+    private static function targetNames(array $keys): array
+    {
+        $names = [];
+
+        foreach ($keys as $key) {
+            foreach (explode(',', (string) $key) as $name) {
+                $names[] = trim($name);
+            }
+        }
+
+        return $names;
     }
 
     /**

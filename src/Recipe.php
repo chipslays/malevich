@@ -97,9 +97,7 @@ final class Recipe
                 $targets = [$this->defaultTarget => $targets];
             }
 
-            foreach ($targets as $target => $classes) {
-                $target = (string) $target;
-
+            foreach (self::expandTargets($targets) as $target => $classes) {
                 if ($when !== []) {
                     $this->options[$target][$option][$value] ??= [];
                     $conditions = $when;
@@ -124,6 +122,35 @@ final class Recipe
         }
 
         return $this;
+    }
+
+    /**
+     * `'leading,trailing' => '...'` styles several elements alike: a target
+     * map with one entry per element. A later entry for the same element
+     * adds its classes to the earlier ones.
+     *
+     * @param  array<array-key, mixed>  $targets
+     * @return array<string, mixed>
+     */
+    public static function expandTargets(array $targets): array
+    {
+        $expanded = [];
+
+        foreach ($targets as $key => $classes) {
+            foreach (explode(',', (string) $key) as $target) {
+                $target = trim($target);
+
+                if ($target === '') {
+                    throw new InvalidArgumentException("Empty element name in the target key [{$key}].");
+                }
+
+                $expanded[$target] = array_key_exists($target, $expanded)
+                    ? trim(Arr::toCssClasses($expanded[$target]).' '.Arr::toCssClasses($classes))
+                    : $classes;
+            }
+        }
+
+        return $expanded;
     }
 
     /** @param array<array-key, mixed> $classes */
@@ -187,8 +214,8 @@ final class Recipe
             throw new InvalidArgumentException("@compound with targets: expects ([conditions], targets: ['target' => classes, ...]).");
         }
 
-        foreach ($targets as $target => $classes) {
-            $this->compounds[(string) $target][] = [$args[0], $classes];
+        foreach (self::expandTargets($targets) as $target => $classes) {
+            $this->compounds[$target][] = [$args[0], $classes];
         }
 
         return $this;
