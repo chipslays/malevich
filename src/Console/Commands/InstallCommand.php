@@ -34,8 +34,6 @@ class InstallCommand extends Command
         $this->newLine();
         $this->line('  <fg=gray>Next:</>');
         $this->line('  - Create a component: <info>php artisan make:malevich badge</info>');
-        $this->line('  - Catch typos like <comment>size="xl"</comment> while developing, in AppServiceProvider::boot():');
-        $this->line('    <info>Malevich::strict(! app()->isProduction());</info>');
         $this->newLine();
 
         return self::SUCCESS;
