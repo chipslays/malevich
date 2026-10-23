@@ -53,6 +53,10 @@ class MalevichServiceProvider extends ServiceProvider
                 __DIR__.'/../resources/views/components' => resource_path('views/vendor/malevich/components'),
             ], 'malevich:components');
 
+            $this->publishes([
+                __DIR__.'/../resources/kit/theme.css' => resource_path('css/malevich-theme.css'),
+            ], 'malevich:theme');
+
             $this->commands([AddCommand::class, InstallCommand::class, LintCommand::class, MakeCommand::class]);
 
             // Tests run in the console too: ->assertSeeClasses() and expect()->toHaveClasses().

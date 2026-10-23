@@ -66,7 +66,7 @@ it('provides theme-matching and contrasting monochrome solid buttons', function 
 
 it('renders all sizes and radii and makes icon buttons square without horizontal padding', function () {
     foreach (['xs' => 'h-7', 'sm' => 'h-8', 'md' => 'h-10', 'lg' => 'h-11', 'xl' => 'h-12'] as $size => $height) {
-        expect($this->render('<x-kit::button :size="$size" aria-label="Add"><x-slot:icon><svg></svg></x-slot:icon></x-kit::button>', compact('size')))
+        expect($this->render('<x-kit::button :size="$size" aria-label="Add"><x-slot:leading><svg></svg></x-slot:leading></x-kit::button>', compact('size')))
             ->toContain($height, 'aspect-square', 'p-0', 'aria-label="Add"')
             ->not->toContain('icon:only=')
             ->not->toMatch('/\bpx-\d+/');
@@ -118,7 +118,7 @@ it('disables loading buttons and links even when disabled is explicitly false', 
 });
 
 it('styles named slots and passes user attributes through to the right elements', function () {
-    $html = $this->render('<x-kit::button class="w-full" id="save"><x-slot:icon class="text-current" data-part="leading"><svg></svg></x-slot:icon> Save <x-slot:trailing data-part="trailing"><svg></svg></x-slot:trailing></x-kit::button>');
+    $html = $this->render('<x-kit::button class="w-full" id="save"><x-slot:leading class="text-current" data-part="leading"><svg></svg></x-slot:leading> Save <x-slot:trailing data-part="trailing"><svg></svg></x-slot:trailing></x-kit::button>');
 
     expect($html)->toContain('w-full', 'id="save"', 'text-current', 'data-part="leading"', 'data-part="trailing"', 'aria-hidden="true"');
     expect(substr_count($html, 'id="save"'))->toBe(1);
@@ -158,13 +158,13 @@ it('shows a replacement label only while loading without removing the original s
 });
 
 it('keeps icon-only loading buttons square and hides their loading text', function () {
-    expect($this->render('<x-kit::button loading aria-label="Save"><x-slot:loadingLabel>Saving</x-slot:loadingLabel><x-slot:icon><svg></svg></x-slot:icon></x-kit::button>'))
+    expect($this->render('<x-kit::button loading aria-label="Save"><x-slot:loadingLabel>Saving</x-slot:loadingLabel><x-slot:leading><svg></svg></x-slot:leading></x-kit::button>'))
         ->toContain('aspect-square', 'p-0', 'aria-label="Save"', 'absolute inset-0', 'animate-spin')
         ->not->toContain('Saving')->not->toContain('truncate');
 });
 
 it('sizes leading and trailing icon slots independently and accepts targeted spinner size', function () {
-    $html = $this->render('<x-kit::button size="sm" spinner:size="xs" loading><x-slot:loadingLabel></x-slot:loadingLabel><x-slot:icon size="xl"><svg></svg></x-slot:icon> Save <x-slot:trailing size="lg"><svg></svg></x-slot:trailing></x-kit::button>');
+    $html = $this->render('<x-kit::button size="sm" spinner:size="xs" loading><x-slot:loadingLabel></x-slot:loadingLabel><x-slot:leading size="xl"><svg></svg></x-slot:leading> Save <x-slot:trailing size="lg"><svg></svg></x-slot:trailing></x-kit::button>');
 
     expect($html)->toContain('h-8', 'text-sm', '[&>svg]:size-5.5', '[&>svg]:size-5')
         ->toMatch('/<svg class="[^"]*size-3\.5[^"]*"/')
@@ -172,7 +172,7 @@ it('sizes leading and trailing icon slots independently and accepts targeted spi
 });
 
 it('keeps the default label and trailing icon while replacing only the leading icon with a spinner', function () {
-    $html = $this->render('<x-kit::button loading><x-slot:icon><svg data-icon="leading"></svg></x-slot:icon> Save changes <x-slot:trailing><svg data-icon="trailing"></svg></x-slot:trailing></x-kit::button>');
+    $html = $this->render('<x-kit::button loading><x-slot:leading><svg data-icon="leading"></svg></x-slot:leading> Save changes <x-slot:trailing><svg data-icon="trailing"></svg></x-slot:trailing></x-kit::button>');
 
     expect($html)->toContain('Save changes', 'animate-spin', 'data-icon="trailing"')
         ->not->toContain('data-icon="leading"')->not->toContain('opacity-0')->not->toContain('absolute inset-0');
@@ -215,7 +215,7 @@ it('does not inset visible treatments ordinary buttons or icon-only buttons', fu
 
     expect($this->render('<x-kit::button variant="ghost">Action</x-kit::button>'))->not->toContain('-mx-');
     expect($this->render('<x-kit::button variant="ghost" :inset="false">Action</x-kit::button>'))->not->toContain('-mx-');
-    expect($this->render('<x-kit::button variant="ghost" inset aria-label="Add"><x-slot:icon><svg></svg></x-slot:icon></x-kit::button>'))
+    expect($this->render('<x-kit::button variant="ghost" inset aria-label="Add"><x-slot:leading><svg></svg></x-slot:leading></x-kit::button>'))
         ->toContain('aspect-square')->not->toContain('-mx-');
 });
 
@@ -255,4 +255,28 @@ it('treats loading="false" and disabled="false" from the tag as off', function (
         ->not->toContain('aria-busy')
         ->not->toContain('disabled="')
         ->not->toContain(' pointer-events-none"');
+});
+
+it('lets square override the detection of icon buttons', function () {
+    expect($this->render('<x-kit::button square aria-label="Add"><span class="sr-only">Add</span><svg></svg></x-kit::button>'))
+        ->toHaveClasses(['aspect-square', 'p-0'])
+        ->not->toContain('px-4');
+
+    expect($this->render('<x-kit::button :square="false" aria-label="Add"><svg></svg></x-kit::button>'))
+        ->toHaveClasses('px-4')
+        ->not->toContain('aspect-square');
+});
+
+it('stretches a block button to the full width', function () {
+    expect($this->render('<x-kit::button block>Continue</x-kit::button>'))->toHaveClasses('w-full');
+    expect($this->render('<x-kit::button>Continue</x-kit::button>'))->not->toContain('w-full');
+    expect($this->render('<x-kit::button block="false">Continue</x-kit::button>'))->not->toContain('w-full');
+});
+
+it('declares its palette with conditional cases instead of building a recipe by hand', function () {
+    $source = file_get_contents(dirname(__DIR__, 2).'/resources/kit/button.blade.php');
+
+    expect($source)->toContain("when: ['variant' => 'solid']")
+        ->not->toContain('Malevich::recipe(')
+        ->not->toContain('filter_var($loading');
 });
