@@ -166,6 +166,7 @@ class MalevichManager
      *
      * @param  array<string, mixed>  $scope  The template's get_defined_vars().
      * @param  array<string, mixed>  $merge  Extra attributes, as with $attributes->merge().
+     * @param  array<string, mixed>  $override  Attributes that win over the ones passed to the component.
      */
     public function attributes(
         ?ComponentAttributeBag $attributes,
@@ -174,6 +175,7 @@ class MalevichManager
         mixed $slot = null,
         array $merge = [],
         string $class = '',
+        array $override = [],
     ): Element {
         $attributes ??= $this->outsideComponent();
 
@@ -186,7 +188,8 @@ class MalevichManager
         return (new Element($attributes, $target, $scope, $recipe, $this))
             ->slot($slot)
             ->classes($class)
-            ->merge($merge);
+            ->merge($merge)
+            ->override($override);
     }
 
     /**
@@ -195,6 +198,7 @@ class MalevichManager
      *
      * @param  array<string, mixed>  $scope  The template's get_defined_vars().
      * @param  array<string, mixed>  $merge  Extra attributes, as with @attributes.
+     * @param  array<string, mixed>  $override  Accepted for parity with @attributes; it never changes classes.
      */
     public function styled(
         ?ComponentAttributeBag $attributes,
@@ -202,8 +206,9 @@ class MalevichManager
         ?string $target = null,
         mixed $slot = null,
         array $merge = [],
+        array $override = [],
     ): bool {
-        return $this->attributes($attributes, $scope, $target, $slot, $merge)->toClasses() !== '';
+        return $this->attributes($attributes, $scope, $target, $slot, $merge, override: $override)->toClasses() !== '';
     }
 
     public function defaultTarget(): string

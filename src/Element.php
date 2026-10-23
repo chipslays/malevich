@@ -10,6 +10,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\View\ComponentAttributeBag;
 use Illuminate\View\ComponentSlot;
+use InvalidArgumentException;
 use Malevich\Exceptions\UnknownValueException;
 use Malevich\Support\ClassList;
 use Malevich\Support\ScopedProps;
@@ -60,6 +61,11 @@ final class Element implements Htmlable, Stringable
      * @var array<string, mixed>
      */
     private array $extra = [];
+
+    /**
+     * @var array<string, mixed>
+     */
+    private array $override = [];
 
     /**
      * Memoized results. Reset whenever with() derives a new element.
@@ -179,6 +185,24 @@ final class Element implements Htmlable, Stringable
     public function merge(array $attributes = []): self
     {
         return $this->with(fn (self $s) => $s->extra = array_merge($s->extra, $attributes));
+    }
+
+    /**
+     * Attributes the component insists on: unlike merge(), they win over the
+     * ones passed to the component. A null value leaves the attribute as the
+     * caller set it, false removes it. Classes can't be overridden - they
+     * always add up, so use the class maps for them. In a template:
+     * `@attributes(override: ['aria-busy' => $loading ? 'true' : null])`.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function override(array $attributes = []): self
+    {
+        if (array_key_exists('class', $attributes)) {
+            throw new InvalidArgumentException('override: cannot replace classes; declare them in a class map or pass them with merge:.');
+        }
+
+        return $this->with(fn (self $s) => $s->override = array_merge($s->override, $attributes));
     }
 
     /**
@@ -441,6 +465,13 @@ final class Element implements Htmlable, Stringable
 
         $attributes = $own + $this->escapedExtra();
         $attributes = array_diff_key($attributes, array_flip($consumed)) + $this->dataAttributes();
+
+        // override: values come from PHP too, so they are escaped like merge:.
+        foreach ($this->override as $name => $value) {
+            if ($value !== null) {
+                $attributes[$name] = is_string($value) ? e($value) : $value;
+            }
+        }
 
         // The bag is printed without escaping. Classes from the tag are already
         // escaped, so only a quote (from a class map or the class merger) could
