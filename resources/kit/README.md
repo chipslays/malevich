@@ -28,7 +28,7 @@ The repository playground registers this directory automatically and defines the
 
 | Prop | Values | Default |
 | --- | --- | --- |
-| `variant` | `solid`, `soft`, `outline`, `ghost`, `link` | `solid` |
+| `variant` | `solid`, `soft`, `surface`, `elevated`, `outline`, `ghost`, `link` | `solid` |
 | `color` | `primary`, `secondary`, `accent`, `neutral`, `contrast`, `success`, `warning`, `danger`, `info` | `primary` |
 | `size` | `xs`, `sm`, `md`, `lg`, `xl` | `md` |
 | `radius` | `brand`, `none`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`, `4xl`, `full`, `squircle` | `brand` |
@@ -86,6 +86,25 @@ Loading disables keyboard activation and navigation as well as pointer interacti
 
 `inset` applies negative horizontal margins matching the button's horizontal padding. This compensates the transparent padding when placing the label alongside surrounding content, while retaining the padded hit area. It applies to `ghost` and `link` with a text label, regardless of color. The component expresses this as one `@cases('size', ..., when: [...])` map, adding margins without replacing the normal dimensions. Treatments with a visible background or border and automatically detected square icon buttons do not receive the adjustment. Use `:inset="false"` to disable it dynamically.
 
+### Treatments
+
+```blade
+<x-button variant="surface" color="primary">Upgrade</x-button>
+<x-button variant="elevated">Cancel</x-button>
+```
+
+| Variant | Looks like | Use it for |
+| --- | --- | --- |
+| `solid` | filled with the role's color | the main action |
+| `soft` | a tint of the role | secondary actions that still carry the role |
+| `surface` | a lighter tint with a border of the role | between `soft` and `outline`: buttons on cards and tables, where `soft` blends in and `outline` looks empty |
+| `elevated` | a neutral raised button with a shadow; only the text takes the role | the classic secondary button next to a solid one ("Cancel" beside "Save") |
+| `outline` | a border of the role | low-emphasis actions |
+| `ghost` | text only, tinted on hover | toolbars, menus, icon buttons |
+| `link` | text with an underline on hover | inline actions |
+
+`elevated` keeps the same white background for every color; on dark themes it is a translucent white (`bg-white/5`), so it reads as raised on any dark surface.
+
 ### Colors
 
 Variant and color are independent. Colors describe semantic roles:
@@ -102,11 +121,21 @@ Variant and color are independent. Colors describe semantic roles:
 | `danger` | `danger` | destructive action |
 | `info` | `info` | informational action |
 
-The component uses your application's named Tailwind color scales: for example, `bg-primary-600`, `text-danger-700` and `border-success-300`. Define the seven semantic scales in your Tailwind theme, including the shades used by the component. `neutral` and `contrast` both use `gray-*` utilities. Backgrounds, text, borders, hover and focus styles all use the same named scales; the component does not assign them to built-in hues.
+#### Contrast
+
+With the default [theme tokens](#theme-tokens), every text color has at least 4.5:1 contrast with its background (WCAG AA) on white, `gray-950` and `gray-900` pages, in every treatment and on hover, with one deliberate exception: the orange `primary`. White on `orange-600` is 3.58:1 and `primary-700` text on the `primary-200` hover of `soft` is 3.84:1. That meets the 3:1 for large text and UI components, not AA for button-sized text; the brighter orange was chosen over the deeper `700`. Focus outlines have at least 3:1 against the page. That is why the shades differ per role:
+
+- `solid`: brand roles and `danger` use `600`; `success` and `info` are light hues, so they need `700` to carry white text. `warning` is `400` yellow with dark `warning-950` text.
+- Text of every other treatment: `700` for the brand roles, `800` for the statuses, `300` on dark themes.
+- Dark themes: `soft`, `surface` and the hover of `outline` and `ghost` use a translucent tint (`bg-success-400/15`) instead of a dark shade, so they stay visible on any dark surface, not only on pure `gray-950`.
+
+If you point a role at another color in `malevich-theme.css`, check its contrast: a lighter hue may need the next darker shade. For full AA with an orange `primary`, change its solid case to `bg-primary-700 text-white hover:bg-primary-800` and its text to `text-primary-800`, as the statuses do.
+
+The component uses your application's named Tailwind color scales: for example, `bg-primary-600`, `text-danger-800` and `border-success-300`. Define the seven semantic scales in your Tailwind theme, including the shades used by the component. `neutral` and `contrast` both use `gray-*` utilities. Backgrounds, text, borders, hover and focus styles all use the same named scales; the component does not assign them to built-in hues.
 
 #### Theme tokens
 
-The kit ships these tokens in [`theme.css`](theme.css): every role mapped onto one of Tailwind's built-in colors (`primary` is `indigo`, `success` is `emerald`, ...) and `brand` set to `rounded-lg`. Publish it and import it after Tailwind:
+The kit ships these tokens in [`theme.css`](theme.css): every role mapped onto one of Tailwind's built-in colors (`primary` is `orange`, `secondary` the warm grey `stone`, `accent` `violet`; the statuses are `green`, `yellow`, `red` and `blue`), `gray` remapped to the pure grey `neutral`, and `brand` set to `rounded-xl`. Publish it and import it after Tailwind:
 
 ```bash
 php artisan vendor:publish --tag=malevich:theme
@@ -124,7 +153,7 @@ The published `resources/css/malevich-theme.css` is yours: point each role at yo
 @theme inline {
     --radius-brand: var(--radius-lg);
 
-    --color-primary-50: var(--color-indigo-50);
+    --color-primary-50: var(--color-orange-50);
     /* ... every shade from 50 to 950, for each of the seven roles */
 }
 ```
@@ -138,7 +167,7 @@ Without these tokens the button renders without colors or rounded corners: Tailw
 
 `contrast` has its own styling for every variant. `solid` reverses the theme's surface brightness; `soft` uses a translucent dark tint on light themes and a light tint on dark themes. `outline` uses a stronger border, while `ghost` and `link` use stronger foreground colors. Soft, outline and ghost treatments also have their own theme-aware hover colors. Text remains readable against each treatment's background.
 
-Customize a color's literal classes in the `@cases('color', [...], when: ['variant' => ...])` block of its treatment and its focus outline in `@color`. Each treatment has one block: solid, soft and outline backgrounds and borders, the text color of the transparent treatments, and their hover tint. Sizes use `@cases('size', ...)`: each size groups the root's dimensions and padding with the content, loading, leading, trailing and spinner classes. Each target still resolves its own size independently. No custom CSS variables, inline styles or generated class names are used.
+Customize a color's literal classes in the `@cases('color', [...], when: ['variant' => ...])` block of its treatment and its focus outline in `@color`. Each treatment has one block: solid, soft, surface and outline backgrounds and borders, the text color of every treatment but solid, and the hover tint of outline and ghost. `elevated` is the same for every color, so its classes live in `@variant`. Sizes use `@cases('size', ...)`: each size groups the root's dimensions and padding with the content, loading, leading, trailing and spinner classes. Each target still resolves its own size independently. No custom CSS variables, inline styles or generated class names are used.
 
 ### Radius
 
