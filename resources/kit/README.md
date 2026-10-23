@@ -101,7 +101,7 @@ Customize a color's literal classes in its `$palette` entry and its focus outlin
 
 ### Radius
 
-`brand` is the default design-system preset, currently `rounded-lg`. Change that one entry in the radius map to set the default corner radius. The remaining scale follows [Tailwind's border radius utilities](https://tailwindcss.com/docs/border-radius).
+`brand` uses `rounded-brand`, the default corner radius defined by your application's Tailwind theme. Configure the named `brand` radius in that theme. The remaining scale follows [Tailwind's border radius utilities](https://tailwindcss.com/docs/border-radius).
 
 ```blade
 <x-button radius="brand">Continue</x-button>

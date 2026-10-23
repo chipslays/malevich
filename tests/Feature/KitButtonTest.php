@@ -64,12 +64,12 @@ it('renders all sizes and radii and makes icon buttons square without horizontal
             ->not->toMatch('/\bpx-\d+/');
     }
 
-    foreach (['none', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', 'full'] as $radius) {
+    foreach (['brand', 'none', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', 'full'] as $radius) {
         expect($this->render('<x-kit::button :radius="$radius">Save</x-kit::button>', compact('radius')))
             ->toContain('rounded-'.$radius);
     }
 
-    expect($this->render('<x-kit::button>Save</x-kit::button>'))->toContain('rounded-lg');
+    expect($this->render('<x-kit::button>Save</x-kit::button>'))->toContain('rounded-brand');
     expect($this->render('<x-kit::button radius="squircle">Save</x-kit::button>'))
         ->toContain('rounded-2xl', '[corner-shape:squircle]');
 });
