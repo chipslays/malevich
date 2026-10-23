@@ -3,6 +3,7 @@
 | Command | What it does |
 |---|---|
 | `php artisan malevich:install` | Sets up the project: config, editor autocomplete. |
+| `php artisan malevich:add button` | Copies a ready-made kit component into the project. |
 | `php artisan make:malevich button` | Creates a component file. |
 | `php artisan malevich:lint` | Finds unknown option values in all views. |
 
@@ -30,6 +31,19 @@ Prefer to do it by hand? Publish the config:
 ```bash
 php artisan vendor:publish --tag malevich:config
 ```
+
+## `malevich:add`
+
+```bash
+php artisan malevich:add button
+php artisan malevich:add button --force    # replace an existing copy
+```
+
+Copies the complete component from the package's [kit](../resources/kit/README.md) into `malevich.components.path`, creating the folder if needed. The default destination is `resources/views/components/button.blade.php`. The command prints the tag to use, including your configured `components.prefix`.
+
+The component is now your source code: customize it directly. Package updates leave your copy alone. Existing files are never overwritten without `--force`; an unknown name lists available kit components. The `.blade.php` suffix is optional. Configure the kit component's Tailwind color scales and radius tokens as described in its README.
+
+This differs from `make:malevich`, which creates an empty scaffold, and `vendor:publish --tag=malevich:components`, which publishes the internal unstyled primitive.
 
 ## `make:malevich`
 

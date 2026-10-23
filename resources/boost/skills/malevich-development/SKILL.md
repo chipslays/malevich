@@ -62,6 +62,7 @@ Never write `$color` in the markup: `@attributes` reads the option from `@props`
 
 ```bash
 php artisan make:malevich button
+php artisan malevich:add button         # copy the ready-made kit component; --force to overwrite
 php artisan vendor:publish --tag malevich:config
 php artisan vendor:publish --tag malevich:components
 php artisan view:clear     # after config changes or package upgrade

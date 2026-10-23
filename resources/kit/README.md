@@ -1,6 +1,18 @@
 # Kit
 
-Copy `button.blade.php` to `resources/views/components/button.blade.php` in an app with Malevich and Tailwind CSS 4. Include the destination in Tailwind's source scanning. No JavaScript or additional components are needed beyond the Malevich primitive.
+Add the ready-made button to an app with Malevich and Tailwind CSS 4:
+
+```bash
+php artisan malevich:add button
+```
+
+This copies `button.blade.php` into `malevich.components.path` (by default, `resources/views/components`) and prints the component tag, respecting `malevich.components.prefix`. The copied file belongs to your project: edit it freely; package updates do not replace it. An existing file is preserved unless you explicitly pass `--force`. An unknown component name prints the available kit components.
+
+```bash
+php artisan malevich:add button --force
+```
+
+Include the destination in Tailwind's source scanning and configure the named color scales and `brand` radius described below. No JavaScript or additional components are needed beyond the Malevich primitive. `make:malevich` creates an empty scaffold; `malevich:add` copies a complete kit component.
 
 The repository playground registers this directory automatically: run `composer serve` and open `/malevich`.
 

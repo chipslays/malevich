@@ -58,6 +58,7 @@
 ```bash
 php artisan malevich:install                          # config + editor autocomplete
 php artisan make:malevich button                      # new component
+php artisan malevich:add button                       # copy the ready-made kit button
 php artisan malevich:lint                             # find unknown values in all views
 php artisan vendor:publish --tag malevich:config      # publish the config
 php artisan vendor:publish --tag malevich:components  # publish the primitive

@@ -2,7 +2,7 @@
 
 Malevich (`malevich/malevich`) builds variant-driven Blade components: you declare class maps per option, and `@attributes` prints the final `class` and attributes. Use it for every reusable Blade component that has options (variant, color, size, flags) instead of `$attributes->class([... => $variant === 'x'])` ternaries.
 
-- Components are plain Blade files (`resources/views/components/...`). Scaffold one with `php artisan make:malevich button`; `php artisan malevich:install` publishes the config and sets up Tailwind IntelliSense.
+- Components are plain Blade files (`resources/views/components/...`). Copy a ready-made kit component with `php artisan malevich:add button`, or scaffold one with `php artisan make:malevich button`; `php artisan malevich:install` publishes the config and sets up Tailwind IntelliSense. Both component commands respect `components.path` and refuse overwriting unless `--force` is explicit.
 - After adding or renaming option values, run `php artisan malevich:lint`: it lists `<x-...>` tags in all views that use a value a component doesn't define. Keep class maps literal so it can read them.
 - Test components with `->assertSeeClasses('bg-red-600 text-white')` on `$this->blade(...)` / responses, or Pest's `expect($html)->toHaveClasses(...)`, not with `assertSee('class="..."')`.
 - Declare directives (`@base`, `@variant`, `@color`, `@size`, `@option`, `@cases`, `@compound`) right after `@props` and **before** `@attributes`.

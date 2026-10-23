@@ -78,6 +78,14 @@ Create your first component and open the [Getting started](docs/01-getting-start
 php artisan make:malevich button
 ```
 
+Or copy the [ready-made kit button](resources/kit/README.md) into your project:
+
+```bash
+php artisan malevich:add button
+```
+
+The command uses your configured components directory and preserves existing files unless `--force` is explicit. The kit button requires Tailwind CSS 4 with the named color scales and `brand` radius described in its documentation.
+
 ## What you get
 
 - **Flat class maps** instead of nested conditions - [`@variant`, `@size`, `@color`, `@option`](docs/02-classes.md).

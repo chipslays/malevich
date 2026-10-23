@@ -9,6 +9,15 @@
 5. Start from the closest existing component in the project, or scaffold a new one with `php artisan make:malevich name`.
 6. Verify with the checklist below.
 
+## `malevich:add`
+
+```bash
+php artisan malevich:add button
+php artisan malevich:add button --force
+```
+
+Copies a ready-made component from the package's kit into `components.path`, creating the destination directory as needed. Existing components are preserved unless `--force` is explicit. The reported tag respects `components.prefix`. Unknown names list the available components. Configure the component's required Tailwind color scales and radius tokens in the application theme. Use `make:malevich` for an empty scaffold instead.
+
 ## `make:malevich`
 
 ```bash
