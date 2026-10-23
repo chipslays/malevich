@@ -59,13 +59,14 @@ class AddCommand extends Command
         }
 
         $path = rtrim($directory, '/\\').'/'.$name.'.blade.php';
-        $exists = $files->exists($path);
 
         if ($files->isDirectory($path)) {
             $this->components->error('A directory already exists at the component path.');
 
             return self::FAILURE;
         }
+
+        $exists = $files->exists($path);
 
         if ($exists && ! $this->option('force')) {
             $this->components->error('Component already exists.');
