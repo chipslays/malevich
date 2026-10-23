@@ -12,6 +12,8 @@ use Illuminate\View\ComponentAttributeBag;
 use Illuminate\View\ComponentSlot;
 use Malevich\Exceptions\UnknownValueException;
 use Malevich\Support\ClassList;
+use Malevich\Support\ScopedProps;
+use Malevich\Support\TargetAttribute;
 use Stringable;
 use UnitEnum;
 
@@ -29,8 +31,9 @@ use UnitEnum;
  *     {{ $attributes->for('icon')->color('danger')->merge(['aria-hidden' => 'true']) }}
  *
  * The value of every option is resolved in this order, first non-null wins:
- * an explicit call (`->color('danger')`), a variable in the template scope
- * (your @props, with their defaults), then an attribute on the component tag.
+ * an explicit call (`->color('danger')`), a named-slot attribute, a
+ * target:option attribute, a variable in the template scope (your @props,
+ * with their defaults), then an attribute on the component tag.
  *
  * Unknown method calls are forwarded to a ComponentAttributeBag with the
  * resolved class already applied, so `->only()`, `->has()`, `->get()` and
@@ -68,6 +71,11 @@ final class Element implements Htmlable, Stringable
     private ?string $resolvedClasses = null;
 
     private ?ComponentAttributeBag $resolvedBag = null;
+
+    /**
+     * @var array<string, array{value: mixed, modifiers: array<string, string|bool|null>}>|null
+     */
+    private ?array $resolvedTargetAttributes = null;
 
     /**
      * @param  ComponentAttributeBag  $attributes  The bag the recipe was declared against.
@@ -140,6 +148,16 @@ final class Element implements Htmlable, Stringable
     public function option(string $option, mixed $value): self
     {
         return $this->with(fn (self $s) => $s->choices[$option] = $value);
+    }
+
+    /**
+     * Modifiers of a target:attribute, e.g. icon:trailing.rounded.size[24].
+     *
+     * @return array<string, string|bool|null>
+     */
+    public function modifiers(string $attribute): array
+    {
+        return $this->targetAttributes()[$attribute]['modifiers'] ?? [];
     }
 
     /**
@@ -372,6 +390,8 @@ final class Element implements Htmlable, Stringable
     {
         return match (true) {
             $this->normalize($this->choices[$option] ?? null) !== null => '->'.$option.'()',
+            $this->slotChoice($option) !== null => 'from slot',
+            $this->normalize($this->targetAttributes()[$option]['value'] ?? null) !== null => 'from '.$this->target.':'.$option,
             // The data Blade passed to the template: what the tag set, before @props defaults.
             $this->normalize($this->scope[$option] ?? null) !== null => is_array($this->scope['__data'] ?? null) && array_key_exists($option, $this->scope['__data'])
                 ? 'from tag'
@@ -404,7 +424,18 @@ final class Element implements Htmlable, Stringable
     private function resolveAttributeBag(): ComponentAttributeBag
     {
         $own = $this->ownAttributes()?->getAttributes() ?? [];
-        $consumed = [...$this->recipe()->optionNames(), 'class'];
+        $options = $this->recipe()->optionNames();
+        $consumed = [...$options, ...array_map(Str::kebab(...), $options), 'class'];
+
+        // Only targets declared by this component own a namespace.
+        // Every other namespaced attribute stays on the root unchanged.
+        foreach (array_keys($own) as $name) {
+            $parsed = TargetAttribute::parse((string) $name);
+
+            if ($parsed !== null && in_array($parsed['target'], $this->recipe()->targets(), true)) {
+                unset($own[$name]);
+            }
+        }
 
         $attributes = $own + $this->escapedExtra();
         $attributes = array_diff_key($attributes, array_flip($consumed)) + $this->dataAttributes();
@@ -498,8 +529,16 @@ final class Element implements Htmlable, Stringable
     private function resolveChoice(string $option): ?string
     {
         return $this->normalize($this->choices[$option] ?? null)
+            ?? $this->slotChoice($option)
+            ?? $this->normalize($this->targetAttributes()[$option]['value'] ?? null)
             ?? $this->normalize($this->scope[$option] ?? null)
             ?? $this->normalize($this->attributes->get($option));
+    }
+
+    private function slotChoice(string $option): ?string
+    {
+        return $this->normalize($this->slotAttributes?->get($option))
+            ?? $this->normalize($this->slotAttributes?->get(Str::kebab($option)));
     }
 
     /**
@@ -572,7 +611,34 @@ final class Element implements Htmlable, Stringable
      */
     private function ownAttributes(): ?ComponentAttributeBag
     {
-        return $this->slotAttributes ?? ($this->target === $this->malevich->defaultTarget() ? $this->attributes : null);
+        $own = $this->slotAttributes ?? ($this->target === $this->malevich->defaultTarget() ? $this->attributes : null);
+        $targeted = array_map(fn (array $attribute) => $attribute['value'], $this->targetAttributes());
+
+        return $own === null && $targeted === [] ? null : new ComponentAttributeBag(($own?->getAttributes() ?? []) + $targeted);
+    }
+
+    /**
+     * @return array<string, array{value: mixed, modifiers: array<string, string|bool|null>}>
+     */
+    private function targetAttributes(): array
+    {
+        if ($this->resolvedTargetAttributes !== null) {
+            return $this->resolvedTargetAttributes;
+        }
+
+        $attributes = [];
+
+        $scoped = $this->scope[ScopedProps::SCOPE_VARIABLE] ?? ScopedProps::attributes($this->attributes);
+
+        foreach (array_replace($scoped, $this->attributes->getAttributes()) as $name => $value) {
+            $parsed = TargetAttribute::parse((string) $name);
+
+            if ($parsed !== null && $parsed['target'] === $this->target) {
+                $attributes[$parsed['name']] = ['value' => $value, 'modifiers' => $parsed['modifiers']];
+            }
+        }
+
+        return $this->resolvedTargetAttributes = $attributes;
     }
 
     private function isOption(string $name): bool
@@ -594,6 +660,7 @@ final class Element implements Htmlable, Stringable
         $clone->resolvedChoices = [];
         $clone->resolvedClasses = null;
         $clone->resolvedBag = null;
+        $clone->resolvedTargetAttributes = null;
         $mutate($clone);
 
         return $clone;

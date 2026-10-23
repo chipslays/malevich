@@ -213,6 +213,14 @@ final class Recipe
     }
 
     /**
+     * @return list<string>
+     */
+    public function targets(): array
+    {
+        return array_values(array_unique([$this->defaultTarget, ...array_keys($this->base), ...array_keys($this->options), ...array_keys($this->compounds)]));
+    }
+
+    /**
      * Names of every option declared on any target - these are the
      * attributes the component consumes and must not render as HTML.
      *

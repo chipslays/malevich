@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Malevich;
 
 use Closure;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Compilers\BladeCompiler;
@@ -16,6 +17,8 @@ use Malevich\Console\Commands\LintCommand;
 use Malevich\Console\Commands\MakeCommand;
 use Malevich\Support\ComponentTagCompiler;
 use Malevich\Support\HtmlTagCompiler;
+use Malevich\Support\ScopedProps;
+use Malevich\Support\TargetAttribute;
 use Malevich\Testing\ClassAssertions;
 use WeakMap;
 
@@ -59,7 +62,7 @@ class MalevichServiceProvider extends ServiceProvider
         $this->registerAttributeBagMacros();
         $this->registerComponentPath();
 
-        if (Catalog::enabled() && ! $this->app->routesAreCached()) {
+        if (Catalog::enabled() && ! App::routesAreCached()) {
             Catalog::routes();
         }
     }
@@ -96,6 +99,10 @@ class MalevichServiceProvider extends ServiceProvider
 
         // `@end` + the name, like @endauth: the closing tag is a plain endif.
         $this->registerDirective('end'.Malevich::directive('has'), fn () => '<?php endif; ?>');
+
+        Blade::prepareStringsForCompilationUsing(TargetAttribute::compile(...));
+        Blade::precompiler(TargetAttribute::restore(...));
+        Blade::prepareStringsForCompilationUsing(ScopedProps::compile(...));
 
         // Blade ignores directives inside <x-...> tags, so @attributes is rewritten there first.
         Blade::prepareStringsForCompilationUsing(ComponentTagCompiler::compile(...));

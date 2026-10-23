@@ -64,7 +64,7 @@ final class TagScanner
      */
     public static function staticAttributes(string $attributes): array
     {
-        preg_match_all('/(?:\{\{.*?\}\}|\{!!.*?!!\})(*SKIP)(*FAIL)|(?<=\s)(?<name>[\w\-.]+)=(?:"(?<double>[^"]*)"|\'(?<single>[^\']*)\')/s', $attributes, $matches, PREG_SET_ORDER | PREG_UNMATCHED_AS_NULL);
+        preg_match_all('/(?:\{\{.*?\}\}|\{!!.*?!!\})(*SKIP)(*FAIL)|(?<=\s)(?<name>[\w\-.:\[\]]+)=(?:"(?<double>[^"]*)"|\'(?<single>[^\']*)\')/s', $attributes, $matches, PREG_SET_ORDER | PREG_UNMATCHED_AS_NULL);
 
         $static = [];
 
@@ -94,7 +94,7 @@ final class TagScanner
                         @\w+'.self::PARENS.'?
                         | \{\{.*?\}\}
                         | \{!!.*?!!\}
-                        | [\w\-:.@%]+(?:=(?:"[^"]*"|\'[^\']*\'|[^\'"=<>\s]+))?
+                        | [\w\-:.@%\[\]]+(?:=(?:"[^"]*"|\'[^\']*\'|[^\'"=<>\s]+))?
                     )
                 )*
                 \s*
