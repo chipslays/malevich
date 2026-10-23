@@ -37,11 +37,20 @@ php artisan vendor:publish --tag malevich:config
 ```bash
 php artisan malevich:add button
 php artisan malevich:add button --force    # replace an existing copy
+php artisan malevich:add                   # pick a kit component from a list
 ```
 
 Copies the complete component from the package's [kit](../resources/kit/README.md) into `malevich.components.path`, creating the folder if needed. The default destination is `resources/views/components/button.blade.php`. The command prints the tag to use, including your configured `components.prefix`.
 
-The component is now your source code: customize it directly. Package updates leave your copy alone. Existing files are never overwritten without `--force`; an unknown name lists available kit components. The `.blade.php` suffix is optional. Configure the kit component's Tailwind color scales and radius tokens as described in its README.
+The component is now your source code: customize it directly. Package updates leave your copy alone. Existing files are never overwritten without `--force`; an unknown name lists available kit components. The `.blade.php` suffix is optional.
+
+Kit components use semantic Tailwind colors (`primary`, `danger`, ...) and a `brand` radius. Publish the default tokens once and import them after Tailwind; the command reminds you until `resources/css/malevich-theme.css` exists:
+
+```bash
+php artisan vendor:publish --tag=malevich:theme
+```
+
+See [theme tokens](../resources/kit/README.md#theme-tokens) for the import and for defining the tokens yourself.
 
 This differs from `make:malevich`, which creates an empty scaffold, and `vendor:publish --tag=malevich:components`, which publishes the internal unstyled primitive.
 

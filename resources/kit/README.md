@@ -6,13 +6,13 @@ Add the ready-made button to an app with Malevich and Tailwind CSS 4:
 php artisan malevich:add button
 ```
 
-This copies `button.blade.php` into `malevich.components.path` (by default, `resources/views/components`) and prints the component tag, respecting `malevich.components.prefix`. The copied file belongs to your project: edit it freely; package updates do not replace it. An existing file is preserved unless you explicitly pass `--force`. An unknown component name prints the available kit components.
+This copies `button.blade.php` into `malevich.components.path` (by default, `resources/views/components`) and prints the component tag, respecting `malevich.components.prefix`. The copied file belongs to your project: edit it freely; package updates do not replace it. An existing file is preserved unless you explicitly pass `--force`. Without a name the command lets you pick a kit component from a list; an unknown name prints the available ones.
 
 ```bash
 php artisan malevich:add button --force
 ```
 
-Include the destination in Tailwind's source scanning and configure the named color scales and `brand` radius described below. No JavaScript or additional components are needed beyond the Malevich primitive. `make:malevich` creates an empty scaffold; `malevich:add` copies a complete kit component.
+Include the destination in Tailwind's source scanning and publish the [theme tokens](#theme-tokens) the kit uses. No JavaScript or additional components are needed beyond the Malevich primitive. `make:malevich` creates an empty scaffold; `malevich:add` copies a complete kit component.
 
 The repository playground registers this directory automatically and defines the theme tokens below: run `composer serve` and open `/malevich`.
 
@@ -33,10 +33,12 @@ The repository playground registers this directory automatically and defines the
 | `size` | `xs`, `sm`, `md`, `lg`, `xl` | `md` |
 | `radius` | `brand`, `none`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`, `4xl`, `full`, `squircle` | `brand` |
 | `inset` | boolean; compensate horizontal padding for text buttons with `ghost` or `link` treatment | `false` |
-| `loading` | boolean; `loading="false"` counts as `false` | `false` |
+| `block` | boolean; stretch the button to the full width of its container | `false` |
+| `square` | boolean; force a square icon button on or off, detected from the default slot when omitted | `null` |
+| `loading` | boolean | `false` |
 | `loadingLabel` | named slot with replacement text, HTML or components; empty slot hides content | omitted |
-| `disabled` | boolean; `disabled="false"` counts as `false` | `false` |
-| `icon` | leading icon content, usually a named slot | `null` |
+| `disabled` | boolean | `false` |
+| `leading` | leading icon content, usually a named slot | `null` |
 | `trailing` | trailing icon content, usually a named slot | `null` |
 | `as` | HTML tag | `button` |
 
@@ -102,18 +104,28 @@ Variant and color are independent. Colors describe semantic roles:
 
 The component uses your application's named Tailwind color scales: for example, `bg-primary-600`, `text-danger-700` and `border-success-300`. Define the seven semantic scales in your Tailwind theme, including the shades used by the component. `neutral` and `contrast` both use `gray-*` utilities. Backgrounds, text, borders, hover and focus styles all use the same named scales; the component does not assign them to built-in hues.
 
-For example, mapping the roles onto Tailwind's built-in palette in your `app.css` (repeat the lines for every shade from `50` to `950`):
+#### Theme tokens
+
+The kit ships these tokens in [`theme.css`](theme.css): every role mapped onto one of Tailwind's built-in colors (`primary` is `indigo`, `success` is `emerald`, ...) and `brand` set to `rounded-lg`. Publish it and import it after Tailwind:
+
+```bash
+php artisan vendor:publish --tag=malevich:theme
+```
+
+```css
+/* resources/css/app.css */
+@import 'tailwindcss';
+@import './malevich-theme.css';
+```
+
+The published `resources/css/malevich-theme.css` is yours: point each role at your brand's colors there. `malevich:add` reminds you about it until the file exists. Prefer to define the tokens your own way? Any `@theme` that provides `--color-primary-50` ... `--color-info-950` and `--radius-brand` works:
 
 ```css
 @theme inline {
     --radius-brand: var(--radius-lg);
 
     --color-primary-50: var(--color-indigo-50);
-    /* ... */
-    --color-primary-950: var(--color-indigo-950);
-
-    --color-secondary-50: var(--color-slate-50);
-    /* ... secondary, accent, success, warning, danger and info likewise */
+    /* ... every shade from 50 to 950, for each of the seven roles */
 }
 ```
 
@@ -126,7 +138,7 @@ Without these tokens the button renders without colors or rounded corners: Tailw
 
 `contrast` has its own styling for every variant. `solid` reverses the theme's surface brightness; `soft` uses a translucent dark tint on light themes and a light tint on dark themes. `outline` uses a stronger border, while `ghost` and `link` use stronger foreground colors. Soft, outline and ghost treatments also have their own theme-aware hover colors. Text remains readable against each treatment's background.
 
-Customize a color's literal classes in its `$palette` entry and its focus outline in `@color`. One palette loop registers the compound rules without repeating color classes. Sizes use `@cases('size', ...)`: each size groups the root's dimensions and padding with the content, loading, icon, trailing and spinner classes. Each target still resolves its own size independently. No custom CSS variables, inline styles or generated class names are used.
+Customize a color's literal classes in the `@cases('color', [...], when: ['variant' => ...])` block of its treatment and its focus outline in `@color`. Each treatment has one block: solid, soft and outline backgrounds and borders, the text color of the transparent treatments, and their hover tint. Sizes use `@cases('size', ...)`: each size groups the root's dimensions and padding with the content, loading, leading, trailing and spinner classes. Each target still resolves its own size independently. No custom CSS variables, inline styles or generated class names are used.
 
 ### Radius
 
@@ -143,25 +155,25 @@ Customize a color's literal classes in its `$palette` entry and its focus outlin
 
 ### Icons and internal elements
 
-Use the `icon` and `trailing` slots for decorative icons. Their attributes and classes apply to the corresponding wrappers; direct SVG children follow the selected size:
+Use the `leading` and `trailing` slots for decorative icons. Their attributes and classes apply to the corresponding wrappers; direct SVG children follow the selected size:
 
 ```blade
 <x-button size="sm">
-    <x-slot:icon size="lg">
+    <x-slot:leading size="lg">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14m-7-7h14" /></svg>
-    </x-slot:icon>
+    </x-slot:leading>
     Add item
 </x-button>
 
 <x-button aria-label="Add item" radius="full">
-    <x-slot:icon>
+    <x-slot:leading>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14m-7-7h14" /></svg>
-    </x-slot:icon>
+    </x-slot:leading>
 </x-button>
 
 <x-button loading spinner:size="sm">Save changes</x-button>
 ```
 
-Buttons without text in their default slot automatically become square icon buttons. Named icon slots, whitespace, comments and SVG-only content do not require a separate flag. A text label wrapped in markup still produces a normal button. Always give an icon-only button an accessible name using `aria-label` or `aria-labelledby`. The kit does not bundle an icon set. See [inner elements](../../docs/05-inner-elements.md) for configuring slots, internal elements and modifiers.
+Buttons without text in their default slot automatically become square icon buttons. Named icon slots, whitespace, comments and SVG-only content do not require a separate flag. When detection guesses wrong, for example with visually hidden text (`<span class="sr-only">`), set it yourself: `square` or `:square="false"`. A text label wrapped in markup still produces a normal button. Always give an icon-only button an accessible name using `aria-label` or `aria-labelledby`. The kit does not bundle an icon set. See [inner elements](../../docs/05-inner-elements.md) for configuring slots, internal elements and modifiers.
 
 Root `class` and named-slot classes are appended last. Install a supported Tailwind merge integration when conflicting utilities should replace defaults; otherwise edit the maps to avoid conflicts.

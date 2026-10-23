@@ -181,6 +181,8 @@ In practice:
 <x-switch :checked="$user->active" />
 ```
 
+A prop with a boolean default in `@props` also gets a real boolean in the template: `checked="false"` on the tag is the string `"false"`, and Malevich turns it into `false`, so `@if ($checked)` agrees with the class map. Only the exact strings `"true"` and `"false"` are converted; props with any other default are left as they came.
+
 ## Enums and numbers
 
 A backed enum is looked up by its value, a plain enum by its case name. Numbers become strings: `:level="2"` looks up `'2'`.

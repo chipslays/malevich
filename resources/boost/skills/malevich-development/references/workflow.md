@@ -16,7 +16,7 @@ php artisan malevich:add button
 php artisan malevich:add button --force
 ```
 
-Copies a ready-made component from the package's kit into `components.path`, creating the destination directory as needed. Existing components are preserved unless `--force` is explicit. The reported tag respects `components.prefix`. Unknown names list the available components. Configure the component's required Tailwind color scales and radius tokens in the application theme. Use `make:malevich` for an empty scaffold instead.
+Copies a ready-made component from the package's kit into `components.path`, creating the destination directory as needed. Existing components are preserved unless `--force` is explicit. The reported tag respects `components.prefix`. Unknown names list the available components; without a name it asks which one. Kit components need the theme tokens: `php artisan vendor:publish --tag=malevich:theme` publishes `resources/css/malevich-theme.css`, imported after Tailwind in `app.css`. Use `make:malevich` for an empty scaffold instead.
 
 ## `make:malevich`
 

@@ -62,6 +62,7 @@ php artisan malevich:add button                       # copy the ready-made kit 
 php artisan malevich:lint                             # find unknown values in all views
 php artisan vendor:publish --tag malevich:config      # publish the config
 php artisan vendor:publish --tag malevich:components  # publish the primitive
+php artisan vendor:publish --tag malevich:theme       # theme tokens for kit components
 php artisan view:clear                                # after config changes or upgrades
 ```
 

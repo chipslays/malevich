@@ -68,7 +68,7 @@ More in [Artisan commands](12-commands.md).
 
 ## Your first component
 
-For a complete button instead of an empty scaffold, run `php artisan malevich:add button`. It copies the [kit component](../resources/kit/README.md) into your configured components folder; existing files are preserved unless you pass `--force`. Configure its named colors and `brand` radius in your Tailwind CSS 4 theme. The example below walks through creating your own component from scratch.
+For a complete button instead of an empty scaffold, run `php artisan malevich:add button`. It copies the [kit component](../resources/kit/README.md) into your configured components folder; existing files are preserved unless you pass `--force`. It needs Tailwind CSS 4 and the kit's [theme tokens](../resources/kit/README.md#theme-tokens): publish them with `php artisan vendor:publish --tag=malevich:theme`. The example below walks through creating your own component from scratch.
 
 **1. Create the file.**
 
