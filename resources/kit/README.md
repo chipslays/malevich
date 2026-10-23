@@ -93,9 +93,9 @@ Variant and color are independent. Colors describe semantic roles:
 <x-button color="contrast">Continue</x-button>
 ```
 
-`neutral` and `contrast` differ in their `solid` fill. They share `soft`, `outline`, `ghost` and `link` styles so text stays readable against the surrounding theme. The previous contrasting `neutral` solid appearance is now available as `contrast`.
+`contrast` has its own styling for every variant. `solid` reverses the theme's surface brightness; `soft` uses a translucent dark tint on light themes and a light tint on dark themes. `outline` uses a stronger border, while `ghost` and `link` use stronger foreground colors. Soft, outline and ghost treatments also have their own theme-aware hover colors. Text remains readable against each treatment's background.
 
-Customize a color's literal classes in its `$palette` entry and its focus outline in `@color`. `contrast` reuses the neutral palette and overrides only its solid classes. One palette loop registers the compound rules without repeating color classes. Sizes use `@cases('size', ...)`: each size groups the root's dimensions and padding with the content, loading, icon and spinner classes. Each target still resolves its own size independently. No custom CSS variables, inline styles or generated class names are used.
+Customize a color's literal classes in its `$palette` entry and its focus outline in `@color`. One palette loop registers the compound rules without repeating color classes. Sizes use `@cases('size', ...)`: each size groups the root's dimensions and padding with the content, loading, icon and spinner classes. Each target still resolves its own size independently. No custom CSS variables, inline styles or generated class names are used.
 
 ### Radius
 

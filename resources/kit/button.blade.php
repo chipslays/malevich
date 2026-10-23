@@ -38,7 +38,7 @@
     'secondary' => 'focus-visible:outline-slate-600 dark:focus-visible:outline-slate-300',
     'accent' => 'focus-visible:outline-violet-600 dark:focus-visible:outline-violet-300',
     'neutral' => 'focus-visible:outline-neutral-600 dark:focus-visible:outline-neutral-300',
-    'contrast' => 'focus-visible:outline-neutral-600 dark:focus-visible:outline-neutral-300',
+    'contrast' => 'focus-visible:outline-neutral-950 dark:focus-visible:outline-neutral-100',
     'success' => 'focus-visible:outline-green-600 dark:focus-visible:outline-green-300',
     'warning' => 'focus-visible:outline-amber-600 dark:focus-visible:outline-amber-300',
     'danger' => 'focus-visible:outline-red-600 dark:focus-visible:outline-red-300',
@@ -97,6 +97,19 @@
             'outline' => 'border-neutral-300 dark:border-neutral-700',
             'hover' => 'hover:bg-neutral-50 dark:hover:bg-neutral-950',
         ],
+        'contrast' => [
+            'solid' => [
+                'bg-neutral-950 text-white hover:bg-neutral-800',
+                'dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-300',
+            ],
+            'soft' => [
+                'bg-neutral-950/10 hover:bg-neutral-950/15',
+                'dark:bg-neutral-100/15 dark:hover:bg-neutral-100/20',
+            ],
+            'foreground' => 'text-neutral-950 dark:text-neutral-50',
+            'outline' => 'border-neutral-950 dark:border-neutral-100',
+            'hover' => 'hover:bg-neutral-950/10 dark:hover:bg-neutral-100/15',
+        ],
         'success' => [
             'solid' => [
                 'bg-green-700 text-white hover:bg-green-800',
@@ -146,14 +159,6 @@
             'hover' => 'hover:bg-blue-50 dark:hover:bg-blue-950',
         ],
     ];
-
-    // Contrast shares neutral's transparent treatments and reverses its solid fill.
-    $palette['contrast'] = array_replace($palette['neutral'], [
-        'solid' => [
-            'bg-neutral-950 text-white hover:bg-neutral-800',
-            'dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-300',
-        ],
-    ]);
 
     // Share palette fragments across treatments without repeating their classes.
     $recipe = \Malevich\Malevich::recipe($attributes);

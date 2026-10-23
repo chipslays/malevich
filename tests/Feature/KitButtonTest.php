@@ -26,15 +26,27 @@ it('renders every combination of button variant and color', function () {
                     'success', 'warning' => '700',
                     default => '600',
                 },
-                'soft' => 'bg-'.$hue.'-50',
-                'outline' => 'border-'.$hue.'-300',
-                'ghost', 'link' => 'text-'.$hue.'-'.(in_array($color, ['neutral', 'contrast', 'warning'], true) ? '800' : '700'),
+                'soft' => $color === 'contrast' ? 'bg-neutral-950/10' : 'bg-'.$hue.'-50',
+                'outline' => $color === 'contrast' ? 'border-neutral-950' : 'border-'.$hue.'-300',
+                'ghost', 'link' => $color === 'contrast' ? 'text-neutral-950' : 'text-'.$hue.'-'.(in_array($color, ['neutral', 'warning'], true) ? '800' : '700'),
             };
 
             expect($html)->toContain($expected);
         }
     }
 });
+
+it('gives contrast its own theme-aware styles for every transparent treatment', function (string $variant, array $expected) {
+    $html = $this->render('<x-kit::button color="contrast" :variant="$variant">Continue</x-kit::button>', compact('variant'));
+
+    expect($html)->toContain('text-neutral-950 dark:text-neutral-50', 'focus-visible:outline-neutral-950 dark:focus-visible:outline-neutral-100', ...$expected)
+        ->not->toContain('text-neutral-800', 'dark:text-neutral-200', 'border-neutral-300');
+})->with([
+    'soft' => ['soft', ['bg-neutral-950/10 hover:bg-neutral-950/15', 'dark:bg-neutral-100/15 dark:hover:bg-neutral-100/20']],
+    'outline' => ['outline', ['border-neutral-950 dark:border-neutral-100', 'hover:bg-neutral-950/10 dark:hover:bg-neutral-100/15']],
+    'ghost' => ['ghost', ['bg-transparent', 'hover:bg-neutral-950/10 dark:hover:bg-neutral-100/15']],
+    'link' => ['link', ['bg-transparent', 'hover:underline']],
+]);
 
 it('provides theme-matching and contrasting monochrome solid buttons', function () {
     expect($this->render('<x-kit::button color="neutral">Cancel</x-kit::button>'))
