@@ -76,17 +76,19 @@ Loading disables keyboard activation and navigation as well as pointer interacti
 
 Variant and color are independent. Colors describe semantic roles:
 
-| Role | Default palette | Purpose |
+| Role | Tailwind color scale | Purpose |
 | --- | --- | --- |
-| `primary` | indigo | main action |
-| `secondary` | slate | supporting action |
-| `accent` | violet | optional accent distinct from the main brand action |
-| `neutral` | neutral | monochrome; solid is light on light themes and dark on dark themes |
-| `contrast` | neutral | contrasting monochrome; solid is dark on light themes and light on dark themes |
-| `success` | green | positive result |
-| `warning` | amber | caution |
-| `danger` | red | destructive action |
-| `info` | blue | informational action |
+| `primary` | `primary` | main action |
+| `secondary` | `secondary` | supporting action |
+| `accent` | `accent` | optional accent distinct from the main brand action |
+| `neutral` | `gray` | monochrome; solid is light on light themes and dark on dark themes |
+| `contrast` | `gray` | contrasting monochrome; solid is dark on light themes and light on dark themes |
+| `success` | `success` | positive result |
+| `warning` | `warning` | caution |
+| `danger` | `danger` | destructive action |
+| `info` | `info` | informational action |
+
+The component uses your application's named Tailwind color scales: for example, `bg-primary-600`, `text-danger-700` and `border-success-300`. Define the seven semantic scales in your Tailwind theme, including the shades used by the component. `neutral` and `contrast` both use `gray-*` utilities. Backgrounds, text, borders, hover and focus styles all use the same named scales; the component does not assign them to built-in hues.
 
 ```blade
 <x-button color="neutral">Cancel</x-button>

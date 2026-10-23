@@ -12,7 +12,7 @@ beforeEach(function () {
 
 it('renders every combination of button variant and color', function () {
     foreach (['solid', 'soft', 'outline', 'ghost', 'link'] as $variant) {
-        foreach (['primary' => 'indigo', 'secondary' => 'slate', 'accent' => 'violet', 'neutral' => 'neutral', 'contrast' => 'neutral', 'success' => 'green', 'warning' => 'amber', 'danger' => 'red', 'info' => 'blue'] as $color => $hue) {
+        foreach (['primary' => 'primary', 'secondary' => 'secondary', 'accent' => 'accent', 'neutral' => 'gray', 'contrast' => 'gray', 'success' => 'success', 'warning' => 'warning', 'danger' => 'danger', 'info' => 'info'] as $color => $hue) {
             $html = $this->render('<x-kit::button :variant="$variant" :color="$color">Save</x-kit::button>', compact('variant', 'color'));
 
             expect($html)
@@ -26,9 +26,9 @@ it('renders every combination of button variant and color', function () {
                     'success', 'warning' => '700',
                     default => '600',
                 },
-                'soft' => $color === 'contrast' ? 'bg-neutral-950/10' : 'bg-'.$hue.'-50',
-                'outline' => $color === 'contrast' ? 'border-neutral-950' : 'border-'.$hue.'-300',
-                'ghost', 'link' => $color === 'contrast' ? 'text-neutral-950' : 'text-'.$hue.'-'.(in_array($color, ['neutral', 'warning'], true) ? '800' : '700'),
+                'soft' => $color === 'contrast' ? 'bg-gray-950/10' : 'bg-'.$hue.'-50',
+                'outline' => $color === 'contrast' ? 'border-gray-950' : 'border-'.$hue.'-300',
+                'ghost', 'link' => $color === 'contrast' ? 'text-gray-950' : 'text-'.$hue.'-'.(in_array($color, ['neutral', 'warning'], true) ? '800' : '700'),
             };
 
             expect($html)->toContain($expected);
@@ -39,21 +39,21 @@ it('renders every combination of button variant and color', function () {
 it('gives contrast its own theme-aware styles for every transparent treatment', function (string $variant, array $expected) {
     $html = $this->render('<x-kit::button color="contrast" :variant="$variant">Continue</x-kit::button>', compact('variant'));
 
-    expect($html)->toContain('text-neutral-950 dark:text-neutral-50', 'focus-visible:outline-neutral-950 dark:focus-visible:outline-neutral-100', ...$expected)
-        ->not->toContain('text-neutral-800', 'dark:text-neutral-200', 'border-neutral-300');
+    expect($html)->toContain('text-gray-950 dark:text-gray-50', 'focus-visible:outline-gray-950 dark:focus-visible:outline-gray-100', ...$expected)
+        ->not->toContain('text-gray-800', 'dark:text-gray-200', 'border-gray-300');
 })->with([
-    'soft' => ['soft', ['bg-neutral-950/10 hover:bg-neutral-950/15', 'dark:bg-neutral-100/15 dark:hover:bg-neutral-100/20']],
-    'outline' => ['outline', ['border-neutral-950 dark:border-neutral-100', 'hover:bg-neutral-950/10 dark:hover:bg-neutral-100/15']],
-    'ghost' => ['ghost', ['bg-transparent', 'hover:bg-neutral-950/10 dark:hover:bg-neutral-100/15']],
+    'soft' => ['soft', ['bg-gray-950/10 hover:bg-gray-950/15', 'dark:bg-gray-100/15 dark:hover:bg-gray-100/20']],
+    'outline' => ['outline', ['border-gray-950 dark:border-gray-100', 'hover:bg-gray-950/10 dark:hover:bg-gray-100/15']],
+    'ghost' => ['ghost', ['bg-transparent', 'hover:bg-gray-950/10 dark:hover:bg-gray-100/15']],
     'link' => ['link', ['bg-transparent', 'hover:underline']],
 ]);
 
 it('provides theme-matching and contrasting monochrome solid buttons', function () {
     expect($this->render('<x-kit::button color="neutral">Cancel</x-kit::button>'))
-        ->toContain('bg-neutral-100 text-neutral-950 hover:bg-neutral-200', 'dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800');
+        ->toContain('bg-gray-100 text-gray-950 hover:bg-gray-200', 'dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800');
 
     expect($this->render('<x-kit::button color="contrast">Continue</x-kit::button>'))
-        ->toContain('bg-neutral-950 text-white hover:bg-neutral-800', 'dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-300');
+        ->toContain('bg-gray-950 text-white hover:bg-gray-800', 'dark:bg-gray-100 dark:text-gray-950 dark:hover:bg-gray-300');
 });
 
 it('renders all sizes and radii and makes icon buttons square without horizontal padding', function () {
@@ -118,12 +118,12 @@ it('styles named slots and passes user attributes through to the right elements'
 
 it('uses literal Tailwind palettes for the requested treatment and color', function () {
     expect($this->render('<x-kit::button variant="solid" color="danger">Delete</x-kit::button>'))
-        ->toContain('bg-red-600', 'text-white', 'hover:bg-red-700')
-        ->not->toContain('text-red-700', 'border-red-300');
+        ->toContain('bg-danger-600', 'text-white', 'hover:bg-danger-700')
+        ->not->toContain('text-danger-700', 'border-danger-300');
 
     expect($this->render('<x-kit::button variant="outline" color="danger">Delete</x-kit::button>'))
-        ->toContain('border-red-300', 'text-red-700', 'dark:text-red-300', 'hover:bg-red-50')
-        ->not->toContain('bg-red-600', 'text-white');
+        ->toContain('border-danger-300', 'text-danger-700', 'dark:text-danger-300', 'hover:bg-danger-50')
+        ->not->toContain('bg-danger-600', 'text-white');
 });
 
 it('keeps original content in layout and absolutely overlays only a spinner for explicitly empty loading labels', function (string $loadingLabel) {

@@ -34,15 +34,15 @@
 ])
 
 @color([
-    'primary' => 'focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-300',
-    'secondary' => 'focus-visible:outline-slate-600 dark:focus-visible:outline-slate-300',
-    'accent' => 'focus-visible:outline-violet-600 dark:focus-visible:outline-violet-300',
-    'neutral' => 'focus-visible:outline-neutral-600 dark:focus-visible:outline-neutral-300',
-    'contrast' => 'focus-visible:outline-neutral-950 dark:focus-visible:outline-neutral-100',
-    'success' => 'focus-visible:outline-green-600 dark:focus-visible:outline-green-300',
-    'warning' => 'focus-visible:outline-amber-600 dark:focus-visible:outline-amber-300',
-    'danger' => 'focus-visible:outline-red-600 dark:focus-visible:outline-red-300',
-    'info' => 'focus-visible:outline-blue-600 dark:focus-visible:outline-blue-300',
+    'primary' => 'focus-visible:outline-primary-600 dark:focus-visible:outline-primary-300',
+    'secondary' => 'focus-visible:outline-secondary-600 dark:focus-visible:outline-secondary-300',
+    'accent' => 'focus-visible:outline-accent-600 dark:focus-visible:outline-accent-300',
+    'neutral' => 'focus-visible:outline-gray-600 dark:focus-visible:outline-gray-300',
+    'contrast' => 'focus-visible:outline-gray-950 dark:focus-visible:outline-gray-100',
+    'success' => 'focus-visible:outline-success-600 dark:focus-visible:outline-success-300',
+    'warning' => 'focus-visible:outline-warning-600 dark:focus-visible:outline-warning-300',
+    'danger' => 'focus-visible:outline-danger-600 dark:focus-visible:outline-danger-300',
+    'info' => 'focus-visible:outline-info-600 dark:focus-visible:outline-info-300',
 ])
 
 {{-- Palette data: complete Tailwind classes, shared by the rules below. --}}
@@ -50,113 +50,113 @@
     $palette = [
         'primary' => [
             'solid' => [
-                'bg-indigo-600 text-white hover:bg-indigo-700',
+                'bg-primary-600 text-white hover:bg-primary-700',
             ],
             'soft' => [
-                'bg-indigo-50 hover:bg-indigo-100',
-                'dark:bg-indigo-950 dark:hover:bg-indigo-900',
+                'bg-primary-50 hover:bg-primary-100',
+                'dark:bg-primary-950 dark:hover:bg-primary-900',
             ],
-            'foreground' => 'text-indigo-700 dark:text-indigo-300',
-            'outline' => 'border-indigo-300 dark:border-indigo-700',
-            'hover' => 'hover:bg-indigo-50 dark:hover:bg-indigo-950',
+            'foreground' => 'text-primary-700 dark:text-primary-300',
+            'outline' => 'border-primary-300 dark:border-primary-700',
+            'hover' => 'hover:bg-primary-50 dark:hover:bg-primary-950',
         ],
         'secondary' => [
             'solid' => [
-                'bg-slate-600 text-white hover:bg-slate-700',
+                'bg-secondary-600 text-white hover:bg-secondary-700',
             ],
             'soft' => [
-                'bg-slate-50 hover:bg-slate-100',
-                'dark:bg-slate-950 dark:hover:bg-slate-900',
+                'bg-secondary-50 hover:bg-secondary-100',
+                'dark:bg-secondary-950 dark:hover:bg-secondary-900',
             ],
-            'foreground' => 'text-slate-700 dark:text-slate-300',
-            'outline' => 'border-slate-300 dark:border-slate-700',
-            'hover' => 'hover:bg-slate-50 dark:hover:bg-slate-950',
+            'foreground' => 'text-secondary-700 dark:text-secondary-300',
+            'outline' => 'border-secondary-300 dark:border-secondary-700',
+            'hover' => 'hover:bg-secondary-50 dark:hover:bg-secondary-950',
         ],
         'accent' => [
             'solid' => [
-                'bg-violet-600 text-white hover:bg-violet-700',
+                'bg-accent-600 text-white hover:bg-accent-700',
             ],
             'soft' => [
-                'bg-violet-50 hover:bg-violet-100',
-                'dark:bg-violet-950 dark:hover:bg-violet-900',
+                'bg-accent-50 hover:bg-accent-100',
+                'dark:bg-accent-950 dark:hover:bg-accent-900',
             ],
-            'foreground' => 'text-violet-700 dark:text-violet-300',
-            'outline' => 'border-violet-300 dark:border-violet-700',
-            'hover' => 'hover:bg-violet-50 dark:hover:bg-violet-950',
+            'foreground' => 'text-accent-700 dark:text-accent-300',
+            'outline' => 'border-accent-300 dark:border-accent-700',
+            'hover' => 'hover:bg-accent-50 dark:hover:bg-accent-950',
         ],
         'neutral' => [
             'solid' => [
-                'bg-neutral-100 text-neutral-950 hover:bg-neutral-200',
-                'dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800',
+                'bg-gray-100 text-gray-950 hover:bg-gray-200',
+                'dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800',
             ],
             'soft' => [
-                'bg-neutral-50 hover:bg-neutral-100',
-                'dark:bg-neutral-950 dark:hover:bg-neutral-900',
+                'bg-gray-50 hover:bg-gray-100',
+                'dark:bg-gray-950 dark:hover:bg-gray-900',
             ],
-            'foreground' => 'text-neutral-800 dark:text-neutral-200',
-            'outline' => 'border-neutral-300 dark:border-neutral-700',
-            'hover' => 'hover:bg-neutral-50 dark:hover:bg-neutral-950',
+            'foreground' => 'text-gray-800 dark:text-gray-200',
+            'outline' => 'border-gray-300 dark:border-gray-700',
+            'hover' => 'hover:bg-gray-50 dark:hover:bg-gray-950',
         ],
         'contrast' => [
             'solid' => [
-                'bg-neutral-950 text-white hover:bg-neutral-800',
-                'dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-300',
+                'bg-gray-950 text-white hover:bg-gray-800',
+                'dark:bg-gray-100 dark:text-gray-950 dark:hover:bg-gray-300',
             ],
             'soft' => [
-                'bg-neutral-950/10 hover:bg-neutral-950/15',
-                'dark:bg-neutral-100/15 dark:hover:bg-neutral-100/20',
+                'bg-gray-950/10 hover:bg-gray-950/15',
+                'dark:bg-gray-100/15 dark:hover:bg-gray-100/20',
             ],
-            'foreground' => 'text-neutral-950 dark:text-neutral-50',
-            'outline' => 'border-neutral-950 dark:border-neutral-100',
-            'hover' => 'hover:bg-neutral-950/10 dark:hover:bg-neutral-100/15',
+            'foreground' => 'text-gray-950 dark:text-gray-50',
+            'outline' => 'border-gray-950 dark:border-gray-100',
+            'hover' => 'hover:bg-gray-950/10 dark:hover:bg-gray-100/15',
         ],
         'success' => [
             'solid' => [
-                'bg-green-700 text-white hover:bg-green-800',
+                'bg-success-700 text-white hover:bg-success-800',
             ],
             'soft' => [
-                'bg-green-50 hover:bg-green-100',
-                'dark:bg-green-950 dark:hover:bg-green-900',
+                'bg-success-50 hover:bg-success-100',
+                'dark:bg-success-950 dark:hover:bg-success-900',
             ],
-            'foreground' => 'text-green-700 dark:text-green-300',
-            'outline' => 'border-green-300 dark:border-green-700',
-            'hover' => 'hover:bg-green-50 dark:hover:bg-green-950',
+            'foreground' => 'text-success-700 dark:text-success-300',
+            'outline' => 'border-success-300 dark:border-success-700',
+            'hover' => 'hover:bg-success-50 dark:hover:bg-success-950',
         ],
         'warning' => [
             'solid' => [
-                'bg-amber-700 text-white hover:bg-amber-800',
+                'bg-warning-700 text-white hover:bg-warning-800',
             ],
             'soft' => [
-                'bg-amber-50 hover:bg-amber-100',
-                'dark:bg-amber-950 dark:hover:bg-amber-900',
+                'bg-warning-50 hover:bg-warning-100',
+                'dark:bg-warning-950 dark:hover:bg-warning-900',
             ],
-            'foreground' => 'text-amber-800 dark:text-amber-300',
-            'outline' => 'border-amber-300 dark:border-amber-700',
-            'hover' => 'hover:bg-amber-50 dark:hover:bg-amber-950',
+            'foreground' => 'text-warning-800 dark:text-warning-300',
+            'outline' => 'border-warning-300 dark:border-warning-700',
+            'hover' => 'hover:bg-warning-50 dark:hover:bg-warning-950',
         ],
         'danger' => [
             'solid' => [
-                'bg-red-600 text-white hover:bg-red-700',
+                'bg-danger-600 text-white hover:bg-danger-700',
             ],
             'soft' => [
-                'bg-red-50 hover:bg-red-100',
-                'dark:bg-red-950 dark:hover:bg-red-900',
+                'bg-danger-50 hover:bg-danger-100',
+                'dark:bg-danger-950 dark:hover:bg-danger-900',
             ],
-            'foreground' => 'text-red-700 dark:text-red-300',
-            'outline' => 'border-red-300 dark:border-red-700',
-            'hover' => 'hover:bg-red-50 dark:hover:bg-red-950',
+            'foreground' => 'text-danger-700 dark:text-danger-300',
+            'outline' => 'border-danger-300 dark:border-danger-700',
+            'hover' => 'hover:bg-danger-50 dark:hover:bg-danger-950',
         ],
         'info' => [
             'solid' => [
-                'bg-blue-600 text-white hover:bg-blue-700',
+                'bg-info-600 text-white hover:bg-info-700',
             ],
             'soft' => [
-                'bg-blue-50 hover:bg-blue-100',
-                'dark:bg-blue-950 dark:hover:bg-blue-900',
+                'bg-info-50 hover:bg-info-100',
+                'dark:bg-info-950 dark:hover:bg-info-900',
             ],
-            'foreground' => 'text-blue-700 dark:text-blue-300',
-            'outline' => 'border-blue-300 dark:border-blue-700',
-            'hover' => 'hover:bg-blue-50 dark:hover:bg-blue-950',
+            'foreground' => 'text-info-700 dark:text-info-300',
+            'outline' => 'border-info-300 dark:border-info-700',
+            'hover' => 'hover:bg-info-50 dark:hover:bg-info-950',
         ],
     ];
 
@@ -237,7 +237,7 @@
 ])
 
 @option('radius', [
-    'brand' => 'rounded-lg',
+    'brand' => 'rounded-brand',
     'none' => 'rounded-none',
     'xs' => 'rounded-xs',
     'sm' => 'rounded-sm',
