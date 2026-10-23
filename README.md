@@ -94,7 +94,6 @@ php artisan make:malevich button
 
 Start with [Getting started](docs/01-getting-started.md), then read on in order - each chapter builds on the previous one. The full table of contents is in [docs/README.md](docs/README.md).
 
-Upgrading from 1.x? See [UPGRADE.md](UPGRADE.md).
 
 ## Playground and contributing
 

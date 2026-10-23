@@ -48,5 +48,3 @@ New to Malevich? Read these three pages in order. Twenty minutes, and you know e
 - [Examples](examples.md) - complete components to copy.
 - [Cheat sheet](cheat-sheet.md) - everything on one screen.
 - [FAQ and troubleshooting](faq.md) - when something doesn't work.
-
-Upgrading from 1.x? See [UPGRADE.md](../UPGRADE.md).
