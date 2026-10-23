@@ -14,7 +14,7 @@ php artisan vendor:publish --tag malevich:config
 | Key | Default | What it does |
 |---|---|---|
 | `options` | `['variant', 'size', 'color']` | Options with a directive of their own: `@variant`, `@size`, ... [Add yours](#your-own-options). |
-| `directives` | `attributes`, `base`, `option`, `compound`, `cases`, `has` | The name of every Malevich directive. [Rename](#renaming-directives) on a clash. |
+| `directives` | `attributes`, `base`, `option`, `compound`, `cases`, `styled` | The name of every Malevich directive. [Rename](#renaming-directives) on a clash. |
 | `components.path` | `resource_path('views/components')` | Where `make:malevich` creates components. |
 | `components.prefix` | `null` | Tag prefix: `null` -> `<x-button>`, `'ui'` -> `<x-ui::button>`. See [Which tag?](12-commands.md#which-tag) |
 | `default_target` | `'default'` | The name of the main element in per-element arrays and `@cases`. |
@@ -69,11 +69,11 @@ Every directive name can be changed, so a clash with another package is always s
     'option' => 'option',           // @option('radius', [...])
     'compound' => 'compound',       // @compound([...], '...')
     'cases' => 'cases',             // @cases('variant', [...])
-    'has' => 'has',                 // @has('glow') ... @endhas
+    'styled' => 'styled',                 // @styled('glow') ... @endstyled
 ],
 ```
 
-- `@has` is closed with `@end` + its name: rename it to `present` and you write `@present(...) ... @endpresent`.
+- `@styled` is closed with `@end` + its name: rename it to `present` and you write `@present(...) ... @endpresent`.
 - The editor autocomplete written by `malevich:install` follows the new names.
 - Run `php artisan view:clear` after renaming.
 

@@ -54,7 +54,7 @@ Never write `$color` in the markup: `@attributes` reads the option from `@props`
 <button @attributes(merge: ['type' => 'button'])>                 {{-- default attributes, user wins --}}
     <svg @attributes('icon')></svg>
     <span @attributes('title')>{{ $title }}</span>                {{-- picks up <x-slot:title class="..."> --}}
-    @has('badge')<i @attributes('badge')></i>@endhas             {{-- only when that element has classes --}}
+    @styled('badge')<i @attributes('badge')></i>@endstyled             {{-- only when that element has classes --}}
     {{ $slot }}
 </button>
 ```
@@ -73,7 +73,7 @@ php artisan view:clear     # after config changes or package upgrade
 | Classes depend on one prop | `@variant` / `@color` / `@size` / `@option('name', ...)` |
 | Classes always present | `@base` |
 | Several elements change together per value of one prop | `@cases('variant', [value => [target => classes]])` |
-| An element exists only in some variants | `@has('target') ... @endhas`, all its classes in the variants (no `@base`) |
+| An element exists only in some variants | `@styled('target') ... @endstyled`, all its classes in the variants (no `@base`) |
 | Classes depend on 2+ props or a flag | `@compound` |
 | Default value of an option | its `@props` default |
 | Catch value typos in dev | `MALEVICH_STRICT=true` or `Malevich::strict(! app()->isProduction())` |

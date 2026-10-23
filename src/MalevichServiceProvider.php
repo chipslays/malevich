@@ -91,14 +91,14 @@ class MalevichServiceProvider extends ServiceProvider
             return '<?php echo \\'.Malevich::class."::attributes(\$attributes ?? null, get_defined_vars(){$arguments}); ?>";
         });
 
-        $this->registerDirective(Malevich::directive('has'), function (string $expression) {
+        $this->registerDirective(Malevich::directive('styled'), function (string $expression) {
             $arguments = trim($expression) === '' ? '' : ", {$expression}";
 
-            return '<?php if (\\'.Malevich::class."::has(\$attributes ?? null, get_defined_vars(){$arguments})): ?>";
+            return '<?php if (\\'.Malevich::class."::styled(\$attributes ?? null, get_defined_vars(){$arguments})): ?>";
         });
 
         // `@end` + the name, like @endauth: the closing tag is a plain endif.
-        $this->registerDirective('end'.Malevich::directive('has'), fn () => '<?php endif; ?>');
+        $this->registerDirective('end'.Malevich::directive('styled'), fn () => '<?php endif; ?>');
 
         Blade::prepareStringsForCompilationUsing(TargetAttribute::compile(...));
         Blade::precompiler(TargetAttribute::restore(...));
@@ -155,8 +155,8 @@ class MalevichServiceProvider extends ServiceProvider
             $names[$name] = "directives.{$role}";
         }
 
-        // The closing tag of the has-directive is a name of its own.
-        $names['end'.Malevich::directive('has')] = 'directives.has';
+        // The closing tag of the styled-directive is a name of its own.
+        $names['end'.Malevich::directive('styled')] = 'directives.styled';
 
         foreach ($this->options() as $name) {
             if (isset($names[$name]) && $names[$name] !== 'options') {

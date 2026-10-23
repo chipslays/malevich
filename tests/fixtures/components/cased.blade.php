@@ -10,5 +10,5 @@
 
 <div @attributes>
     <span @attributes('title')>{{ $slot }}</span>
-    @has('glow')<i @attributes('glow')></i>@else<b>no glow</b>@endhas
+    @styled('glow')<i @attributes('glow')></i>@else<b>no glow</b>@endstyled
 </div>

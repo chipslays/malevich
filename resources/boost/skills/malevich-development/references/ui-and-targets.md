@@ -14,12 +14,12 @@
 
 Arguments: target (1st, positional), `slot:`, `merge:` (named).
 
-## `@has`
+## `@styled`
 
-`@has('target') ... @endhas` renders its body only if the element ends up with classes (same arguments as `@attributes`; `@else` works). Use it for parts that exist in some variants only. A `@base` makes a part non-empty everywhere, so an optional part has no `@base`: all its classes live in the variants.
+`@styled('target') ... @endstyled` renders its body only if the element ends up with classes (same arguments as `@attributes`; `@else` works). Use it for parts that exist in some variants only. A `@base` makes a part non-empty everywhere, so an optional part has no `@base`: all its classes live in the variants.
 
 ```blade
-@has('glow')<div @attributes('glow')></div>@endhas
+@styled('glow')<div @attributes('glow')></div>@endstyled
 ```
 
 ## `class="..."` next to `@attributes`

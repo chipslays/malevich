@@ -9,7 +9,7 @@
 5. Primitive-based components: `as` is a prop forwarded with `:as="$as"`; do not declare `href`, `target`, `disabled`, `type` in `@props` unless forwarding them.
 6. Inner elements: each `@attributes('x')` needs matching target declarations if it should be styled; tag `class` never reaches it.
 9. Match the project: option names, value names, size scale, palette, prefix (`components.prefix`), Tailwind version.
-10. Optional parts (drawn in some variants only): no `@base` for them, all classes in the variants, rendered in `@has('target') ... @endhas`. No `hidden` placeholders.
+10. Optional parts (drawn in some variants only): no `@base` for them, all classes in the variants, rendered in `@styled('target') ... @endstyled`. No `hidden` placeholders.
 11. Keep public prop names and values stable when refactoring; do not change rendered classes unless asked.
 
 ## Anti-patterns
@@ -17,7 +17,7 @@
 - `@attributes` before the directives it depends on.
 - Hardcoded `class` next to `@attributes` for always-on classes (use `@base`).
 - Repeating the same variant keys in many `@variant('target', ...)` calls when `@cases` reads better.
-- An empty or `hidden` placeholder element for a part that a variant does not have (use `@has`).
+- An empty or `hidden` placeholder element for a part that a variant does not have (use `@styled`).
 - Computing classes per variant in a PHP array inside the component instead of `@cases`.
 - Dynamic class-name concatenation.
 - Encoding a combination as a fake value (`'primary-lg'`) instead of `@compound`.

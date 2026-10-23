@@ -23,7 +23,7 @@ By design: attributes from the tag go to the main element only. Use a [named slo
 
 ### An optional element renders as an empty `<div>`
 
-It has a `@base`, which makes it non-empty in every variant. Move its classes into the variants and wrap it in [`@has`](05-inner-elements.md#parts-that-exist-only-in-some-variants).
+It has a `@base`, which makes it non-empty in every variant. Move its classes into the variants and wrap it in [`@styled`](05-inner-elements.md#parts-that-exist-only-in-some-variants).
 
 ### `<x-input size="20">` doesn't reach the `<input>`
 

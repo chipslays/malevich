@@ -259,7 +259,7 @@ Write string arguments without quotes. Only lowercase `true` and `false` become 
 
 ## Parts that exist only in some variants
 
-`@has('name') ... @endhas` renders a part only when its target has classes:
+`@styled('name') ... @endstyled` renders a part only when its target has classes:
 
 ```blade
 @props(['variant' => 'graphite'])
@@ -270,13 +270,13 @@ Write string arguments without quotes. Only lowercase `true` and `false` become 
 ])
 
 <div @attributes>
-    @has('glow')
+    @styled('glow')
         <div @attributes('glow')></div>
-    @endhas
+    @endstyled
 </div>
 ```
 
-`variant="teal"` draws the glow; `variant="graphite"` skips it. Keep all optional-part classes in the variants: adding `@base('glow', ...)` would make the target present in every variant. `@else` works, and `@has` accepts the same arguments as `@attributes`.
+`variant="teal"` draws the glow; `variant="graphite"` skips it. Keep all optional-part classes in the variants: adding `@base('glow', ...)` would make the target present in every variant. `@else` works, and `@styled` accepts the same arguments as `@attributes`.
 
 ---
 

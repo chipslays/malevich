@@ -39,7 +39,7 @@
 <button class="relative" @attributes(merge: ['type' => 'button'])>   {{-- class="" works like @base --}}
     <svg @attributes('icon')></svg>
     <span @attributes('title')>{{ $title }}</span>                  {{-- takes <x-slot:title class="..."> --}}
-    @has('badge')<i @attributes('badge')></i>@endhas                {{-- only when it has classes --}}
+    @styled('badge')<i @attributes('badge')></i>@endstyled                {{-- only when it has classes --}}
     {{ $slot }}
 </button>
 ```

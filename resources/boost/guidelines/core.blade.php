@@ -8,7 +8,7 @@ Malevich (`malevich/malevich`) builds variant-driven Blade components: you decla
 - Declare directives (`@base`, `@variant`, `@color`, `@size`, `@option`, `@cases`, `@compound`) right after `@props` and **before** `@attributes`.
 - Give options their defaults in `@props(['variant' => 'primary'])`. An option without a default doesn't need `@props` at all; `@attributes` reads the tag.
 - Turn on `Malevich::strict(! app()->isProduction())` in `AppServiceProvider::boot()` so a value with no key in its class map throws instead of silently rendering no classes.
-- When one option restyles several inner elements, `@cases('variant', [value => [target => classes]])` groups the maps by value; `@has('target') ... @endhas` draws a part only when it has classes.
+- When one option restyles several inner elements, `@cases('variant', [value => [target => classes]])` groups the maps by value; `@styled('target') ... @endstyled` draws a part only when it has classes.
 - Put always-on classes in `@base('...')`, never in a `class` attribute on the `@attributes` element.
 - Write full literal Tailwind class names in the maps; never build class names from variables.
 - Activate the `malevich-development` skill when creating or editing such components.

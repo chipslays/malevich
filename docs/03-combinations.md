@@ -131,7 +131,7 @@ Read it as: *"when variant is teal, the card is `bg-teal-600`, the title is `tex
 | Classes when two props have certain values | `@compound` |
 | React to a flag (`loading`, `active`) | `@compound(['loading' => true], '...')` or a [`'true'`/`'false'` map](02-classes.md#booleans) |
 | Many elements change together per value | `@cases` |
-| An element that exists only in some variants | [`@has`](05-inner-elements.md#parts-that-exist-only-in-some-variants) |
+| An element that exists only in some variants | [`@styled`](05-inner-elements.md#parts-that-exist-only-in-some-variants) |
 | A default value | the `@props` default |
 | Default HTML attributes (`type`, `role`, `aria-*`) | [`@attributes(merge: [...])`](04-attributes.md#default-attributes-merge) |
 | Users add classes to an inner element | a [named slot](05-inner-elements.md#named-slots) |

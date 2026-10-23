@@ -41,7 +41,7 @@ class MalevichManager
         'option' => 'option',
         'compound' => 'compound',
         'cases' => 'cases',
-        'has' => 'has',
+        'styled' => 'styled',
     ];
 
     /**
@@ -190,13 +190,13 @@ class MalevichManager
     }
 
     /**
-     * Runtime of `@has('target')`: whether the element ends up with any
+     * Runtime of `@styled('target')`: whether the element ends up with any
      * classes. Lets a template skip a part that exists only in some variants.
      *
      * @param  array<string, mixed>  $scope  The template's get_defined_vars().
      * @param  array<string, mixed>  $merge  Extra attributes, as with @attributes.
      */
-    public function has(
+    public function styled(
         ?ComponentAttributeBag $attributes,
         array $scope,
         ?string $target = null,
@@ -213,7 +213,7 @@ class MalevichManager
 
     /**
      * The configured name of one of Malevich's directives, by its role:
-     * attributes, base, option, compound, cases or has.
+     * attributes, base, option, compound, cases or styled.
      */
     public function directive(string $role): string
     {

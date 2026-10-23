@@ -27,7 +27,7 @@ Scaffolds a `@props` entry (default `null`) and an empty map for every option in
 
 A prefix adds a tag, it doesn't remove the plain one: while `components.path` is `resources/views/components`, Laravel still serves the file as `<x-button>` too. For prefix-only tags use a folder of their own, e.g. `'path' => resource_path('views/ui'), 'prefix' => 'ui'`.
 
-Config defaults: `options` = `['variant','size','color']`, `directives` = `attributes`, `base`, `option`, `compound`, `cases`, `has` (each renamable), `components.path` = `resource_path('views/components')`, `components.prefix` = `null`, `default_target` = `'default'`, `data_attributes` = `false`, `merge_classes` = `'auto'`. Publish with `php artisan vendor:publish --tag malevich:config`.
+Config defaults: `options` = `['variant','size','color']`, `directives` = `attributes`, `base`, `option`, `compound`, `cases`, `styled` (each renamable), `components.path` = `resource_path('views/components')`, `components.prefix` = `null`, `default_target` = `'default'`, `data_attributes` = `false`, `merge_classes` = `'auto'`. Publish with `php artisan vendor:publish --tag malevich:config`.
 
 ## Converting an existing component
 

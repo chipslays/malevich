@@ -28,7 +28,7 @@ it('styles every element of the chosen value from one declaration', function () 
         ->not->toContain('<i');
 });
 
-it('lets @has guard a part that exists only in some variants', function () {
+it('lets @styled guard a part that exists only in some variants', function () {
     expect($this->render('<x-cased variant="graphite">Hi</x-cased>'))->not->toContain('<i')
         ->and($this->render('<x-cased variant="teal">Hi</x-cased>'))->toContain('<i class="glow-teal">');
 });

@@ -40,7 +40,7 @@ return [
         'option' => 'option',
         'compound' => 'compound',
         'cases' => 'cases',
-        'has' => 'has',
+        'styled' => 'styled',
     ],
 
     /*
