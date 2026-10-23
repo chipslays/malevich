@@ -2,8 +2,8 @@
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\View\ViewException;
-use Malevich\Playground\Playground;
 use Malevich\Malevich;
+use Malevich\Playground\Playground;
 
 beforeEach(function () {
     Blade::anonymousComponentPath(dirname(__DIR__, 2).'/resources/kit', 'kit');

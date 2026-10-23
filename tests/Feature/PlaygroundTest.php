@@ -22,7 +22,6 @@ it('is off by default outside the local environment', function () {
     expect(Playground::enabled())->toBeTrue();
 });
 
-
 it('can be turned on or off from code, which wins over the config', function () {
     config(['malevich.playground.enabled' => false]);
     Malevich\Malevich::playground();
