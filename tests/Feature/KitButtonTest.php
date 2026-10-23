@@ -246,3 +246,12 @@ it('rejects removed palette color names', function () {
     expect(fn () => $this->render('<x-kit::button color="violet">Save</x-kit::button>'))
         ->toThrow(ViewException::class, 'violet');
 });
+
+it('treats loading="false" and disabled="false" from the tag as off', function () {
+    expect($this->render('<x-kit::button loading="false" disabled="false">Save</x-kit::button>'))
+        ->toContain('Save')
+        ->not->toContain('animate-spin')
+        ->not->toContain('aria-busy')
+        ->not->toContain('disabled="')
+        ->not->toContain(' pointer-events-none"');
+});

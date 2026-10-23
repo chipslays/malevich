@@ -15,6 +15,9 @@
 ])
 
 @php
+    // loading="false" from the tag is a string; treat it like :loading="false".
+    $loading = filter_var($loading, FILTER_VALIDATE_BOOL);
+    $disabled = filter_var($disabled, FILTER_VALIDATE_BOOL);
     $iconOnly = trim(strip_tags((string) $slot)) === '';
     $overlayLoading = $loading && ($iconOnly || $loadingLabel !== null);
     $hasLoadingLabel = ! $iconOnly && $loadingLabel !== null && (
@@ -178,6 +181,9 @@
             'color' => $colorName,
         ], $styles['hover']);
     }
+
+    // Keep the helpers out of the scope @attributes reads option values from.
+    unset($palette, $recipe, $colorName, $styles, $treatment);
 @endphp
 
 {{-- One size describes all parts; each target can still override it. --}}
