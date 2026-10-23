@@ -11,8 +11,9 @@
 | `@attributes('heading', slot: $title)` | Use a differently named slot. |
 | `@attributes('title', slot: false)` | Ignore the slot's attributes. |
 | `@attributes('title', merge: ['id' => 'x'])` | Inner element + default attributes. |
+| `@attributes(override: ['aria-busy' => $loading ? 'true' : null])` | Attributes that win over the user's; `null` leaves the user's value, `false` removes it. Never `class`. |
 
-Arguments: target (1st, positional), `slot:`, `merge:` (named).
+Arguments: target (1st, positional), `slot:`, `merge:`, `override:` (named). Use `override:` instead of rebuilding `$attributes` with `->except()->merge()` in `@php`.
 
 ## `@styled`
 

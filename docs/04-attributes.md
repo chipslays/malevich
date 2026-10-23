@@ -15,6 +15,7 @@ Think of it this way: **`$attributes` is what the component received** (`variant
 | `@attributes` | The main element: classes + every attribute from the component tag. |
 | `@attributes('icon')` | The inner element `icon`: only its classes. See [Inner elements](05-inner-elements.md). |
 | `@attributes(merge: ['type' => 'button'])` | The main element + default attributes. |
+| `@attributes(override: ['aria-busy' => 'true'])` | The main element + attributes that win over the tag's. |
 | `@attributes('title')` | The inner element `title` + the attributes of `<x-slot:title>`, if there is one. |
 | `@attributes('heading', slot: $title)` | The inner element + the attributes of a slot with another name. |
 | `@attributes('title', slot: false)` | The inner element, ignoring the slot's attributes. |
@@ -38,6 +39,24 @@ Think of it this way: **`$attributes` is what the component received** (`variant
 
 It's the same idea as `$attributes->merge([...])` in plain Blade.
 
+## Forced attributes: `override:`
+
+Sometimes the component must have the last word: a loading button is busy, whatever `aria-busy` the user passed. `override:` wins over the tag:
+
+```blade
+<button @attributes(override: ['aria-busy' => $loading ? 'true' : null])>{{ $slot }}</button>
+```
+
+```blade
+<x-button aria-busy="false">Go</x-button>          {{-- aria-busy="false": null leaves it alone --}}
+<x-button loading aria-busy="false">Go</x-button>  {{-- aria-busy="true": override wins --}}
+```
+
+- `null` leaves the attribute as the user set it (or absent); `false` removes it.
+- Values are escaped, like `merge:`.
+- Classes can't be overridden: they always add up. `override: ['class' => ...]` throws; use a class map, or `class` in `merge:` to add one.
+- Both can be used together: `@attributes(merge: ['type' => 'button'], override: ['role' => 'switch'])`.
+
 ## What ends up in the HTML
 
 On the **main element**:
@@ -53,6 +72,7 @@ On the **main element**:
    Duplicates are removed. Without any classes there's no empty `class=""`.
 2. Every other attribute from the tag: `id`, `wire:click`, `x-data`, `data-*`, `aria-*`, ...
 3. `merge:` attributes the tag didn't set.
+4. `override:` attributes, replacing any of the above with the same name.
 
 Option names (`variant`, `size`, any `@option` name) are **not** printed - Malevich used them to pick classes.
 

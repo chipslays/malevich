@@ -117,6 +117,7 @@ Read it as: *"when variant is teal, the card is `bg-teal-600`, the title is `tex
 
 - The first argument is the option: `@cases('size', [...])`, `@cases('color', [...])` or any other name.
 - The inner keys are elements; `default` is the main one.
+- Elements that share classes share a key, separated by commas: `'leading,trailing' => '[&>svg]:size-4'`. Each element still gets its own copy, so `trailing:size="lg"` or `<x-slot:trailing size="lg">` changes only that one. An element in a shared key and a key of its own gets both. `@compound(..., targets: [...])` reads its keys the same way.
 - A value can also be plain classes - they style the main element: `'teal' => 'bg-teal-600'`.
 - A boolean class map also styles the main element: `'sm' => ['px-2' => ! $iconOnly]`. In mixed lists, named class keys must have boolean values. For a target map, put conditional classes under a target key: `'sm' => ['icon' => ['size-3' => $showIcon]]`.
 - It is exactly the same as one `@variant('element', [...])` per element, so everything else (`@compound`, [named slots](05-inner-elements.md#named-slots)) works as usual. Pick one style per option and stick to it.

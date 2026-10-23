@@ -22,6 +22,7 @@
 | `->slot($slot)` | Read HTML attributes and option values from a named slot. |
 | `->modifiers('value')` | Read the current target's modifier settings, e.g. `text:value.uppercase.limit[24]`. |
 | `->merge([...])` | Default attributes, like `@attributes(merge: ...)`. |
+| `->override([...])` | Attributes that win over the component tag's, like `@attributes(override: ...)`. |
 | `->toClasses()` | Only the class string. |
 | `->classesFor('variant')` | The class string of every value, for [Alpine](08-javascript.md#2-classesfor---let-the-server-prepare-every-variant). |
 | `->only()`, `->except()`, `->has()`, `->get()`, ... | The usual `$attributes` methods, with the classes already applied. |

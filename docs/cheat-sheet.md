@@ -35,6 +35,8 @@
 @compound(['variant' => ['outline', 'ghost']], 'bg-transparent')
 @compound(['loading' => true], 'cursor-wait')
 @compound(['size' => 'sm'], targets: ['default' => 'px-2', 'icon' => 'size-3'])
+@compound(['size' => 'sm'], targets: ['leading,trailing' => 'size-3'])   {{-- one key, several elements --}}
+{{-- @attributes(override: ['aria-busy' => 'true']): wins over the tag; merge: is only a default --}}
 
 <button class="relative" @attributes(merge: ['type' => 'button'])>   {{-- class="" works like @base --}}
     <svg @attributes('icon')></svg>
