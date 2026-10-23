@@ -71,6 +71,38 @@ final class ScopedProps
         return self::$attributes[$bag] ?? [];
     }
 
+    /**
+     * Props whose default is a boolean: `loading="false"` on the tag is the
+     * string "false", which a template's `@if ($loading)` would take as true.
+     *
+     * @param  array<array-key, mixed>  $props
+     * @return list<string>
+     */
+    public static function booleans(array $props): array
+    {
+        $names = [];
+
+        foreach ($props as $name => $default) {
+            if (is_string($name) && is_bool($default)) {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
+    }
+
+    /**
+     * "true" and "false" as booleans, as Malevich reads them for class maps.
+     */
+    public static function boolean(mixed $value): mixed
+    {
+        return match ($value) {
+            'true' => true,
+            'false' => false,
+            default => $value,
+        };
+    }
+
     public static function compile(string $template): string
     {
         if (! str_contains($template, '@props')) {
@@ -99,7 +131,9 @@ final class ScopedProps
                 .'foreach ($__malevichPropAliases as $__malevichPropName => $__malevichPropValue) { ${$__malevichPropName} = $__malevichPropValue; } '
                 .'unset($__malevichPropAliases, $__malevichPropName, $__malevichPropValue); ?>'
                 .'@props($__malevichPropDefaults)'
-                .'<?php \\'.self::class.'::remember($attributes, $'.self::SCOPE_VARIABLE.'); unset($__malevichPropDefaults); ?>';
+                .'<?php \\'.self::class.'::remember($attributes, $'.self::SCOPE_VARIABLE.'); '
+                .'foreach (\\'.self::class.'::booleans($__malevichPropDefaults) as $__malevichPropName) { ${$__malevichPropName} = \\'.self::class.'::boolean(${$__malevichPropName} ?? null); } '
+                .'unset($__malevichPropDefaults, $__malevichPropName); ?>';
         }, $template) ?? $template;
     }
 }

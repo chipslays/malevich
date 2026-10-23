@@ -96,3 +96,19 @@ it('preserves target class choices when the same input is also a declared prop',
         ->toContain('<u class="large-icon"></u>')
         ->not->toContain('icon:size=')->not->toContain('iconSize=');
 });
+
+it('turns "true" and "false" from the tag into booleans for props with a boolean default', function () {
+    expect($this->render('<x-scoped-props icon-only="false" />'))->toContain('<b>false</b>');
+    expect($this->render('<x-scoped-props icon-only="true" />'))->toContain('<b>true</b>');
+    expect($this->render('<x-scoped-props icon:only="false" />'))->toContain('<b>false</b>');
+});
+
+it('leaves other strings and non-boolean props alone', function () {
+    expect($this->render('<x-scoped-props icon-only="yes" loading-label="false" />'))
+        ->toContain('<b>&quot;yes&quot;</b>', '<label>false</label>');
+});
+
+it('lists the props with a boolean default', function () {
+    expect(ScopedProps::booleans(['loading' => false, 'open' => true, 'size' => 'md', 'icon' => null, 'title']))
+        ->toBe(['loading', 'open']);
+});
