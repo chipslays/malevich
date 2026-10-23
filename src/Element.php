@@ -429,10 +429,12 @@ final class Element implements Htmlable, Stringable
 
         // Only targets declared by this component own a namespace.
         // Every other namespaced attribute stays on the root unchanged.
+        $targets = $this->recipe()->targets();
+
         foreach (array_keys($own) as $name) {
             $parsed = TargetAttribute::parse((string) $name);
 
-            if ($parsed !== null && in_array($parsed['target'], $this->recipe()->targets(), true)) {
+            if ($parsed !== null && in_array($parsed['target'], $targets, true)) {
                 unset($own[$name]);
             }
         }

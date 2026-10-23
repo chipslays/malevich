@@ -36,6 +36,11 @@ final class TargetAttribute
             $name = (string) hex2bin($encoded);
         }
 
+        // Called for every attribute of every component: skip the regex for plain names.
+        if (! str_contains($name, ':')) {
+            return null;
+        }
+
         if (! preg_match('/^(?<target>[\w-]+):(?<name>[\w-]+)(?<modifiers>(?:\.[\w-]+(?:\[[^\[\]\s]*\])?)*)$/D', $name, $match)) {
             return null;
         }
@@ -61,6 +66,11 @@ final class TargetAttribute
      */
     public static function restore(string $template): string
     {
+        // A precompiler runs on every template: most have nothing to restore.
+        if (! str_contains($template, 'malevich-target-') && ! str_contains($template, 'malevichTarget')) {
+            return $template;
+        }
+
         // Match whole PHP strings so a key-looking fragment inside an
         // attribute value cannot be rewritten. Only array keys are restored.
         $strings = '/"(?:\\\\.|[^"\\\\])*"(*SKIP)(*FAIL)|\'(?:\\\\.|[^\'\\\\])*\'(?<key>\\s*=>)?/s';
