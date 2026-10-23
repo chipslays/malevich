@@ -67,6 +67,74 @@ final class ConstantExpression
     }
 
     /**
+     * Read an array's literal keys while leaving its values as source text.
+     * Dynamic values are safe; spreads and dynamic keys make the keys unknown.
+     *
+     * @return array<array-key, string>
+     */
+    public static function entries(string $expression): array
+    {
+        $expression = trim($expression);
+
+        if (str_starts_with($expression, '[') && str_ends_with($expression, ']')) {
+            $body = substr($expression, 1, -1);
+        } elseif (preg_match('/^array\s*\((.*)\)$/s', $expression, $match)) {
+            $body = $match[1];
+        } else {
+            throw new InvalidArgumentException('Not an array literal.');
+        }
+
+        $entries = [];
+
+        foreach (self::split($body) as $entry) {
+            $depth = 0;
+            $offset = 0;
+            $arrow = null;
+
+            foreach (token_get_all('<?php '.$entry) as $token) {
+                [$type, $text] = is_array($token) ? [$token[0], $token[1]] : [$token, $token];
+
+                if ($type === T_OPEN_TAG) {
+                    continue;
+                }
+
+                if ($depth === 0 && $type === T_ELLIPSIS) {
+                    throw new InvalidArgumentException('Unknown spread keys.');
+                }
+
+                if ($depth === 0 && $type === T_DOUBLE_ARROW) {
+                    $arrow = $offset;
+
+                    break;
+                }
+
+                $depth += match ($type) {
+                    '(', '[', '{', T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES => 1,
+                    ')', ']', '}' => -1,
+                    default => 0,
+                };
+                $offset += strlen($text);
+            }
+
+            if ($arrow === null) {
+                $entries[] = $entry;
+
+                continue;
+            }
+
+            $key = self::evaluate(substr($entry, 0, $arrow));
+
+            if (! is_string($key) && ! is_int($key)) {
+                throw new InvalidArgumentException('Not a literal array key.');
+            }
+
+            $entries[$key] = trim(substr($entry, $arrow + 2));
+        }
+
+        return $entries;
+    }
+
+    /**
      * @throws InvalidArgumentException When the expression is not a literal.
      */
     public static function evaluate(string $expression): mixed

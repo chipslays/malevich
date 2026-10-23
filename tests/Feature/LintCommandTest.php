@@ -23,6 +23,14 @@ beforeEach(function () {
         'free' => "@color('text-red-500')\n<div @attributes></div>",
         'cards/index' => "@variant(['flat' => 'a'])\n<div @attributes></div>",
         'targeted' => "@variant(['flat' => 'a'])\n@compound(['variant' => 'raised'], targets: ['icon' => \$classes])\n<div @attributes></div>",
+        'scoped' => "@props(['iconStyle' => 'solid'])\n@option('iconStyle', ['solid' => 'a', 'outline' => 'b'])\n<div @attributes></div>",
+        'cased' => <<<'BLADE'
+            @cases('size', [
+                'sm' => ['default' => ['px-3' => ! $iconOnly], 'icon' => $iconClasses],
+                'lg' => ['default' => $classes, 'icon' => 'large-icon'],
+            ])
+            <div @attributes></div>
+            BLADE,
     ];
 
     foreach ($components as $name => $source) {
@@ -83,6 +91,40 @@ it('never reports what it cannot know', function () {
     $this->artisan('malevich:lint', ['paths' => [$views]])
         ->expectsOutputToContain('No problems')
         ->assertSuccessful();
+});
+
+it('checks target option values including modifier syntax', function () {
+    $views = page($this->dir, '<x-lint::button size="sm" icon:size="lg" /><x-lint::button icon:size.rounded.scale[2]="typo" />');
+
+    $this->artisan('malevich:lint', ['paths' => [$views]])
+        ->expectsOutputToContain('icon:size.rounded.scale[2] [typo] is not defined')
+        ->expectsOutputToContain('1 problem')
+        ->assertFailed();
+});
+
+it('does not validate external namespaces as component options', function () {
+    $views = page($this->dir, '<x-lint::button wire:loading.attr="disabled" x:variant="external" x-bind:size="computed" analytics:size.once.limit[24]="external" />');
+
+    $this->artisan('malevich:lint', ['paths' => [$views]])
+        ->expectsOutputToContain('No problems')
+        ->assertSuccessful();
+});
+
+it('checks cases with literal option values and dynamic classes', function () {
+    $views = page($this->dir, '<x-lint::cased size="sm" icon:size="lg" /><x-lint::cased icon:size="typo" />');
+
+    $this->artisan('malevich:lint', ['paths' => [$views]])
+        ->expectsOutputToContain('icon:size [typo] is not defined; expected one of: sm, lg.')
+        ->assertFailed();
+});
+
+it('checks a scoped prop alias including its decorated form', function () {
+    $views = page($this->dir, '<x-lint::scoped icon:style="solid" /><x-lint::scoped icon:style.filled[false]="typo" />');
+
+    $this->artisan('malevich:lint', ['paths' => [$views]])
+        ->expectsOutputToContain('icon:style.filled[false] [typo] is not defined')
+        ->expectsOutputToContain('1 problem')
+        ->assertFailed();
 });
 
 it('checks literal maps next to unknown ones and maps from partials', function () {

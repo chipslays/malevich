@@ -34,3 +34,19 @@ it('splits directive arguments at top-level commas only', function () {
         ->toBe(["'icon'", "['a' => fn (\$x, \$y) => [1, 2]]", '$c'])
         ->and(ConstantExpression::split(''))->toBe([]);
 });
+
+it('reads literal array keys without evaluating dynamic values', function () {
+    expect(ConstantExpression::entries("['sm' => ['default' => ['px-3' => ! \$iconOnly]], 'lg' => buildClasses(1, 2)]"))
+        ->toBe(['sm' => "['default' => ['px-3' => ! \$iconOnly]]", 'lg' => 'buildClasses(1, 2)']);
+
+    expect(ConstantExpression::entries("array('a' => fn (\$x) => [\$x, 2], 'b' => \$classes)"))
+        ->toBe(['a' => 'fn ($x) => [$x, 2]', 'b' => '$classes']);
+});
+
+it('refuses unknown array keys and spreads while reading entries', function (string $source) {
+    ConstantExpression::entries($source);
+})->with([
+    'variable' => ['$cases'],
+    'dynamic key' => ["[\$size => 'classes']"],
+    'spread' => ["['sm' => 'small', ...\$cases]"],
+])->throws(InvalidArgumentException::class);

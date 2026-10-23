@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\View\FileViewFinder;
 use Malevich\Support\ComponentScanner;
 use Malevich\Support\TagScanner;
+use Malevich\Support\TargetAttribute;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -71,7 +72,7 @@ class LintCommand extends Command
     }
 
     /**
-     * @param  array{file: string, options: array<string, list<string>>}  $component
+     * @param  array{file: string, options: array<string, list<string>>, targets?: list<string>}  $component
      * @param  array<string, string>  $attributes
      * @return list<string>
      */
@@ -80,9 +81,16 @@ class LintCommand extends Command
         $problems = [];
 
         foreach ($attributes as $attribute => $value) {
-            $option = Str::camel($attribute);
+            $targeted = TargetAttribute::parse($attribute);
+            $option = $targeted !== null && in_array($targeted['target'], $component['targets'] ?? [], true)
+                ? Str::camel($targeted['name'])
+                : Str::camel($attribute);
 
             $known = $component['options'][$option] ?? $component['options'][$attribute] ?? null;
+
+            if ($known === null && $targeted !== null) {
+                $known = $component['options'][TargetAttribute::propName($targeted)] ?? null;
+            }
 
             // The missing side of a boolean (`['true' => ...]` and loading="false") is fine, as in strict mode.
             $boolean = in_array($value, ['true', 'false'], true) && array_intersect($known ?? [], ['true', 'false']) !== [];

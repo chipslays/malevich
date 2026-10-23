@@ -35,7 +35,7 @@ final class ComponentScanner
      *
      * @param  bool  $all  Also every other component that uses @attributes, with
      *                     the options that could be read (none for a fresh one).
-     * @return array<string, array{file: string, options: array<string, list<string>>}>
+     * @return array<string, array{file: string, options: array<string, list<string>>, targets?: list<string>}>
      */
     public function components(bool $all = false): array
     {
@@ -96,7 +96,7 @@ final class ComponentScanner
     /**
      * What one component file declares, or null when it has nothing to check.
      *
-     * @return array{file: string, options: array<string, list<string>>}|null
+     * @return array{file: string, options: array<string, list<string>>, targets: list<string>}|null
      */
     public function component(string $path): ?array
     {
@@ -113,6 +113,7 @@ final class ComponentScanner
         return $options === [] ? null : [
             'file' => $path,
             'options' => $options,
+            'targets' => array_values(array_unique([Malevich::defaultTarget(), ...$declarations->targets])),
         ];
     }
 
@@ -137,7 +138,8 @@ final class ComponentScanner
         $option = Malevich::directive('option');
         $compound = Malevich::directive('compound');
         $cases = Malevich::directive('cases');
-        $names = [$option, $compound, $cases, 'include', 'includeIf', 'includeWhen', 'includeUnless', 'includeFirst', 'each', ...$options];
+        $base = Malevich::directive('base');
+        $names = [$option, $compound, $cases, $base, 'include', 'includeIf', 'includeWhen', 'includeUnless', 'includeFirst', 'each', ...$options];
         $pattern = '/(?<!@)@(?<name>'.implode('|', array_map(fn (string $name) => preg_quote($name, '/'), $names)).')\b\s*(?<arguments>'.TagScanner::PARENS.')?/';
 
         preg_match_all($pattern, $template, $matches, PREG_SET_ORDER | PREG_UNMATCHED_AS_NULL);
@@ -159,6 +161,7 @@ final class ComponentScanner
                 $name === $option => $this->option(null, $arguments, $declarations),
                 $name === $compound => $this->compound($arguments, $declarations),
                 $name === $cases => $this->cases($arguments, $declarations),
+                $name === $base => $this->target(ConstantExpression::split($arguments), $declarations),
                 default => $this->option($name, $arguments, $declarations),
             };
         }
@@ -173,6 +176,7 @@ final class ComponentScanner
 
         // `@option($name, ...)`: any option might be meant.
         $option ??= self::string(array_shift($arguments));
+        $this->target($arguments, $declarations);
 
         try {
             $map = ConstantExpression::evaluate((string) end($arguments));
@@ -195,14 +199,26 @@ final class ComponentScanner
         $option = self::string($arguments[0] ?? null);
 
         try {
-            $cases = ConstantExpression::evaluate($arguments[1] ?? '');
+            $cases = ConstantExpression::entries($arguments[1] ?? '');
         } catch (InvalidArgumentException) {
             $declarations->unchecked($option);
 
             return;
         }
 
-        is_array($cases) ? $declarations->values($option, array_keys($cases)) : $declarations->unchecked($option);
+        $declarations->values($option, array_keys($cases));
+
+        foreach ($cases as $source) {
+            try {
+                $targets = ConstantExpression::entries($source);
+
+                if (! array_is_list($targets)) {
+                    $declarations->targets = [...$declarations->targets, ...array_map(strval(...), array_keys($targets))];
+                }
+            } catch (InvalidArgumentException) {
+                // Classes may be dynamic even when the option values are known.
+            }
+        }
     }
 
     /**
@@ -213,6 +229,10 @@ final class ComponentScanner
     private function compound(string $arguments, Declarations $declarations): void
     {
         $arguments = ConstantExpression::split($arguments);
+
+        if (count($arguments) === 3) {
+            $this->target([$arguments[0], $arguments[2]], $declarations);
+        }
         $conditions = ConstantExpression::evaluate($arguments[count($arguments) === 3 ? 1 : 0] ?? '');
 
         if (! is_array($conditions)) {
@@ -221,6 +241,24 @@ final class ComponentScanner
 
         foreach ($conditions as $option => $expected) {
             $declarations->values((string) $option, is_array($expected) ? array_values($expected) : [$expected]);
+        }
+    }
+
+    /**
+     * Record a literal target without guessing dynamic declarations.
+     *
+     * @param  list<string>  $arguments
+     */
+    private function target(array $arguments, Declarations $declarations): void
+    {
+        if (count($arguments) !== 2) {
+            return;
+        }
+
+        try {
+            $declarations->targets[] = self::string($arguments[0]);
+        } catch (InvalidArgumentException) {
+            // An unknown target cannot justify consuming an external namespace.
         }
     }
 

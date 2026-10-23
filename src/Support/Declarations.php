@@ -13,6 +13,9 @@ use BackedEnum;
  */
 final class Declarations
 {
+    /** @var list<string> */
+    public array $targets = [];
+
     /**
      * @var array<string, array<string, true>> [option][value]
      */
