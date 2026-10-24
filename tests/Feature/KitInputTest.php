@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\MessageBag;
+use Illuminate\Support\ViewErrorBag;
 use Malevich\Malevich;
 
 beforeEach(function () {
@@ -97,10 +100,10 @@ describe('label, description and error', function () {
     });
 
     it('takes the error from the validation bag by name', function () {
-        $errors = (new Illuminate\Support\ViewErrorBag)->put('default', new Illuminate\Support\MessageBag(['user.email' => ['Invalid email.']]));
+        $errors = (new ViewErrorBag)->put('default', new MessageBag(['user.email' => ['Invalid email.']]));
 
         // Laravel shares $errors with every view, components included.
-        Illuminate\Support\Facades\View::share('errors', $errors);
+        View::share('errors', $errors);
 
         expect($this->render('<x-kit::input name="user[email]" />'))
             ->toContain('Invalid email.', 'aria-invalid="true"');
