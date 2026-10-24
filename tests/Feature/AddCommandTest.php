@@ -86,7 +86,7 @@ it('does not replace a directory even when forced', function () {
 
 it('asks which kit component to add when no name is given', function () {
     $this->artisan('malevich:add')
-        ->expectsChoice('Which kit component do you want to add?', 'button', ['button'])
+        ->expectsChoice('Which kit component do you want to add?', 'button', ['button', 'field', 'input'])
         ->expectsOutputToContain('Kit component added.')
         ->assertSuccessful();
 
