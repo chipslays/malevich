@@ -84,13 +84,21 @@ it('does not replace a directory even when forced', function () {
     expect(is_dir($this->kitDestination.'/button.blade.php'))->toBeTrue();
 });
 
-it('asks which kit component to add when no name is given', function () {
+it('lets you pick several kit components when no name is given', function () {
     $this->artisan('malevich:add')
-        ->expectsChoice('Which kit component do you want to add?', 'button', ['button', 'field', 'input'])
+        ->expectsChoice('Which kit components do you want to add?', ['button', 'input'], ['button', 'field', 'input'])
         ->expectsOutputToContain('Kit component added.')
         ->assertSuccessful();
 
-    expect($this->kitDestination.'/button.blade.php')->toBeFile();
+    expect($this->kitDestination.'/button.blade.php')->toBeFile()
+        ->and($this->kitDestination.'/input.blade.php')->toBeFile();
+});
+
+it('adds several named kit components at once', function () {
+    $this->artisan('malevich:add', ['name' => ['button', 'input']])->assertSuccessful();
+
+    expect($this->kitDestination.'/button.blade.php')->toBeFile()
+        ->and($this->kitDestination.'/input.blade.php')->toBeFile();
 });
 
 it('points to the theme tokens until they are published', function () {
@@ -100,7 +108,7 @@ it('points to the theme tokens until they are published', function () {
 });
 
 it('publishes the kit theme tokens', function () {
-    $published = resource_path('css/malevich-theme.css');
+    $published = resource_path('css/vendor/malevich.css');
 
     try {
         $this->artisan('vendor:publish', ['--tag' => 'malevich:theme'])->assertSuccessful();

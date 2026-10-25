@@ -4,29 +4,65 @@ declare(strict_types=1);
 
 namespace Malevich\Console\Commands;
 
-use Closure;
 use Illuminate\Console\Command;
-use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use Malevich\Malevich;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 
-use function Laravel\Prompts\select;
+use function Laravel\Prompts\multiselect;
 
 #[AsCommand(name: 'malevich:add')]
-class AddCommand extends Command implements PromptsForMissingInput
+class AddCommand extends Command
 {
     protected $signature = 'malevich:add
-        {name : Kit component name, e.g. "button"}
-        {--force : Overwrite the component if it already exists}';
+        {name?* : Kit component names, e.g. "button"; omit to pick from a list}
+        {--force : Overwrite components that already exist}';
 
-    protected $description = 'Copy a ready-made kit component into your project';
+    protected $description = 'Copy ready-made kit components into your project';
 
     public function handle(Filesystem $files): int
     {
-        $name = Str::replaceEnd('.blade.php', '', str_replace('\\', '/', (string) $this->argument('name')));
+        $names = array_values(array_unique((array) $this->argument('name')));
+
+        if ($names === []) {
+            if (! $this->input->isInteractive()) {
+                $this->components->error('Specify at least one component name.');
+
+                return self::FAILURE;
+            }
+
+            $names = multiselect(
+                label: 'Which kit components do you want to add?',
+                options: self::available($files),
+                required: true,
+                hint: 'Space to select, Enter to confirm.',
+            );
+        }
+
+        $status = self::SUCCESS;
+
+        foreach ($names as $name) {
+            if ($this->add($files, (string) $name) !== self::SUCCESS) {
+                $status = self::FAILURE;
+            }
+        }
+
+        // Kit components use the theme tokens; without them Tailwind skips their colors.
+        if (! $files->exists(resource_path('css/vendor/malevich.css'))) {
+            $this->newLine();
+            $this->line('  <fg=gray>Next:</> publish the theme tokens the kit uses and import them after Tailwind:');
+            $this->line('  <info>php artisan vendor:publish --tag=malevich:theme</info>');
+            $this->line("  <info>@import './vendor/malevich.css';</info> <fg=gray>in resources/css/app.css</>");
+        }
+
+        return $status;
+    }
+
+    private function add(Filesystem $files, string $name): int
+    {
+        $name = Str::replaceEnd('.blade.php', '', str_replace('\\', '/', $name));
 
         if (str_contains($name, '..') || ! preg_match('#^[\w-]+(?:[/.][\w-]+)*$#D', $name)) {
             $this->components->error('Invalid component name.');
@@ -81,30 +117,7 @@ class AddCommand extends Command implements PromptsForMissingInput
         $this->components->twoColumnDetail('File', OutputFormatter::escape($path));
         $this->components->twoColumnDetail('Tag', OutputFormatter::escape('<'.Malevich::componentTag($name).'>'));
 
-        // Kit components use the theme tokens; without them Tailwind skips their colors.
-        if (! $files->exists(resource_path('css/malevich-theme.css'))) {
-            $this->newLine();
-            $this->line('  <fg=gray>Next:</> publish the theme tokens the kit uses and import them after Tailwind:');
-            $this->line('  <info>php artisan vendor:publish --tag=malevich:theme</info>');
-            $this->line("  <info>@import './malevich-theme.css';</info> <fg=gray>in resources/css/app.css</>");
-        }
-
         return self::SUCCESS;
-    }
-
-    /**
-     * Without a name, pick one of the kit's components from a list.
-     *
-     * @return array<string, Closure(): string>
-     */
-    protected function promptForMissingArgumentsUsing(): array
-    {
-        return [
-            'name' => fn (): string => (string) select(
-                label: 'Which kit component do you want to add?',
-                options: self::available(new Filesystem),
-            ),
-        ];
     }
 
     private static function kit(): string
