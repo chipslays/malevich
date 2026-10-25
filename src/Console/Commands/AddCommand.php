@@ -50,10 +50,12 @@ class AddCommand extends Command
             );
         }
 
+        $names = array_map('strval', array_values($names));
+
         $status = self::SUCCESS;
 
         foreach ($names as $name) {
-            if ($this->add($files, (string) $name) !== self::SUCCESS) {
+            if ($this->add($files, $name) !== self::SUCCESS) {
                 $status = self::FAILURE;
             }
         }
@@ -155,7 +157,7 @@ class AddCommand extends Command
      */
     private static function dependencies(array $names): array
     {
-        $requested = array_map(fn ($name) => self::normalize((string) $name), $names);
+        $requested = array_map(fn (string $name) => self::normalize($name), $names);
         $needed = [];
 
         foreach ($requested as $name) {
