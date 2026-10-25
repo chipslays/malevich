@@ -42,6 +42,8 @@ php artisan malevich:add                   # pick a kit component from a list
 
 Copies the complete component from the package's [kit](../resources/kit/README.md) into `malevich.components.path`, creating the folder if needed. The default destination is `resources/views/components/button.blade.php`. The command prints the tag to use, including your configured `components.prefix`.
 
+Some kit components are built from others: `malevich:add input` also copies `field`, which draws the label, description and error. A dependency is added only when it is missing; an existing copy is kept even with `--force`.
+
 The component is now your source code: customize it directly. Package updates leave your copy alone. Existing files are never overwritten without `--force`; an unknown name lists available kit components. The `.blade.php` suffix is optional.
 
 Kit components use semantic Tailwind colors (`primary`, `danger`, ...) and a `brand` radius. Publish the default tokens once and import them after Tailwind; the command reminds you until `resources/css/vendor/malevich.css` exists:

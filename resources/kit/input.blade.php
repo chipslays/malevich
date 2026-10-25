@@ -60,15 +60,12 @@
     $outerClass = (string) $attributes->get('class', '');
     $outerStyle = $attributes->get('style');
     $attributes = $attributes->except(['class', 'style', 'id', 'aria-describedby']);
+
+    // Label, description and error are drawn by the field component, under whatever tag your project gives it.
+    $fieldComponent = \Illuminate\Support\Str::after(\Malevich\Malevich::componentTag('field'), 'x-');
 @endphp
 
 {{-- Styles --}}
-
-@base('field', 'flex w-full flex-col gap-1.5')
-@base('label', 'text-sm font-medium text-gray-950 select-none dark:text-gray-100')
-@base('required', 'ms-0.5 text-danger-600 dark:text-danger-400')
-@base('description', 'text-sm text-gray-500 dark:text-gray-400')
-@base('error', 'text-sm text-danger-700 dark:text-danger-400')
 
 {{-- The group draws the box; the input is a transparent flex item between the slots. --}}
 @base('group', [
@@ -173,19 +170,7 @@
 
 {{-- Markup --}}
 
-@if ($wrapped)
-    <div @attributes('field', class: $outerClass, merge: ['style' => $outerStyle])>
-        @if ($hasLabel)
-            <label @attributes('label', merge: ['for' => $id])>
-                {{ $label }}
-
-                @if ($required)
-                    <span @attributes('required', merge: ['aria-hidden' => 'true'])>*</span>
-                @endif
-            </label>
-        @endif
-@endif
-
+@php ob_start(); @endphp
 <div @attributes('group', class: $wrapped ? '' : $outerClass, merge: ['style' => $wrapped ? null : $outerStyle])>
     @if ($leading !== null)
         <span @attributes('leading')>{{ $leading }}</span>
@@ -197,14 +182,11 @@
         <span @attributes('trailing')>{{ $trailing }}</span>
     @endif
 </div>
+@php $control = new \Illuminate\Support\HtmlString(ob_get_clean()); @endphp
 
 @if ($wrapped)
-        @if ($hasDescription)
-            <p @attributes('description', merge: ['id' => "{$id}-description"])>{{ $description }}</p>
-        @endif
-
-        @if ($hasErrorMessage)
-            <p @attributes('error', merge: ['id' => "{$id}-error"])>{{ $error }}</p>
-        @endif
-    </div>
+    {{-- The field derives {id}-description and {id}-error from `for`; $describedBy above relies on it. --}}
+    <x-dynamic-component :component="$fieldComponent" :label="$label" :description="$description" :error="$error" :required="$required" :for="$id" :class="$outerClass ?: null" :style="$outerStyle">{{ $control }}</x-dynamic-component>
+@else
+    {{ $control }}
 @endif

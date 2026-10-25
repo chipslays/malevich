@@ -101,6 +101,34 @@ it('adds several named kit components at once', function () {
         ->and($this->kitDestination.'/input.blade.php')->toBeFile();
 });
 
+it('adds the components a kit component needs', function () {
+    $this->artisan('malevich:add', ['name' => 'input'])
+        ->expectsOutputToContain('[field] is required')
+        ->assertSuccessful();
+
+    expect($this->kitDestination.'/input.blade.php')->toBeFile()
+        ->and($this->kitDestination.'/field.blade.php')->toBeFile();
+});
+
+it('keeps an existing dependency even when forced', function () {
+    $files = new Filesystem;
+    $files->ensureDirectoryExists($this->kitDestination);
+    $files->put($this->kitDestination.'/field.blade.php', 'custom field');
+
+    $this->artisan('malevich:add', ['name' => 'input', '--force' => true])
+        ->doesntExpectOutputToContain('is required')
+        ->assertSuccessful();
+
+    expect(file_get_contents($this->kitDestination.'/field.blade.php'))->toBe('custom field')
+        ->and($this->kitDestination.'/input.blade.php')->toBeFile();
+});
+
+it('does not add a dependency twice when it is also named', function () {
+    $this->artisan('malevich:add', ['name' => ['input', 'field']])
+        ->doesntExpectOutputToContain('is required')
+        ->assertSuccessful();
+});
+
 it('points to the theme tokens until they are published', function () {
     $this->artisan('malevich:add', ['name' => 'button'])
         ->expectsOutputToContain('vendor:publish --tag=malevich:theme')

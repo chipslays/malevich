@@ -12,7 +12,7 @@ This copies `button.blade.php` into `malevich.components.path` (by default, `res
 php artisan malevich:add button --force
 ```
 
-Include the destination in Tailwind's source scanning and publish the [theme tokens](#theme-tokens) the kit uses. No JavaScript or additional components are needed beyond the Malevich primitive. `make:malevich` creates an empty scaffold; `malevich:add` copies a complete kit component.
+Include the destination in Tailwind's source scanning and publish the [theme tokens](#theme-tokens) the kit uses. No JavaScript is needed. A component built from other kit components brings them along: `input` also adds `field`, unless you already have one. `make:malevich` creates an empty scaffold; `malevich:add` copies a complete kit component.
 
 The repository playground registers this directory automatically and defines the theme tokens below: run `composer serve` and open `/malevich`.
 

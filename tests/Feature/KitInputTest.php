@@ -8,6 +8,8 @@ use Malevich\Malevich;
 
 beforeEach(function () {
     Blade::anonymousComponentPath(dirname(__DIR__, 2).'/resources/kit', 'kit');
+    // The input finds the field by the project's tag prefix.
+    config(['malevich.components.prefix' => 'kit']);
     Malevich::strict();
 });
 

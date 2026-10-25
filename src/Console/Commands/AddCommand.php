@@ -22,6 +22,15 @@ class AddCommand extends Command
 
     protected $description = 'Copy ready-made kit components into your project';
 
+    /**
+     * Kit components that render other kit components, added along with them.
+     *
+     * @var array<string, list<string>>
+     */
+    private const DEPENDENCIES = [
+        'input' => ['field'],
+    ];
+
     public function handle(Filesystem $files): int
     {
         $names = array_values(array_unique((array) $this->argument('name')));
@@ -45,6 +54,19 @@ class AddCommand extends Command
 
         foreach ($names as $name) {
             if ($this->add($files, (string) $name) !== self::SUCCESS) {
+                $status = self::FAILURE;
+            }
+        }
+
+        // Added after the requested components, and only when missing: a customized copy is never replaced.
+        foreach (self::dependencies($names) as $dependency) {
+            if ($files->exists(self::destination($dependency))) {
+                continue;
+            }
+
+            $this->components->info("[{$dependency}] is required by the components above.");
+
+            if ($this->add($files, $dependency) !== self::SUCCESS) {
                 $status = self::FAILURE;
             }
         }
@@ -118,6 +140,38 @@ class AddCommand extends Command
         $this->components->twoColumnDetail('Tag', OutputFormatter::escape('<'.Malevich::componentTag($name).'>'));
 
         return self::SUCCESS;
+    }
+
+    private static function normalize(string $name): string
+    {
+        return str_replace('.', '/', Str::replaceEnd('.blade.php', '', str_replace('\\', '/', $name)));
+    }
+
+    /**
+     * Kit components the given ones need and that were not asked for themselves.
+     *
+     * @param  list<string>  $names
+     * @return list<string>
+     */
+    private static function dependencies(array $names): array
+    {
+        $requested = array_map(fn ($name) => self::normalize((string) $name), $names);
+        $needed = [];
+
+        foreach ($requested as $name) {
+            foreach (self::DEPENDENCIES[$name] ?? [] as $dependency) {
+                if (! in_array($dependency, $requested, true)) {
+                    $needed[$dependency] = $dependency;
+                }
+            }
+        }
+
+        return array_values($needed);
+    }
+
+    private static function destination(string $name): string
+    {
+        return rtrim((string) config('malevich.components.path'), '/\\').'/'.$name.'.blade.php';
     }
 
     private static function kit(): string
