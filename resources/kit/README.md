@@ -129,7 +129,7 @@ With the default [theme tokens](#theme-tokens), every text color has at least 4.
 - Text of every other treatment: `700` for the brand roles, `800` for the statuses, `300` on dark themes.
 - Dark themes: `soft`, `surface` and the hover of `outline` and `ghost` use a translucent tint (`bg-success-400/15`) instead of a dark shade, so they stay visible on any dark surface, not only on pure `gray-950`.
 
-If you point a role at another color in `malevich-theme.css`, check its contrast: a lighter hue may need the next darker shade. For full AA with an orange `primary`, change its solid case to `bg-primary-700 text-white hover:bg-primary-800` and its text to `text-primary-800`, as the statuses do.
+If you point a role at another color in `vendor/malevich.css`, check its contrast: a lighter hue may need the next darker shade. For full AA with an orange `primary`, change its solid case to `bg-primary-700 text-white hover:bg-primary-800` and its text to `text-primary-800`, as the statuses do.
 
 The component uses your application's named Tailwind color scales: for example, `bg-primary-600`, `text-danger-800` and `border-success-300`. Define the seven semantic scales in your Tailwind theme, including the shades used by the component. `neutral` and `contrast` both use `gray-*` utilities. Backgrounds, text, borders, hover and focus styles all use the same named scales; the component does not assign them to built-in hues.
 
@@ -144,10 +144,10 @@ php artisan vendor:publish --tag=malevich:theme
 ```css
 /* resources/css/app.css */
 @import 'tailwindcss';
-@import './malevich-theme.css';
+@import './vendor/malevich.css';
 ```
 
-The published `resources/css/malevich-theme.css` is yours: point each role at your brand's colors there. `malevich:add` reminds you about it until the file exists. Prefer to define the tokens your own way? Any `@theme` that provides `--color-primary-50` ... `--color-info-950` and `--radius-brand` works:
+The published `resources/css/vendor/malevich.css` is yours: point each role at your brand's colors there. `malevich:add` reminds you about it until the file exists. Prefer to define the tokens your own way? Any `@theme` that provides `--color-primary-50` ... `--color-info-950` and `--radius-brand` works:
 
 ```css
 @theme inline {

@@ -84,7 +84,7 @@ Or copy the [ready-made kit button](resources/kit/README.md) into your project:
 php artisan malevich:add button
 ```
 
-The command uses your configured components directory and preserves existing files unless `--force` is explicit. The kit button requires Tailwind CSS 4 and the kit's theme tokens: `php artisan vendor:publish --tag=malevich:theme`, then import `malevich-theme.css` after Tailwind ([details](resources/kit/README.md#theme-tokens)).
+The command uses your configured components directory and preserves existing files unless `--force` is explicit. The kit button requires Tailwind CSS 4 and the kit's theme tokens: `php artisan vendor:publish --tag=malevich:theme`, then import `vendor/malevich.css` after Tailwind ([details](resources/kit/README.md#theme-tokens)).
 
 ## What you get
 

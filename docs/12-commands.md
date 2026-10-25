@@ -44,7 +44,7 @@ Copies the complete component from the package's [kit](../resources/kit/README.m
 
 The component is now your source code: customize it directly. Package updates leave your copy alone. Existing files are never overwritten without `--force`; an unknown name lists available kit components. The `.blade.php` suffix is optional.
 
-Kit components use semantic Tailwind colors (`primary`, `danger`, ...) and a `brand` radius. Publish the default tokens once and import them after Tailwind; the command reminds you until `resources/css/malevich-theme.css` exists:
+Kit components use semantic Tailwind colors (`primary`, `danger`, ...) and a `brand` radius. Publish the default tokens once and import them after Tailwind; the command reminds you until `resources/css/vendor/malevich.css` exists:
 
 ```bash
 php artisan vendor:publish --tag=malevich:theme

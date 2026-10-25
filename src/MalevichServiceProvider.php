@@ -54,7 +54,7 @@ class MalevichServiceProvider extends ServiceProvider
             ], 'malevich:components');
 
             $this->publishes([
-                __DIR__.'/../resources/kit/theme.css' => resource_path('css/malevich-theme.css'),
+                __DIR__.'/../resources/kit/theme.css' => resource_path('css/vendor/malevich.css'),
             ], 'malevich:theme');
 
             $this->commands([AddCommand::class, InstallCommand::class, LintCommand::class, MakeCommand::class]);
