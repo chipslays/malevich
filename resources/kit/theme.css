@@ -1,10 +1,3 @@
-/*
- * Theme tokens for the Malevich kit: semantic color scales and the brand radius.
- * Publish with: php artisan vendor:publish --tag=malevich:theme
- * then import this file right after Tailwind in resources/css/app.css and
- * point each role at the palette of your brand.
- */
-
 @theme inline {
     --radius-brand: var(--radius-xl);
 
