@@ -5,7 +5,7 @@
     'radius' => 'brand',
 
     'block' => false,
-    'square' => null,
+    'square' => false,
 
     'loading' => false,
     'disabled' => false,
@@ -33,6 +33,10 @@
     'size' => 'md',
     'radius' => 'brand',
 ]) --}}
+
+@php
+    $square = $square === null ? trim(strip_tags((string) $slot)) === '' : filter_var($square, FILTER_VALIDATE_BOOL);
+@endphp
 
 @base('button', [
     'relative inline-flex shrink-0 items-center justify-center align-middle',
@@ -341,11 +345,11 @@
 ])
 
 @size('button', [
-    'xs' => ['text-xs', 'px-1.5 h-6' => !$block, 'size-6' => $block],
-    'sm' => ['text-[0.8rem] leading-[0.8rem]', 'px-2.5 h-7' => !$block, 'size-7' => $block],
-    'md' => ['text-sm', 'px-3 h-8' => !$block, 'size-8' => $block],
-    'lg' => ['text-sm', 'px-4 h-9' => !$block, 'size-9' => $block],
-    'xl' => ['text-sm', 'px-5 h-10' => !$block, 'size-10' => $block],
+    'xs' => ['text-xs', 'px-1.5 h-6' => !$square, 'size-6' => $square],
+    'sm' => ['text-[0.8rem] leading-[0.8rem]', 'px-2.5 h-7' => !$square, 'size-7' => $square],
+    'md' => ['text-sm', 'px-3 h-8' => !$square, 'size-8' => $square],
+    'lg' => ['text-sm', 'px-4 h-9' => !$square, 'size-9' => $square],
+    'xl' => ['text-sm', 'px-5 h-10' => !$square, 'size-10' => $square],
 ])
 
 @option('radius', 'button', [
