@@ -1,5 +1,5 @@
 @theme inline {
-    --radius-brand: var(--radius-xl);
+    --radius-brand: var(--radius-lg);
 
     --color-gray-50: var(--color-neutral-50);
     --color-gray-100: var(--color-neutral-100);

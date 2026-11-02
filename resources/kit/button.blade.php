@@ -1,19 +1,13 @@
-{{-- <x-button variant="solid" color="primary">Continue</x-button> --}}
-
-{{-- Props --}}
-
 @props([
     'variant' => 'solid',
     'color' => 'primary',
     'size' => 'md',
     'radius' => 'brand',
 
-    'inset' => false,
     'block' => false,
     'square' => null,
 
     'loading' => false,
-    'loadingLabel' => null,
     'disabled' => false,
 
     'leading' => null,
@@ -22,82 +16,339 @@
     'as' => 'button',
 ])
 
-{{-- State --}}
+{{-- @validate([
+    'variant' => [
+        'rule' => ['solid', 'soft', 'surface', 'elevated', 'outline', 'ghost', 'link'],
+        'fallback' => 'solid',
+    ],
+    'color' => [
+        'rule' => ['primary', 'secondary', 'success', 'info', 'warning', 'danger'],
+        'fallback' => 'primary',
+    ],
+])
 
-@php
-    // Square when the default slot has no text, e.g. only an icon.
-    $square = $square === null
-        ? trim(strip_tags((string) $slot)) === ''
-        : filter_var($square, FILTER_VALIDATE_BOOL);
+@fallback([
+    'variant' => 'solid',
+    'color' => 'primary',
+    'size' => 'md',
+    'radius' => 'brand',
+]) --}}
 
-    $hasLoadingLabel = ! $square && $loadingLabel !== null && (
-        $loadingLabel instanceof \Illuminate\View\ComponentSlot
-            ? $loadingLabel->hasActualContent()
-            : trim((string) $loadingLabel) !== ''
-    );
-
-    // Overlay keeps the button size; otherwise the spinner replaces the leading icon.
-    $overlayLoading = $loading && ($square || $loadingLabel !== null);
-@endphp
-
-{{-- Styles --}}
-
-@base([
+@base('button', [
     'relative inline-flex shrink-0 items-center justify-center align-middle',
     'border',
-
     'font-medium whitespace-nowrap select-none',
-
     'focus-visible:outline-2 focus-visible:outline-offset-2',
-
-    'data-disabled:pointer-events-none data-disabled:opacity-50',
-
+    'data-disabled:pointer-events-none data-disabled:opacity-70 data-disabled:cursor-not-allowed',
+    'active:translate-y-px',
     'aspect-square p-0' => $square,
 ])
 
-@base('content', 'inline-flex items-center justify-center')
-@base('leading', 'inline-flex shrink-0')
-@base('trailing', 'inline-flex shrink-0')
-@base('loading', 'inline-flex shrink-0 items-center justify-center')
-@base('loadingLabel', 'truncate')
-@base('spinner', 'shrink-0 animate-spin motion-reduce:animate-none')
-
-{{-- Size --}}
-@cases('size', [
-    'xs' => [
-        'default' => ['h-7', 'gap-1', 'text-xs', 'px-2' => ! $square],
-        'content,loading' => 'gap-1',
-        'leading,trailing' => '[&>svg]:size-3.5',
-        'spinner' => 'size-3.5',
+@cases('variant', [
+    'solid' => [
+        'button' => [
+            'border-transparent',
+        ],
     ],
-    'sm' => [
-        'default' => ['h-8', 'gap-1.5', 'text-sm', 'px-3' => ! $square],
-        'content,loading' => 'gap-1.5',
-        'leading,trailing' => '[&>svg]:size-4',
-        'spinner' => 'size-4',
+    'soft' => [
+        'button' => [
+            'border-transparent',
+        ],
     ],
-    'md' => [
-        'default' => ['h-10', 'gap-2', 'text-sm', 'px-4' => ! $square],
-        'content,loading' => 'gap-2',
-        'leading,trailing' => '[&>svg]:size-4.5',
-        'spinner' => 'size-4.5',
+    'surface' => [
+        'button' => [
+            '',
+        ],
     ],
-    'lg' => [
-        'default' => ['h-11', 'gap-2', 'text-base', 'px-5' => ! $square],
-        'content,loading' => 'gap-2',
-        'leading,trailing' => '[&>svg]:size-5',
-        'spinner' => 'size-5',
+    'elevated' => [
+        'button' => [
+            'shadow-xs',
+            'bg-white border-gray-200 hover:bg-gray-50',
+            'dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10',
+        ],
     ],
-    'xl' => [
-        'default' => ['h-12', 'gap-2.5', 'text-base', 'px-6' => ! $square],
-        'content,loading' => 'gap-2.5',
-        'leading,trailing' => '[&>svg]:size-5.5',
-        'spinner' => 'size-5.5',
+    'outline' => [
+        'button' => [
+            '',
+        ],
+    ],
+    'ghost' => [
+        'button' => [
+            'border-transparent'
+        ],
+    ],
+    'link' => [
+        'button' => [
+            'border-transparent',
+            'underline-offset-4 hover:underline',
+        ],
     ],
 ])
 
-{{-- Shape --}}
-@option('radius', [
+@cases('color', [
+    'primary' => [
+        'button' => [
+            'bg-primary-500 text-white',
+            'hover:bg-primary-600/90 active:bg-primary-600',
+            'dark:hover:bg-primary-400/90 dark:active:bg-primary-400',
+        ],
+    ],
+    'success' => [
+        'button' => [
+            'bg-success-500 text-success-950',
+            'hover:bg-success-600/90 active:bg-success-600',
+            'dark:hover:bg-success-400/90 dark:active:bg-success-400 dark:text-success-950',
+        ],
+    ],
+    'info' => [
+        'button' => [
+            'bg-info-500 text-white',
+            'hover:bg-info-600/90 active:bg-info-600',
+            'dark:hover:bg-info-400/90 dark:active:bg-info-400',
+        ],
+    ],
+    'warning' => [
+        'button' => [
+            'bg-warning-500 text-warning-950',
+            'hover:bg-warning-600/90 active:bg-warning-600',
+            'dark:hover:bg-warning-400/90 dark:active:bg-warning-400 dark:text-warning-950',
+        ],
+    ],
+    'danger' => [
+        'button' => [
+            'bg-danger-500 text-white',
+            'hover:bg-danger-600/90 active:bg-danger-600',
+            'dark:hover:bg-danger-400/90 dark:active:bg-danger-400',
+        ],
+    ],
+], when: [
+    'variant' => ['solid'],
+])
+
+@cases('color', [
+    'primary' => [
+        'button' => [
+            'bg-primary-100 text-primary-600 hover:bg-primary-200 active:bg-primary-300',
+            'dark:bg-primary-500/20 dark:hover:bg-primary-500/30 dark:active:bg-primary-500/40 dark:text-primary-400',
+        ],
+    ],
+    'success' => [
+        'button' => [
+            'bg-success-100 text-success-600 hover:bg-success-200 active:bg-success-300',
+            'dark:bg-success-500/20 dark:hover:bg-success-500/30 dark:active:bg-success-500/40 dark:text-success-400',
+        ],
+    ],
+    'info' => [
+        'button' => [
+            'bg-info-100 text-info-600 hover:bg-info-200 active:bg-info-300',
+            'dark:bg-info-500/20 dark:hover:bg-info-500/30 dark:active:bg-info-500/40 dark:text-info-400',
+        ],
+    ],
+    'warning' => [
+        'button' => [
+            'bg-warning-100 text-warning-600 hover:bg-warning-200 active:bg-warning-300',
+            'dark:bg-warning-500/20 dark:hover:bg-warning-500/30 dark:active:bg-warning-500/40 dark:text-warning-400',
+        ],
+    ],
+    'danger' => [
+        'button' => [
+            'bg-danger-100 text-danger-600 hover:bg-danger-200 active:bg-danger-300',
+            'dark:bg-danger-500/20 dark:hover:bg-danger-500/30 dark:active:bg-danger-500/40 dark:text-danger-400',
+        ],
+    ],
+], when: [
+    'variant' => ['soft'],
+])
+
+@cases('color', [
+    'primary' => [
+        'button' => [
+            'bg-primary-100 text-primary-600 hover:bg-primary-200 active:bg-primary-300 border-primary-200 hover:border-primary-300',
+            'dark:bg-primary-500/20 dark:hover:bg-primary-500/30 dark:active:bg-primary-500/40 dark:text-primary-400 dark:border-primary-700 dark:hover:border-primary-600',
+        ],
+    ],
+    'success' => [
+        'button' => [
+            'bg-success-100 text-success-600 hover:bg-success-200 active:bg-success-300 border-success-200 hover:border-success-300',
+            'dark:bg-success-500/20 dark:hover:bg-success-500/30 dark:active:bg-success-500/40 dark:text-success-400 dark:border-success-700 dark:hover:border-success-600',
+        ],
+    ],
+    'info' => [
+        'button' => [
+            'bg-info-100 text-info-600 hover:bg-info-200 active:bg-info-300 border-info-200 hover:border-info-300',
+            'dark:bg-info-500/20 dark:hover:bg-info-500/30 dark:active:bg-info-500/40 dark:text-info-400 dark:border-info-700 dark:hover:border-info-600',
+        ],
+    ],
+    'warning' => [
+        'button' => [
+            'bg-warning-100 text-warning-600 hover:bg-warning-200 active:bg-warning-300 border-warning-200 hover:border-warning-300',
+            'dark:bg-warning-500/20 dark:hover:bg-warning-500/30 dark:active:bg-warning-500/40 dark:text-warning-400 dark:border-warning-700 dark:hover:border-warning-600',
+        ],
+    ],
+    'danger' => [
+        'button' => [
+            'bg-danger-100 text-danger-600 hover:bg-danger-200 active:bg-danger-300 border-danger-200 hover:border-danger-300',
+            'dark:bg-danger-500/20 dark:hover:bg-danger-500/30 dark:active:bg-danger-500/40 dark:text-danger-400 dark:border-danger-700 dark:hover:border-danger-600',
+        ],
+    ],
+], when: [
+    'variant' => ['surface'],
+])
+
+@cases('color', [
+    'primary' => [
+        'button' => [
+            'text-primary-500 dark:text-primary-400',
+        ],
+    ],
+    'success' => [
+        'button' => [
+            'text-success-500 dark:text-success-400',
+        ],
+    ],
+    'info' => [
+        'button' => [
+            'text-info-500 dark:text-info-400',
+        ],
+    ],
+    'warning' => [
+        'button' => [
+            'text-warning-500 dark:text-warning-400',
+        ],
+    ],
+    'danger' => [
+        'button' => [
+            'text-danger-500 dark:text-danger-400',
+        ],
+    ],
+], when: [
+    'variant' => ['elevated'],
+])
+
+@cases('color', [
+    'primary' => [
+        'button' => [
+            'bg-transparent',
+            'text-primary-500 hover:bg-primary-500 hover:text-white active:bg-primary-600 border-primary-300 hover:border-primary-500 active:border-primary-600',
+            'dark:text-primary-400 dark:hover:bg-primary-500 dark:hover:text-white dark:active:bg-primary-400 dark:border-primary-700 dark:hover:border-primary-500 dark:active:border-primary-400',
+        ],
+    ],
+    'success' => [
+        'button' => [
+            'bg-transparent',
+            'text-success-500 hover:bg-success-500 hover:text-success-950 active:bg-success-600 active:text-success-950 border-success-300 hover:border-success-500 active:border-success-600',
+            'dark:text-success-400 dark:hover:bg-success-500 dark:hover:text-success-950 dark:active:bg-success-400 dark:active:text-success-950 dark:border-success-700 dark:hover:border-success-500 dark:active:border-success-400',
+        ],
+    ],
+    'info' => [
+        'button' => [
+            'bg-transparent',
+            'text-info-500 hover:bg-info-500 hover:text-white active:bg-info-600 border-info-300 hover:border-info-500 active:border-info-600',
+            'dark:text-info-400 dark:hover:bg-info-500 dark:hover:text-white dark:active:bg-info-400 dark:border-info-700 dark:hover:border-info-500 dark:active:border-info-400',
+        ],
+    ],
+    'warning' => [
+        'button' => [
+            'bg-transparent',
+            'text-warning-500 hover:bg-warning-500 hover:text-warning-950 active:bg-warning-600 active:text-warning-950 border-warning-300 hover:border-warning-500 active:border-warning-600',
+            'dark:text-warning-400 dark:hover:bg-warning-500 dark:hover:text-warning-950 dark:active:bg-warning-400 dark:active:text-warning-950 dark:border-warning-700 dark:hover:border-warning-500 dark:active:border-warning-400',
+        ],
+    ],
+    'danger' => [
+        'button' => [
+            'bg-transparent',
+            'text-danger-500 hover:bg-danger-500 hover:text-white active:bg-danger-600 border-danger-300 hover:border-danger-500 active:border-danger-600',
+            'dark:text-danger-400 dark:hover:bg-danger-500 dark:hover:text-white dark:active:bg-danger-400 dark:border-danger-700 dark:hover:border-danger-500 dark:active:border-danger-400',
+        ],
+    ],
+], when: [
+    'variant' => ['outline'],
+])
+
+@cases('color', [
+    'primary' => [
+        'button' => [
+            'bg-transparent',
+            'hover:bg-primary-100 active:bg-primary-200 text-primary-600',
+            'dark:hover:bg-primary-500/20 dark:active:bg-primary-500/30 dark:text-primary-400',
+        ],
+    ],
+    'success' => [
+        'button' => [
+            'bg-transparent',
+            'hover:bg-success-100 active:bg-success-200 text-success-600',
+            'dark:hover:bg-success-500/20 dark:active:bg-success-500/30 dark:text-success-400',
+        ],
+    ],
+    'info' => [
+        'button' => [
+            'bg-transparent',
+            'hover:bg-info-100 active:bg-info-200 text-info-600',
+            'dark:hover:bg-info-500/20 dark:active:bg-info-500/30 dark:text-info-400',
+        ],
+    ],
+    'warning' => [
+        'button' => [
+            'bg-transparent',
+            'hover:bg-warning-100 active:bg-warning-200 text-warning-600',
+            'dark:hover:bg-warning-500/20 dark:active:bg-warning-500/30 dark:text-warning-400',
+        ],
+    ],
+    'danger' => [
+        'button' => [
+            'bg-transparent',
+            'hover:bg-danger-100 active:bg-danger-200 text-danger-600',
+            'dark:hover:bg-danger-500/20 dark:active:bg-danger-500/30 dark:text-danger-400',
+        ],
+    ],
+], when: [
+    'variant' => ['ghost'],
+])
+
+@cases('color', [
+    'primary' => [
+        'button' => [
+            'text-primary-600 hover:text-primary-700 active:text-primary-800',
+            'dark:text-primary-500 dark:hover:text-primary-400 dark:active:text-primary-300',
+        ],
+    ],
+    'success' => [
+        'button' => [
+            'text-success-600 hover:text-success-700 active:text-success-800',
+            'dark:text-success-500 dark:hover:text-success-400 dark:active:text-success-300',
+        ],
+    ],
+    'info' => [
+        'button' => [
+            'text-info-600 hover:text-info-700 active:text-info-800',
+            'dark:text-info-500 dark:hover:text-info-400 dark:active:text-info-300',
+        ],
+    ],
+    'warning' => [
+        'button' => [
+            'text-warning-600 hover:text-warning-700 active:text-warning-800',
+            'dark:text-warning-500 dark:hover:text-warning-400 dark:active:text-warning-300',
+        ],
+    ],
+    'danger' => [
+        'button' => [
+            'text-danger-600 hover:text-danger-700 active:text-danger-800',
+            'dark:text-danger-500 dark:hover:text-danger-400 dark:active:text-danger-300',
+        ],
+    ],
+], when: [
+    'variant' => ['link'],
+])
+
+@size('button', [
+    'xs' => ['text-xs', 'px-1.5 h-6' => !$block, 'size-6' => $block],
+    'sm' => ['text-[0.8rem] leading-[0.8rem]', 'px-2.5 h-7' => !$block, 'size-7' => $block],
+    'md' => ['text-sm', 'px-3 h-8' => !$block, 'size-8' => $block],
+    'lg' => ['text-sm', 'px-4 h-9' => !$block, 'size-9' => $block],
+    'xl' => ['text-sm', 'px-5 h-10' => !$block, 'size-10' => $block],
+])
+
+@option('radius', 'button', [
     'brand' => 'rounded-brand',
     'none' => 'rounded-none',
     'xs' => 'rounded-xs',
@@ -112,241 +363,22 @@
     'squircle' => ['rounded-2xl', '[corner-shape:squircle]'],
 ])
 
-{{-- Treatment: classes shared by every color --}}
-@variant([
-    'solid' => 'border-transparent',
-    'soft' => 'border-transparent',
-    'surface' => '',
-    'elevated' => [
-        'bg-white border-gray-200 shadow-xs hover:bg-gray-50',
-        // Raised on dark means lighter than the surface below.
-        'dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10',
-    ],
-    'outline' => 'bg-transparent',
-    'ghost' => 'border-transparent bg-transparent',
-    'link' => ['border-transparent bg-transparent', 'underline-offset-4 hover:underline'],
-])
-
-{{-- Inset: cancels the padding so the label lines up with adjacent text. --}}
-@cases('size', [
-    'xs' => ['-mx-2' => ! $square],
-    'sm' => ['-mx-3' => ! $square],
-    'md' => ['-mx-4' => ! $square],
-    'lg' => ['-mx-5' => ! $square],
-    'xl' => ['-mx-6' => ! $square],
-], when: ['inset' => true, 'variant' => ['ghost', 'link']])
-
-{{-- Colors: rows are [light, dark]. All text passes WCAG AA except the orange primary-600 (3.58:1). --}}
-
-{{-- Focus ring --}}
-@color([
-    'primary' => ['focus-visible:outline-primary-600', 'dark:focus-visible:outline-primary-300'],
-    'secondary' => [
-        'focus-visible:outline-secondary-600',
-        'dark:focus-visible:outline-secondary-300',
-    ],
-    'accent' => ['focus-visible:outline-accent-600', 'dark:focus-visible:outline-accent-300'],
-
-    'neutral' => ['focus-visible:outline-gray-600', 'dark:focus-visible:outline-gray-300'],
-    'contrast' => ['focus-visible:outline-gray-950', 'dark:focus-visible:outline-gray-100'],
-
-    'success' => ['focus-visible:outline-success-600', 'dark:focus-visible:outline-success-300'],
-    'warning' => ['focus-visible:outline-warning-600', 'dark:focus-visible:outline-warning-300'],
-    'danger' => ['focus-visible:outline-danger-600', 'dark:focus-visible:outline-danger-300'],
-    'info' => ['focus-visible:outline-info-600', 'dark:focus-visible:outline-info-300'],
-])
-
-{{-- Solid --}}
-@cases('color', [
-    'primary' => ['bg-primary-600 hover:bg-primary-700', 'text-white'],
-    'secondary' => ['bg-secondary-600 hover:bg-secondary-700', 'text-white'],
-    'accent' => ['bg-accent-600 hover:bg-accent-700', 'text-white'],
-
-    'neutral' => [
-        'bg-gray-100 hover:bg-gray-200',
-        'text-gray-950',
-        'dark:bg-gray-800 dark:hover:bg-gray-700',
-        'dark:text-gray-100',
-    ],
-    'contrast' => [
-        'bg-gray-950 hover:bg-gray-800',
-        'text-white',
-        'dark:bg-gray-100 dark:hover:bg-gray-300',
-        'dark:text-gray-950',
-    ],
-
-    'success' => ['bg-success-700 hover:bg-success-800', 'text-white'],
-    'warning' => ['bg-warning-400 hover:bg-warning-500', 'text-warning-950'],
-    'danger' => ['bg-danger-600 hover:bg-danger-700', 'text-white'],
-    'info' => ['bg-info-700 hover:bg-info-800', 'text-white'],
-], when: ['variant' => 'solid'])
-
-{{-- Soft --}}
-@cases('color', [
-    'primary' => [
-        'bg-primary-100 hover:bg-primary-200',
-        'dark:bg-primary-400/15 dark:hover:bg-primary-400/25',
-    ],
-    'secondary' => [
-        'bg-secondary-100 hover:bg-secondary-200',
-        'dark:bg-secondary-400/15 dark:hover:bg-secondary-400/25',
-    ],
-    'accent' => [
-        'bg-accent-100 hover:bg-accent-200',
-        'dark:bg-accent-400/15 dark:hover:bg-accent-400/25',
-    ],
-
-    'neutral' => [
-        'bg-gray-950/5 hover:bg-gray-950/10',
-        'dark:bg-gray-400/15 dark:hover:bg-gray-400/25',
-    ],
-    'contrast' => [
-        'bg-gray-950/10 hover:bg-gray-950/15',
-        'dark:bg-gray-100/15 dark:hover:bg-gray-100/20',
-    ],
-
-    'success' => [
-        'bg-success-100 hover:bg-success-200',
-        'dark:bg-success-400/15 dark:hover:bg-success-400/25',
-    ],
-    'warning' => [
-        'bg-warning-100 hover:bg-warning-200',
-        'dark:bg-warning-400/15 dark:hover:bg-warning-400/25',
-    ],
-    'danger' => [
-        'bg-danger-100 hover:bg-danger-200',
-        'dark:bg-danger-400/15 dark:hover:bg-danger-400/25',
-    ],
-    'info' => [
-        'bg-info-100 hover:bg-info-200',
-        'dark:bg-info-400/15 dark:hover:bg-info-400/25',
-    ],
-], when: ['variant' => 'soft'])
-
-{{-- Surface --}}
-@cases('color', [
-    'primary' => [
-        'bg-primary-50 hover:bg-primary-100 border-primary-200',
-        'dark:bg-primary-400/10 dark:hover:bg-primary-400/20 dark:border-primary-400/25',
-    ],
-    'secondary' => [
-        'bg-secondary-50 hover:bg-secondary-100 border-secondary-200',
-        'dark:bg-secondary-400/10 dark:hover:bg-secondary-400/20 dark:border-secondary-400/25',
-    ],
-    'accent' => [
-        'bg-accent-50 hover:bg-accent-100 border-accent-200',
-        'dark:bg-accent-400/10 dark:hover:bg-accent-400/20 dark:border-accent-400/25',
-    ],
-
-    'neutral' => [
-        'bg-gray-50 hover:bg-gray-100 border-gray-200',
-        'dark:bg-gray-400/10 dark:hover:bg-gray-400/20 dark:border-gray-400/25',
-    ],
-    'contrast' => [
-        'bg-gray-950/5 hover:bg-gray-950/10 border-gray-950/30',
-        'dark:bg-gray-100/10 dark:hover:bg-gray-100/20 dark:border-gray-100/30',
-    ],
-
-    'success' => [
-        'bg-success-50 hover:bg-success-100 border-success-200',
-        'dark:bg-success-400/10 dark:hover:bg-success-400/20 dark:border-success-400/25',
-    ],
-    'warning' => [
-        'bg-warning-50 hover:bg-warning-100 border-warning-200',
-        'dark:bg-warning-400/10 dark:hover:bg-warning-400/20 dark:border-warning-400/25',
-    ],
-    'danger' => [
-        'bg-danger-50 hover:bg-danger-100 border-danger-200',
-        'dark:bg-danger-400/10 dark:hover:bg-danger-400/20 dark:border-danger-400/25',
-    ],
-    'info' => [
-        'bg-info-50 hover:bg-info-100 border-info-200',
-        'dark:bg-info-400/10 dark:hover:bg-info-400/20 dark:border-info-400/25',
-    ],
-], when: ['variant' => 'surface'])
-
-{{-- Outline --}}
-@cases('color', [
-    'primary' => ['border-primary-300', 'dark:border-primary-700'],
-    'secondary' => ['border-secondary-300', 'dark:border-secondary-700'],
-    'accent' => ['border-accent-300', 'dark:border-accent-700'],
-
-    'neutral' => ['border-gray-300', 'dark:border-gray-700'],
-    'contrast' => ['border-gray-950', 'dark:border-gray-100'],
-
-    'success' => ['border-success-300', 'dark:border-success-700'],
-    'warning' => ['border-warning-300', 'dark:border-warning-700'],
-    'danger' => ['border-danger-300', 'dark:border-danger-700'],
-    'info' => ['border-info-300', 'dark:border-info-700'],
-], when: ['variant' => 'outline'])
-
-{{-- Hover tint for outline and ghost --}}
-@cases('color', [
-    'primary' => ['hover:bg-primary-50', 'dark:hover:bg-primary-400/15'],
-    'secondary' => ['hover:bg-secondary-50', 'dark:hover:bg-secondary-400/15'],
-    'accent' => ['hover:bg-accent-50', 'dark:hover:bg-accent-400/15'],
-
-    'neutral' => ['hover:bg-gray-950/5', 'dark:hover:bg-gray-400/15'],
-    'contrast' => ['hover:bg-gray-950/10', 'dark:hover:bg-gray-100/15'],
-
-    'success' => ['hover:bg-success-50', 'dark:hover:bg-success-400/15'],
-    'warning' => ['hover:bg-warning-50', 'dark:hover:bg-warning-400/15'],
-    'danger' => ['hover:bg-danger-50', 'dark:hover:bg-danger-400/15'],
-    'info' => ['hover:bg-info-50', 'dark:hover:bg-info-400/15'],
-], when: ['variant' => ['outline', 'ghost']])
-
-{{-- Text for every treatment but solid --}}
-@cases('color', [
-    'primary' => ['text-primary-700', 'dark:text-primary-300'],
-    'secondary' => ['text-secondary-700', 'dark:text-secondary-300'],
-    'accent' => ['text-accent-700', 'dark:text-accent-300'],
-
-    'neutral' => ['text-gray-800', 'dark:text-gray-200'],
-    'contrast' => ['text-gray-950', 'dark:text-gray-50'],
-
-    'success' => ['text-success-800', 'dark:text-success-300'],
-    'warning' => ['text-warning-800', 'dark:text-warning-300'],
-    'danger' => ['text-danger-800', 'dark:text-danger-300'],
-    'info' => ['text-info-800', 'dark:text-info-300'],
-], when: ['variant' => ['soft', 'surface', 'elevated', 'outline', 'ghost', 'link']])
-
-{{-- States --}}
 @compound(['block' => true], 'w-full')
 
 @compound(['loading' => true], targets: [
-    'default' => 'pointer-events-none',
-    'content' => ['opacity-0' => $overlayLoading],
-    'loading' => [
-        'absolute inset-0 overflow-hidden' => $overlayLoading,
-        'px-2' => $overlayLoading && ! $square,
-    ],
+    'button' => ['pointer-events-none cursor-wait'],
+    'content' => ['opacity-0'],
+    'loading' => ['absolute inset-0 overflow-hidden' => $loading],
 ])
 
-{{-- Markup --}}
-
-<x-malevich::primitive :as="$as" :disabled="$disabled || $loading" @attributes(override: ['aria-busy' => $loading ? 'true' : null])>
-    @if ($loading)
-        <span @attributes('loading', merge: ['aria-hidden' => $hasLoadingLabel ? null : 'true'])>
-            <svg @attributes('spinner', merge: ['aria-hidden' => 'true']) viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" opacity="0.2" />
-                <path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
-            </svg>
-
-            @if ($hasLoadingLabel)
-                <span @attributes('loadingLabel')>{{ $loadingLabel }}</span>
-            @endif
-        </span>
-    @endif
-
-    <span @attributes('content', merge: ['aria-hidden' => $overlayLoading && $hasLoadingLabel ? 'true' : null])>
-        @if ($leading !== null && (! $loading || $overlayLoading))
-            <span @attributes('leading', merge: ['aria-hidden' => 'true'])>{{ $leading }}</span>
+<x-malevich::primitive @attributes('button') :as="$as" :disabled="$disabled || $loading" >
+    <span @attributes('content')>
+        @if (filled($leading))
+            <span @attributes('leading')>{{ $leading }}</span>
         @endif
-
         {{ $slot }}
-
-        @if ($trailing !== null)
-            <span @attributes('trailing', merge: ['aria-hidden' => 'true'])>{{ $trailing }}</span>
+        @if (filled($trailing))
+            <span @attributes('trailing')>{{ $trailing }}</span>
         @endif
     </span>
 </x-malevich::primitive>
