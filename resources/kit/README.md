@@ -6,33 +6,36 @@ Add the ready-made button to an app with Malevich and Tailwind CSS 4:
 php artisan malevich:add button
 ```
 
-This copies `button.blade.php` into `malevich.components.path` (by default, `resources/views/components`) and prints the component tag, respecting `malevich.components.prefix`. The copied file belongs to your project: edit it freely; package updates do not replace it. An existing file is preserved unless you explicitly pass `--force`. Without a name the command lets you pick a kit component from a list; an unknown name prints the available ones.
+This copies `button/index.blade.php` into `malevich.components.path` (by default, `resources/views/components`) and prints the component tag, respecting `malevich.components.prefix`. The copied file belongs to your project: edit it freely; package updates do not replace it. An existing file is preserved unless you explicitly pass `--force`. Without a name the command lets you pick a kit component from a list; an unknown name prints the available ones.
 
 ```bash
 php artisan malevich:add button --force
 ```
 
-Include the destination in Tailwind's source scanning and publish the [theme tokens](#theme-tokens) the kit uses. No JavaScript is needed. A component built from other kit components brings them along: `input` also adds `field`, unless you already have one. `make:malevich` creates an empty scaffold; `malevich:add` copies a complete kit component.
+Include the destination in Tailwind's source scanning and publish the [theme tokens](#theme-tokens) the kit uses. Buttons need no JavaScript. A component built from other kit components brings them along: `input`, `select` and `slider` also add `field`, unless you already have one. `make:malevich` creates an empty scaffold; `malevich:add` copies a complete kit component.
+
+The kit also includes **input, select, field, switch, checkbox, radio, badge, progress, divider and slider**. See the [controls guide](controls.md) for variants, named elements, form bindings and examples. All components use the same palette and live in their own folders.
 
 The repository playground registers this directory automatically and defines the theme tokens below: run `composer serve` and open `/malevich`.
+
+Composed desktop examples are available at `/examples`, `/examples/projects` and `/examples/settings`. See the [workbench guide](../../workbench/README.md) and [composition components](composition.md) for avatar, typography and tabs.
 
 ## Button
 
 ```blade
 <x-button>Continue</x-button>
-<x-button variant="outline" color="secondary">Cancel</x-button>
+<x-button variant="outline" color="neutral">Cancel</x-button>
 <x-button variant="soft" color="danger" size="sm">Delete</x-button>
-<x-button variant="ghost" color="accent">Explore</x-button>
+<x-button variant="ghost" color="brand">Explore</x-button>
 <x-button href="/docs" variant="link">Documentation</x-button>
 ```
 
 | Prop | Values | Default |
 | --- | --- | --- |
 | `variant` | `solid`, `soft`, `surface`, `elevated`, `outline`, `ghost`, `link` | `solid` |
-| `color` | `primary`, `secondary`, `accent`, `neutral`, `contrast`, `success`, `warning`, `danger`, `info` | `primary` |
+| `color` | `brand`, `neutral`, `contrast`, `success`, `info`, `warning`, `danger` | `brand` |
 | `size` | `xs`, `sm`, `md`, `lg`, `xl` | `md` |
 | `radius` | `brand`, `none`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`, `3xl`, `4xl`, `full`, `squircle` | `brand` |
-| `inset` | boolean; compensate horizontal padding for text buttons with `ghost` or `link` treatment | `false` |
 | `block` | boolean; stretch the button to the full width of its container | `false` |
 | `square` | boolean; force a square icon button on or off, detected from the default slot when omitted | `null` |
 | `loading` | boolean | `false` |
@@ -43,6 +46,36 @@ The repository playground registers this directory automatically and defines the
 | `as` | HTML tag | `button` |
 
 All component props and named slots are declared at the top of the file. Use named slots for rich content and scoped attributes such as `spinner:size` to configure internal elements. Native HTML attributes (`type`, `name`, `value`, `href`, `target`, `aria-*`, `wire:*`, `x-*`) pass through the attribute bag. An `href` renders a link; disabled and loading links lose their destination.
+
+### Button group
+
+Install the wrapper together with its button dependency:
+
+```bash
+php artisan malevich:add button.group
+```
+
+```blade
+<x-button.group aria-label="Pagination">
+    <x-button color="neutral" variant="outline">Previous</x-button>
+    <x-button color="neutral" variant="outline">Next</x-button>
+</x-button.group>
+
+<x-button.group orientation="vertical" block aria-label="Actions">
+    <x-button color="contrast">Save</x-button>
+    <x-button color="neutral">Cancel</x-button>
+</x-button.group>
+```
+
+The group joins direct child buttons and links with no gap, keeps only the outer corners rounded and overlaps adjacent borders by one pixel. A subtle separator remains between solid buttons. Each button keeps its color, variant, size, radius, action and disabled/loading state. Use consistent sizes for a continuous silhouette. A single button keeps all its corners. Hovered and keyboard-focused buttons rise above adjacent borders; buttons do not shift vertically when pressed inside a group.
+
+| Prop | Values | Default |
+| --- | --- | --- |
+| `orientation` | `horizontal`, `vertical` | `horizontal` |
+| `block` | boolean; full width, with equal-width buttons in horizontal groups | `false` |
+| `as` | wrapper HTML tag | `div` |
+
+The wrapper has `role="group"`; give it an `aria-label` when a name helps identify the group. Horizontal joining uses logical start/end edges, so it follows RTL direction. Put buttons directly inside the group without additional wrappers. This component groups independent actions; it does not add selection state or change keyboard navigation.
 
 ### Loading
 
@@ -77,19 +110,10 @@ With a `loadingLabel` slot, the original content stays in the layout with zero o
 
 Loading disables keyboard activation and navigation as well as pointer interaction. The original accessible label remains available when the visible content is hidden without replacement. With a replacement label, the original content is marked decorative. An explicit `aria-label` or `aria-labelledby` remains under the caller's control.
 
-### Aligning transparent buttons
-
-```blade
-<x-button variant="ghost" inset>Edit profile</x-button>
-<x-button variant="link" size="sm" inset>Read more</x-button>
-```
-
-`inset` applies negative horizontal margins matching the button's horizontal padding. This compensates the transparent padding when placing the label alongside surrounding content, while retaining the padded hit area. It applies to `ghost` and `link` with a text label, regardless of color. The component expresses this as one `@cases('size', ..., when: [...])` map, adding margins without replacing the normal dimensions. Treatments with a visible background or border and automatically detected square icon buttons do not receive the adjustment. Use `:inset="false"` to disable it dynamically.
-
 ### Treatments
 
 ```blade
-<x-button variant="surface" color="primary">Upgrade</x-button>
+<x-button variant="surface" color="brand">Upgrade</x-button>
 <x-button variant="elevated">Cancel</x-button>
 ```
 
@@ -103,71 +127,104 @@ Loading disables keyboard activation and navigation as well as pointer interacti
 | `ghost` | text only, tinted on hover | toolbars, menus, icon buttons |
 | `link` | text with an underline on hover | inline actions |
 
-`elevated` keeps the same white background for every color; on dark themes it is a translucent white (`bg-white/5`), so it reads as raised on any dark surface.
+`elevated` uses `surface-raised` and `line` for every color, with a subtle tint of the selected color on hover.
 
 ### Colors
 
-Variant and color are independent. Colors describe semantic roles:
+Choose a meaning with `color`, then choose its visual treatment with `variant`. Color names describe their relationship to the interface; they never mean a fixed light or dark shade.
 
-| Role | Tailwind color scale | Purpose |
+| Color | Meaning | Solid in light / dark themes |
 | --- | --- | --- |
-| `primary` | `primary` | main action |
-| `secondary` | `secondary` | supporting action |
-| `accent` | `accent` | optional accent distinct from the main brand action |
-| `neutral` | `gray` | monochrome; solid is light on light themes and dark on dark themes |
-| `contrast` | `gray` | contrasting monochrome; solid is dark on light themes and light on dark themes |
-| `success` | `success` | positive result |
-| `warning` | `warning` | caution |
-| `danger` | `danger` | destructive action |
-| `info` | `info` | informational action |
+| `brand` | the brand's signature color; default | orange / orange |
+| `neutral` | a quiet button that belongs to the surface | near-white / charcoal |
+| `contrast` | a monochrome button that stands out from the surface | charcoal / near-white |
+| `success` | positive result | jade green / jade green |
+| `info` | information | clear blue / clear blue |
+| `warning` | caution | amber / amber, with warm brown text |
+| `danger` | destructive or risky action | coral red / coral red |
 
-#### Contrast
+```blade
+<x-button>Save</x-button>
+<x-button color="neutral">Cancel</x-button>
+<x-button color="contrast">Continue</x-button>
+<x-button color="warning" variant="soft">Review changes</x-button>
+<x-button color="danger" variant="outline">Delete</x-button>
+```
 
-With the default [theme tokens](#theme-tokens), every text color has at least 4.5:1 contrast with its background (WCAG AA) on white, `gray-950` and `gray-900` pages, in every treatment and on hover, with one deliberate exception: the orange `primary`. White on `orange-600` is 3.58:1 and `primary-700` text on the `primary-200` hover of `soft` is 3.84:1. That meets the 3:1 for large text and UI components, not AA for button-sized text; the brighter orange was chosen over the deeper `700`. Focus outlines have at least 3:1 against the page. That is why the shades differ per role:
-
-- `solid`: brand roles and `danger` use `600`; `success` and `info` are light hues, so they need `700` to carry white text. `warning` is `400` yellow with dark `warning-950` text.
-- Text of every other treatment: `700` for the brand roles, `800` for the statuses, `300` on dark themes.
-- Dark themes: `soft`, `surface` and the hover of `outline` and `ghost` use a translucent tint (`bg-success-400/15`) instead of a dark shade, so they stay visible on any dark surface, not only on pure `gray-950`.
-
-If you point a role at another color in `vendor/malevich.css`, check its contrast: a lighter hue may need the next darker shade. For full AA with an orange `primary`, change its solid case to `bg-primary-700 text-white hover:bg-primary-800` and its text to `text-primary-800`, as the statuses do.
-
-The component uses your application's named Tailwind color scales: for example, `bg-primary-600`, `text-danger-800` and `border-success-300`. Define the seven semantic scales in your Tailwind theme, including the shades used by the component. `neutral` and `contrast` both use `gray-*` utilities. Backgrounds, text, borders, hover and focus styles all use the same named scales; the component does not assign them to built-in hues.
+`neutral` and `contrast` are two positions on one monochrome ramp, configured with `--mono-light` and `--mono-dark`. Their hue and chroma are identical; only lightness differs. Solid fills and their matching text exchange the exact same endpoints when the theme changes. Muted ink is derived from those endpoints instead of picked independently. Surface and outline share one clean frame recipe for both roles, with a fine border and subtle hover/active fills. There are no `primary`, `secondary` or `accent` colors: importance depends on treatment and placement, while `brand` names the brand color.
 
 #### Theme tokens
 
-The kit ships these tokens in [`theme.css`](theme.css): every role mapped onto one of Tailwind's built-in colors (`primary` is `orange`, `secondary` the warm grey `stone`, `accent` `violet`; the statuses are `green`, `yellow`, `red` and `blue`), `gray` remapped to the pure grey `neutral`, and `brand` set to `rounded-xl`. Publish it and import it after Tailwind:
+Publish the theme and import it after Tailwind CSS 4:
 
 ```bash
 php artisan vendor:publish --tag=malevich:theme
 ```
 
 ```css
-/* resources/css/app.css */
 @import 'tailwindcss';
 @import './vendor/malevich.css';
+@custom-variant dark (&:where(.dark, .dark *));
 ```
 
-The published `resources/css/vendor/malevich.css` is yours: point each role at your brand's colors there. `malevich:add` reminds you about it until the file exists. Prefer to define the tokens your own way? Any `@theme` that provides `--color-primary-50` ... `--color-info-950` and `--radius-brand` works:
+Keep the complete published stylesheet. Edit its `:root` values for the light theme and `.dark` values for the dark theme. Toggle the `dark` class on the page or a local preview container. Brand and status pairs are shared across themes by default. The default palette uses custom OKLCH values: orange, jade green, clear blue, honey amber and coral red. Neutrals share the same subtle cool hue, and interaction states use small, consistent lightness shifts.
+
+The system has two groups of public tokens:
+
+| Token | Meaning | Classes |
+| --- | --- | --- |
+| `surface` | the page or section background | `bg-surface` |
+| `surface-raised` | cards, menus and raised controls | `bg-surface-raised` |
+| `ink` | main text and icons | `text-ink` |
+| `ink-muted` | supporting text | `text-ink-muted` |
+| `line` | dividers and borders | `border-line` |
+| `focus` | keyboard focus indicator | `outline-focus`, `ring-focus` |
+| `ROLE` | a filled color | `bg-brand`, `bg-warning`, etc. |
+| `on-ROLE` | text and icons on that fill | `text-on-brand`, `text-on-warning`, etc. |
+| `ROLE-ink` | the role expressed as text on a surface; derived automatically | `text-brand-ink`, `text-warning-ink`, etc. |
+
+Pair a fill with its `on-` color. Use its `-ink` color when the background is a page, card or tinted surface:
+
+```html
+<section class="bg-surface text-ink">
+    <article class="bg-surface-raised border border-line">
+        <p class="text-ink-muted">Supporting information</p>
+        <span class="bg-warning text-on-warning">Pending review</span>
+        <a class="text-brand-ink">Read more</a>
+    </article>
+</section>
+```
+
+Changing a color takes one surface/ink pair, not eleven shades or seven separate variant maps:
 
 ```css
-@theme inline {
-    --radius-brand: var(--radius-lg);
-
-    --color-primary-50: var(--color-orange-50);
-    /* ... every shade from 50 to 950, for each of the seven roles */
+:root {
+    --brand: var(--color-violet-500);
+    --on-brand: white;
 }
 ```
 
-Without these tokens the button renders without colors or rounded corners: Tailwind silently skips utilities such as `bg-primary-600` it has no theme value for.
+This updates brand buttons, their hover and active states, tinted backgrounds, outlines and brand text in both themes. Add the same pair to `.dark` only if the brand needs a separate dark-theme treatment. The built-in Tailwind color scales remain available when choosing literal shades.
 
-```blade
-<x-button color="neutral">Cancel</x-button>
-<x-button color="contrast">Continue</x-button>
+#### Button internals and custom colors
+
+`tone-brand` (or another `tone-ROLE`) selects three local values: `--tone` is the fill, `--tone-on` is content on that fill, and `--tone-ink` is colored text on a surface. `button-colors` derives the `--button-*` tokens used by all seven variants. Soft fills and borders mix with the current theme surface; solid hover and active states move gently toward the matching content color. No inline styles are generated.
+
+To add a color, define its tone utility in the published theme and add its name to the button's `@cases('color', ...)` map:
+
+```css
+@utility tone-promotion {
+    --tone: var(--color-violet-500);
+    --tone-on: white;
+    --tone-ink: color-mix(in oklab, var(--color-violet-500) 80%, var(--ink));
+}
 ```
 
-`contrast` has its own styling for every variant. `solid` reverses the theme's surface brightness; `soft` uses a translucent dark tint on light themes and a light tint on dark themes. `outline` uses a stronger border, while `ghost` and `link` use stronger foreground colors. Soft, outline and ghost treatments also have their own theme-aware hover colors. Text remains readable against each treatment's background.
+```blade
+'promotion' => ['button' => ['tone-promotion']],
+```
 
-Customize a color's literal classes in the `@cases('color', [...], when: ['variant' => ...])` block of its treatment and its focus outline in `@color`. Each treatment has one block: solid, soft, surface and outline backgrounds and borders, the text color of every treatment but solid, and the hover tint of outline and ghost. `elevated` is the same for every color, so its classes live in `@variant`. Sizes use `@cases('size', ...)`: each size groups the root's dimensions and padding with the content, loading, leading, trailing and spinner classes. Each target still resolves its own size independently. No custom CSS variables, inline styles or generated class names are used.
+All variants use the new tone immediately. Define tone values on the button itself so a tone nested inside another tone never inherits the parent's resolved colors.
 
 ### Radius
 

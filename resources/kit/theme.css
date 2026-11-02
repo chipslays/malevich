@@ -1,99 +1,269 @@
+/*
+ * Malevich colors
+ *
+ * Space: surface, surface-raised, ink, ink-muted, line, focus.
+ * Meaning: brand, neutral, contrast, success, info, warning, danger.
+ * Pair every filled role with on-ROLE. Example: bg-brand text-on-brand.
+ * Values use OKLCH: lightness, chroma, hue. Neutrals share a subtle cool hue.
+ * Variants and interaction states are derived below; no shade ladders to tune.
+ */
+:root {
+    color-scheme: light;
+    /* One monochrome ramp; the roles exchange its endpoints with the theme. */
+    --mono-light: oklch(0.975 0.004 265);
+    --mono-dark: oklch(0.22 0.004 265);
+    --surface: oklch(0.985 0.002 265);
+    --surface-raised: oklch(1 0 0);
+    --ink: oklch(0.24 0.012 265);
+    --ink-muted: oklch(0.56 0.015 265);
+    --line: oklch(0.92 0.006 265);
+    --focus: oklch(0.68 0.018 265);
+    --brand: oklch(0.705 0.18 48);
+    --on-brand: white;
+    --neutral: var(--mono-light);
+    --on-neutral: var(--mono-dark);
+    --neutral-ink: color-mix(in oklab, var(--mono-dark) 65%, var(--mono-light));
+    --contrast: var(--mono-dark);
+    --on-contrast: var(--mono-light);
+    --contrast-ink: var(--mono-dark);
+    --success: oklch(0.70 0.15 158);
+    --on-success: oklch(0.30 0.065 158);
+    --info: oklch(0.64 0.16 254);
+    --on-info: white;
+    --warning: oklch(0.83 0.15 82);
+    --on-warning: oklch(0.40 0.085 58);
+    --danger: oklch(0.65 0.19 24);
+    --on-danger: white;
+}
+
+/* Toggle .dark on the page or any preview container.
+   Status and brand pairs deliberately keep their identity across themes. */
+.dark {
+    color-scheme: dark;
+    --surface: oklch(0.155 0.008 265);
+    --surface-raised: oklch(0.205 0.010 265);
+    --ink: oklch(0.94 0.005 265);
+    --ink-muted: oklch(0.68 0.016 265);
+    --line: oklch(0.30 0.012 265);
+    --focus: oklch(0.62 0.018 265);
+    --neutral: var(--mono-dark);
+    --on-neutral: var(--mono-light);
+    --neutral-ink: color-mix(in oklab, var(--mono-light) 65%, var(--mono-dark));
+    --contrast: var(--mono-light);
+    --on-contrast: var(--mono-dark);
+    --contrast-ink: var(--mono-light);
+}
+
 @theme inline {
     --radius-brand: var(--radius-lg);
+    --color-surface: var(--surface);
+    --color-surface-raised: var(--surface-raised);
+    --color-ink: var(--ink);
+    --color-ink-muted: var(--ink-muted);
+    --color-line: var(--line);
+    --color-focus: var(--focus);
+    --color-brand: var(--brand);
+    --color-on-brand: var(--on-brand);
+    --color-neutral: var(--neutral);
+    --color-on-neutral: var(--on-neutral);
+    --color-contrast: var(--contrast);
+    --color-on-contrast: var(--on-contrast);
+    --color-success: var(--success);
+    --color-on-success: var(--on-success);
+    --color-info: var(--info);
+    --color-on-info: var(--on-info);
+    --color-warning: var(--warning);
+    --color-on-warning: var(--on-warning);
+    --color-danger: var(--danger);
+    --color-on-danger: var(--on-danger);
+    --color-brand-ink: color-mix(in oklab, var(--brand) 80%, var(--ink));
+    --color-neutral-ink: var(--neutral-ink);
+    --color-contrast-ink: var(--contrast-ink);
+    --color-success-ink: color-mix(in oklab, var(--success) 80%, var(--ink));
+    --color-info-ink: color-mix(in oklab, var(--info) 80%, var(--ink));
+    --color-warning-ink: color-mix(in oklab, var(--warning) 80%, var(--ink));
+    --color-danger-ink: color-mix(in oklab, var(--danger) 80%, var(--ink));
+}
 
-    --color-gray-50: var(--color-neutral-50);
-    --color-gray-100: var(--color-neutral-100);
-    --color-gray-200: var(--color-neutral-200);
-    --color-gray-300: var(--color-neutral-300);
-    --color-gray-400: var(--color-neutral-400);
-    --color-gray-500: var(--color-neutral-500);
-    --color-gray-600: var(--color-neutral-600);
-    --color-gray-700: var(--color-neutral-700);
-    --color-gray-800: var(--color-neutral-800);
-    --color-gray-900: var(--color-neutral-900);
-    --color-gray-950: var(--color-neutral-950);
+/* A tone supplies three values:
+   --tone: fill, --tone-on: content on the fill, --tone-ink: text on a surface.
+   Define a custom tone utility with those values to add a new button color. */
+@utility tone-brand {
+    --tone: var(--brand);
+    --tone-on: var(--on-brand);
+    --tone-ink: color-mix(in oklab, var(--brand) 80%, var(--ink));
+}
 
-    --color-primary-50: var(--color-orange-50);
-    --color-primary-100: var(--color-orange-100);
-    --color-primary-200: var(--color-orange-200);
-    --color-primary-300: var(--color-orange-300);
-    --color-primary-400: var(--color-orange-400);
-    --color-primary-500: var(--color-orange-500);
-    --color-primary-600: var(--color-orange-600);
-    --color-primary-700: var(--color-orange-700);
-    --color-primary-800: var(--color-orange-800);
-    --color-primary-900: var(--color-orange-900);
-    --color-primary-950: var(--color-orange-950);
+@utility tone-neutral {
+    --tone: var(--neutral);
+    --tone-on: var(--on-neutral);
+    --tone-ink: var(--neutral-ink);
+}
 
-    --color-secondary-50: var(--color-stone-50);
-    --color-secondary-100: var(--color-stone-100);
-    --color-secondary-200: var(--color-stone-200);
-    --color-secondary-300: var(--color-stone-300);
-    --color-secondary-400: var(--color-stone-400);
-    --color-secondary-500: var(--color-stone-500);
-    --color-secondary-600: var(--color-stone-600);
-    --color-secondary-700: var(--color-stone-700);
-    --color-secondary-800: var(--color-stone-800);
-    --color-secondary-900: var(--color-stone-900);
-    --color-secondary-950: var(--color-stone-950);
+@utility tone-contrast {
+    --tone: var(--contrast);
+    --tone-on: var(--on-contrast);
+    --tone-ink: var(--contrast-ink);
+}
 
-    --color-accent-50: var(--color-violet-50);
-    --color-accent-100: var(--color-violet-100);
-    --color-accent-200: var(--color-violet-200);
-    --color-accent-300: var(--color-violet-300);
-    --color-accent-400: var(--color-violet-400);
-    --color-accent-500: var(--color-violet-500);
-    --color-accent-600: var(--color-violet-600);
-    --color-accent-700: var(--color-violet-700);
-    --color-accent-800: var(--color-violet-800);
-    --color-accent-900: var(--color-violet-900);
-    --color-accent-950: var(--color-violet-950);
+@utility tone-success {
+    --tone: var(--success);
+    --tone-on: var(--on-success);
+    --tone-ink: color-mix(in oklab, var(--success) 80%, var(--ink));
+}
 
-    --color-success-50: var(--color-green-50);
-    --color-success-100: var(--color-green-100);
-    --color-success-200: var(--color-green-200);
-    --color-success-300: var(--color-green-300);
-    --color-success-400: var(--color-green-400);
-    --color-success-500: var(--color-green-500);
-    --color-success-600: var(--color-green-600);
-    --color-success-700: var(--color-green-700);
-    --color-success-800: var(--color-green-800);
-    --color-success-900: var(--color-green-900);
-    --color-success-950: var(--color-green-950);
+@utility tone-info {
+    --tone: var(--info);
+    --tone-on: var(--on-info);
+    --tone-ink: color-mix(in oklab, var(--info) 80%, var(--ink));
+}
 
-    --color-warning-50: var(--color-yellow-50);
-    --color-warning-100: var(--color-yellow-100);
-    --color-warning-200: var(--color-yellow-200);
-    --color-warning-300: var(--color-yellow-300);
-    --color-warning-400: var(--color-yellow-400);
-    --color-warning-500: var(--color-yellow-500);
-    --color-warning-600: var(--color-yellow-600);
-    --color-warning-700: var(--color-yellow-700);
-    --color-warning-800: var(--color-yellow-800);
-    --color-warning-900: var(--color-yellow-900);
-    --color-warning-950: var(--color-yellow-950);
+@utility tone-warning {
+    --tone: var(--warning);
+    --tone-on: var(--on-warning);
+    --tone-ink: color-mix(in oklab, var(--warning) 80%, var(--ink));
+}
 
-    --color-danger-50: var(--color-red-50);
-    --color-danger-100: var(--color-red-100);
-    --color-danger-200: var(--color-red-200);
-    --color-danger-300: var(--color-red-300);
-    --color-danger-400: var(--color-red-400);
-    --color-danger-500: var(--color-red-500);
-    --color-danger-600: var(--color-red-600);
-    --color-danger-700: var(--color-red-700);
-    --color-danger-800: var(--color-red-800);
-    --color-danger-900: var(--color-red-900);
-    --color-danger-950: var(--color-red-950);
+@utility tone-danger {
+    --tone: var(--danger);
+    --tone-on: var(--on-danger);
+    --tone-ink: color-mix(in oklab, var(--danger) 80%, var(--ink));
+}
 
-    --color-info-50: var(--color-blue-50);
-    --color-info-100: var(--color-blue-100);
-    --color-info-200: var(--color-blue-200);
-    --color-info-300: var(--color-blue-300);
-    --color-info-400: var(--color-blue-400);
-    --color-info-500: var(--color-blue-500);
-    --color-info-600: var(--color-blue-600);
-    --color-info-700: var(--color-blue-700);
-    --color-info-800: var(--color-blue-800);
-    --color-info-900: var(--color-blue-900);
-    --color-info-950: var(--color-blue-950);
+/* Buttons consume the same surface/line/tint recipe as the other controls. */
+@utility button-colors {
+    @apply tone-colors;
+    --button-solid: var(--tone);
+    --button-solid-hover: color-mix(in oklab, var(--tone) 94%, var(--tone-on));
+    --button-solid-active: color-mix(in oklab, var(--tone) 88%, var(--tone-on));
+    --button-on-solid: var(--tone-on);
+    --button-text: var(--tone-ink);
+    --button-text-hover: color-mix(in oklab, var(--tone-ink) 85%, var(--ink));
+    --button-text-active: color-mix(in oklab, var(--tone-ink) 70%, var(--ink));
+    --button-soft: var(--tone-soft);
+    --button-soft-hover: var(--tone-soft-hover);
+    --button-soft-active: var(--tone-soft-active);
+    --button-surface: var(--tone-surface);
+    --button-border: var(--tone-line);
+    --button-border-hover: var(--tone-line-hover);
+    --button-focus: var(--focus);
+}
+
+/* Shared treatments for controls, badges and status indicators. */
+@utility tone-colors {
+    --tone-fill: var(--tone);
+    --tone-fill-on: var(--tone-on);
+    --tone-soft: color-mix(in oklab, var(--tone-ink) 10%, var(--surface));
+    --tone-soft-hover: color-mix(in oklab, var(--tone-ink) 15%, var(--surface));
+    --tone-soft-active: color-mix(in oklab, var(--tone-ink) 20%, var(--surface));
+    --tone-surface: color-mix(in oklab, var(--tone-ink) 5%, var(--surface-raised));
+    --tone-line: color-mix(in oklab, var(--tone-ink) 20%, var(--surface));
+    --tone-line-hover: color-mix(in oklab, var(--tone-ink) 30%, var(--surface));
+    &:is(.tone-neutral, .tone-contrast) {
+        --tone-soft: color-mix(in oklab, var(--surface-raised) 96%, var(--tone-ink));
+        --tone-soft-hover: color-mix(in oklab, var(--surface-raised) 93%, var(--tone-ink));
+        --tone-soft-active: color-mix(in oklab, var(--surface-raised) 90%, var(--tone-ink));
+        --tone-surface: var(--surface-raised);
+        --tone-line: color-mix(in oklab, var(--line) 96%, var(--tone-ink));
+        --tone-line-hover: color-mix(in oklab, var(--line) 90%, var(--tone-ink));
+    }
+    &.tone-neutral { --tone-fill: var(--neutral-ink); --tone-fill-on: var(--mono-light); }
+    &[data-invalid] .choice-indicator { border-color: var(--danger); }
+}
+
+@utility control-frame {
+    &:hover:not([data-disabled]) { border-color: color-mix(in oklab, var(--line) 65%, var(--ink-muted)); }
+    &:focus-within {
+        outline: none;
+        box-shadow: 0 0 0 3px color-mix(in oklab, var(--tone) 12%, transparent);
+        border-color: color-mix(in oklab, var(--tone-ink) 55%, var(--surface));
+    }
+    &[data-invalid] {
+        border-color: var(--danger);
+        &:focus-within { box-shadow: 0 0 0 3px color-mix(in oklab, var(--danger) 12%, transparent); }
+    }
+}
+
+@utility control-invalid {
+    &.control-frame { --tone-ink: var(--danger); }
+}
+
+@utility select-multiple {
+    &.control-frame { height: auto; min-height: 6rem; padding-block: 0.5rem; }
+}
+
+@utility progress-track {
+    appearance: none;
+    background: var(--tone-soft);
+    color: var(--progress-fill);
+    &::-webkit-progress-bar { background: var(--tone-soft); border-radius: inherit; }
+    &::-webkit-progress-value { background: var(--progress-fill); border-radius: inherit; transition: width 180ms ease; }
+    &::-moz-progress-bar { background: var(--progress-fill); border-radius: inherit; }
+    &:indeterminate { background: linear-gradient(90deg, var(--tone-soft) 25%, var(--progress-fill) 50%, var(--tone-soft) 75%); background-size: 200% 100%; animation: malevich-progress 1.6s ease-in-out infinite; }
+    &:indeterminate::-webkit-progress-bar { background: transparent; }
+    &:indeterminate::-moz-progress-bar { background: transparent; }
+    @media (prefers-reduced-motion: reduce) { animation: none; &::-webkit-progress-value { transition: none; } }
+}
+
+@utility progress-striped {
+    &::-webkit-progress-value { background-image: repeating-linear-gradient(135deg, transparent 0 6px, #ffffff26 6px 12px); }
+    &::-moz-progress-bar { background-image: repeating-linear-gradient(135deg, transparent 0 6px, #ffffff26 6px 12px); }
+}
+
+@keyframes malevich-progress { 0%, 100% { background-position: 100% 0; } 50% { background-position: 0 0; } }
+
+@utility slider-control {
+    appearance: none;
+    background: transparent;
+    height: var(--slider-hit);
+    --slider-direction: to right;
+    &:dir(rtl) { --slider-direction: to left; }
+    &::-webkit-slider-runnable-track {
+        height: var(--slider-height);
+        border-radius: 9999px;
+        background: linear-gradient(var(--slider-direction), var(--slider-color) 0 var(--slider-fill), var(--tone-soft) var(--slider-fill) 100%);
+    }
+    &::-moz-range-track { height: var(--slider-height); border-radius: 9999px; background: var(--tone-soft); }
+    &::-moz-range-progress { height: var(--slider-height); border-radius: 9999px; background: var(--slider-color); }
+    &::-webkit-slider-thumb {
+        appearance: none;
+        width: var(--slider-thumb);
+        height: var(--slider-thumb);
+        margin-top: calc((var(--slider-height) - var(--slider-thumb)) / 2);
+        border: 2px solid var(--slider-color);
+        border-radius: 50%;
+        background: var(--surface-raised);
+        box-shadow: 0 1px 3px #0000001f;
+    }
+    &::-moz-range-thumb {
+        box-sizing: border-box;
+        width: var(--slider-thumb);
+        height: var(--slider-thumb);
+        border: 2px solid var(--slider-color);
+        border-radius: 50%;
+        background: var(--surface-raised);
+        box-shadow: 0 1px 3px #0000001f;
+    }
+}
+
+@utility slider-invalid {
+    &.tone-colors { --slider-color: var(--danger); --tone-ink: var(--danger); }
+}
+
+/* Tabs share the control scale and do not impose a card around their content. */
+@utility tabs-style {
+    &:not([data-ready]) > [role=tabpanel] ~ [role=tabpanel] { display: none; }
+    > [data-tabs-list] > [role=tab] { height: var(--tab-height); padding-inline: var(--tab-padding); }
+    > [data-tabs-list] > [role=tab][aria-selected=true] { color: var(--tone-ink); }
+    &.tabs-underline > [data-tabs-list] { gap: 1.5rem; border-bottom: 1px solid var(--line); }
+    &.tabs-underline > [data-tabs-list] > [role=tab] { border-radius: 0; padding-inline: 0; }
+    &.tabs-underline > [data-tabs-list] > [role=tab][aria-selected=true]::after { content: ''; position: absolute; inset-inline: 0; bottom: -1px; height: 2px; background: var(--tone-ink); }
+    &.tabs-soft > [data-tabs-list] { align-self: start; padding: 4px; border-radius: var(--radius-lg); background: var(--surface); }
+    &.tabs-soft > [data-tabs-list] > [role=tab][aria-selected=true] { background: var(--surface-raised); box-shadow: 0 1px 3px #0000000d; }
+    &.tabs-solid > [data-tabs-list] { align-self: start; }
+    &.tabs-solid > [data-tabs-list] > [role=tab][aria-selected=true] { background: var(--tone); color: var(--tone-on); }
+    &.tabs-vertical > [data-tabs-list] { flex-direction: column; align-items: stretch; }
+    &.tabs-vertical.tabs-underline > [data-tabs-list] { gap: 0.5rem; border-bottom: 0; border-inline-end: 1px solid var(--line); }
+    &.tabs-vertical.tabs-underline > [data-tabs-list] > [role=tab] { justify-content: start; padding-inline: var(--tab-padding); }
+    &.tabs-vertical.tabs-underline > [data-tabs-list] > [role=tab][aria-selected=true]::after { inset-inline-start: auto; inset-inline-end: -1px; top: 0; bottom: 0; width: 2px; height: auto; }
 }

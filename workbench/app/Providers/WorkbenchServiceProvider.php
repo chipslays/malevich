@@ -2,8 +2,10 @@
 
 namespace Workbench\App\Providers;
 
+use BladeUI\Icons\BladeIconsServiceProvider;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use MallardDuck\LucideIcons\BladeLucideIconsServiceProvider;
 
 /**
  * The playground (`composer serve`): the ready-made components from
@@ -13,9 +15,19 @@ use Illuminate\Support\ServiceProvider;
  */
 class WorkbenchServiceProvider extends ServiceProvider
 {
+    public static function cssPath(): string
+    {
+        return dirname(__DIR__, 3).'/build/examples.css';
+    }
+
     public function register(): void
     {
+        $this->app->register(BladeIconsServiceProvider::class);
+        $this->app->register(BladeLucideIconsServiceProvider::class);
+
         config([
+            'blade-icons.components.disabled' => true,
+            'session.driver' => 'file',
             'malevich.data_attributes' => true,
             'malevich.debug' => true,
             'malevich.playground.enabled' => true,
@@ -32,5 +44,8 @@ class WorkbenchServiceProvider extends ServiceProvider
     {
         // The kit as <x-button>, <x-badge>, ... - edit resources/kit/*.blade.php and refresh.
         Blade::anonymousComponentPath(__DIR__.'/../../../resources/kit');
+        $this->loadViewsFrom(__DIR__.'/../../resources/views', 'examples');
+        // Keep icon rendering in a static view: repeated SVGs need no temporary Blade files.
+        $this->app->booted(fn () => Blade::component('examples::components.icon', 'icon'));
     }
 }

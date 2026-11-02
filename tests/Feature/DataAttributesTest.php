@@ -25,9 +25,9 @@ describe('with data attributes enabled', function () {
     });
 
     it('names the component, also with a prefix', function () {
-        Blade::anonymousComponentPath(__DIR__.'/../../resources/kit', 'kit');
+        Blade::anonymousComponentPath(__DIR__.'/../fixtures/playground', 'kit');
 
-        expect($this->render('<x-kit::button>Go</x-kit::button>'))->toContain('data-component="kit::button"');
+        expect($this->render('<x-kit::chip>Go</x-kit::chip>'))->toContain('data-component="kit::chip"');
     });
 
     it('lets an explicit attribute win', function () {

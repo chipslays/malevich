@@ -18,13 +18,13 @@ it('copies a kit component into the configured directory without altering its so
         ->expectsOutputToContain('<x-button>')
         ->assertSuccessful();
 
-    expect(file_get_contents($this->kitDestination.'/button.blade.php'))
-        ->toBe(file_get_contents(dirname(__DIR__, 2).'/resources/kit/button.blade.php'));
+    expect(file_get_contents($this->kitDestination.'/button/index.blade.php'))
+        ->toBe(file_get_contents(dirname(__DIR__, 2).'/resources/kit/button/index.blade.php'));
 
     Blade::anonymousComponentPath($this->kitDestination, 'added');
 
     expect($this->render('<x-added::button>Save</x-added::button>'))
-        ->toContain('<button', 'bg-primary-600', 'rounded-brand', 'Save');
+        ->toContain('<button', 'tone-brand', 'rounded-brand', 'Save');
 });
 
 it('accepts a Blade filename and reports the configured component prefix', function () {
@@ -33,30 +33,30 @@ it('accepts a Blade filename and reports the configured component prefix', funct
     $this->artisan('malevich:add', ['name' => 'button.blade.php'])
         ->expectsOutputToContain('<x-ui::button>')->assertSuccessful();
 
-    expect($this->kitDestination.'/button.blade.php')->toBeFile();
+    expect($this->kitDestination.'/button/index.blade.php')->toBeFile();
 });
 
 it('preserves existing components unless force is explicit', function () {
     $files = new Filesystem;
-    $files->ensureDirectoryExists($this->kitDestination);
-    $files->put($this->kitDestination.'/button.blade.php', 'custom button');
+    $files->ensureDirectoryExists($this->kitDestination.'/button');
+    $files->put($this->kitDestination.'/button/index.blade.php', 'custom button');
 
     $this->artisan('malevich:add', ['name' => 'button'])
         ->expectsOutputToContain('--force')->assertFailed();
 
-    expect(file_get_contents($this->kitDestination.'/button.blade.php'))->toBe('custom button');
+    expect(file_get_contents($this->kitDestination.'/button/index.blade.php'))->toBe('custom button');
 
     $this->artisan('malevich:add', ['name' => 'button', '--force' => true])
         ->expectsOutputToContain('Kit component overwritten.')->assertSuccessful();
 
-    expect(file_get_contents($this->kitDestination.'/button.blade.php'))
-        ->toBe(file_get_contents(dirname(__DIR__, 2).'/resources/kit/button.blade.php'));
+    expect(file_get_contents($this->kitDestination.'/button/index.blade.php'))
+        ->toBe(file_get_contents(dirname(__DIR__, 2).'/resources/kit/button/index.blade.php'));
 });
 
 it('lists available components for an unknown kit name without creating files', function () {
     $this->artisan('malevich:add', ['name' => 'missing'])
         ->expectsOutputToContain('does not exist')
-        ->expectsOutputToContain('Available: button')->assertFailed();
+        ->expectsOutputToContain('Available: avatar, badge, button')->assertFailed();
 
     expect(is_dir($this->kitDestination))->toBeFalse();
 });
@@ -76,29 +76,29 @@ it('rejects an empty destination setting', function () {
 });
 
 it('does not replace a directory even when forced', function () {
-    (new Filesystem)->ensureDirectoryExists($this->kitDestination.'/button.blade.php');
+    (new Filesystem)->ensureDirectoryExists($this->kitDestination.'/button/index.blade.php');
 
     $this->artisan('malevich:add', ['name' => 'button', '--force' => true])
         ->expectsOutputToContain('A directory already exists')->assertFailed();
 
-    expect(is_dir($this->kitDestination.'/button.blade.php'))->toBeTrue();
+    expect(is_dir($this->kitDestination.'/button/index.blade.php'))->toBeTrue();
 });
 
 it('lets you pick several kit components when no name is given', function () {
     $this->artisan('malevich:add')
-        ->expectsChoice('Which kit components do you want to add?', ['button', 'input'], ['button', 'field', 'input'])
+        ->expectsChoice('Which kit components do you want to add?', ['button', 'input'], ['avatar', 'badge', 'button', 'button-old', 'button.group', 'checkbox', 'dialog', 'divider', 'field', 'heading', 'input', 'panel', 'progress', 'radio', 'select', 'slider', 'switch', 'tabs', 'tabs.list', 'tabs.panel', 'tabs.tab', 'text'])
         ->expectsOutputToContain('Kit component added.')
         ->assertSuccessful();
 
-    expect($this->kitDestination.'/button.blade.php')->toBeFile()
-        ->and($this->kitDestination.'/input.blade.php')->toBeFile();
+    expect($this->kitDestination.'/button/index.blade.php')->toBeFile()
+        ->and($this->kitDestination.'/input/index.blade.php')->toBeFile();
 });
 
 it('adds several named kit components at once', function () {
     $this->artisan('malevich:add', ['name' => ['button', 'input']])->assertSuccessful();
 
-    expect($this->kitDestination.'/button.blade.php')->toBeFile()
-        ->and($this->kitDestination.'/input.blade.php')->toBeFile();
+    expect($this->kitDestination.'/button/index.blade.php')->toBeFile()
+        ->and($this->kitDestination.'/input/index.blade.php')->toBeFile();
 });
 
 it('adds the components a kit component needs', function () {
@@ -106,21 +106,22 @@ it('adds the components a kit component needs', function () {
         ->expectsOutputToContain('[field] is required')
         ->assertSuccessful();
 
-    expect($this->kitDestination.'/input.blade.php')->toBeFile()
-        ->and($this->kitDestination.'/field.blade.php')->toBeFile();
+    expect($this->kitDestination.'/input/index.blade.php')->toBeFile()
+        ->and($this->kitDestination.'/field/index.blade.php')->toBeFile();
 });
 
 it('keeps an existing dependency even when forced', function () {
     $files = new Filesystem;
     $files->ensureDirectoryExists($this->kitDestination);
-    $files->put($this->kitDestination.'/field.blade.php', 'custom field');
+    $files->ensureDirectoryExists($this->kitDestination.'/field');
+    $files->put($this->kitDestination.'/field/index.blade.php', 'custom field');
 
     $this->artisan('malevich:add', ['name' => 'input', '--force' => true])
         ->doesntExpectOutputToContain('is required')
         ->assertSuccessful();
 
-    expect(file_get_contents($this->kitDestination.'/field.blade.php'))->toBe('custom field')
-        ->and($this->kitDestination.'/input.blade.php')->toBeFile();
+    expect(file_get_contents($this->kitDestination.'/field/index.blade.php'))->toBe('custom field')
+        ->and($this->kitDestination.'/input/index.blade.php')->toBeFile();
 });
 
 it('does not add a dependency twice when it is also named', function () {
@@ -143,7 +144,7 @@ it('publishes the kit theme tokens', function () {
 
         expect(file_get_contents($published))
             ->toBe(file_get_contents(dirname(__DIR__, 2).'/resources/kit/theme.css'))
-            ->toContain('@theme inline', '--radius-brand', '--color-primary-600', '--color-info-950');
+            ->toContain('@theme inline', '--radius-brand', '--color-brand', '--color-info');
 
         $this->artisan('malevich:add', ['name' => 'button', '--force' => true])
             ->doesntExpectOutputToContain('vendor:publish --tag=malevich:theme')

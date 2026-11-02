@@ -4,9 +4,11 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\MessageBag;
 use Illuminate\Support\ViewErrorBag;
+use Illuminate\View\DynamicComponent;
 use Malevich\Malevich;
 
 beforeEach(function () {
+    (new ReflectionProperty(DynamicComponent::class, 'compiler'))->setValue(null, null);
     Blade::anonymousComponentPath(dirname(__DIR__, 2).'/resources/kit', 'kit');
     // The input finds the field by the project's tag prefix.
     config(['malevich.components.prefix' => 'kit']);
@@ -21,17 +23,17 @@ it('renders a text input inside a styled field', function () {
         ->not->toContain(' variant=')->not->toContain(' size=');
 
     expect($html)
-        ->toHaveClasses(['h-10', 'px-3', 'rounded-brand', 'border-gray-300', 'focus-within:outline-primary-600'])
+        ->toHaveClasses(['h-9', 'px-3', 'rounded-brand', 'border-line', 'control-frame'])
         ->toHaveClasses(['bg-transparent', 'flex-1', 'outline-none']);
 });
 
 it('styles the box with class and style, and passes the rest to the input', function () {
-    $html = $this->render('<x-kit::input class="mt-2 w-64" style="color: red" name="q" input:class="font-mono tracking-wide" />');
+    $html = $this->render('<x-kit::input class="mt-2 w-64" style="color: red" name="q" control:class="font-mono tracking-wide" />');
 
     expect($html)
         ->toHaveClasses(['rounded-brand', 'mt-2', 'w-64'])
         ->toHaveClasses(['flex-1', 'font-mono', 'tracking-wide'])
-        ->not->toContain('input:class')->not->toContain('input-class')
+        ->not->toContain('control:class')->not->toContain('input-class')
         ->toContain('style="color: red"', 'name="q"');
 
     expect(substr_count($html, 'mt-2'))->toBe(1);
@@ -43,11 +45,11 @@ it('keeps an explicit type', function () {
 });
 
 it('renders every variant, size and color', function () {
-    foreach (['outline', 'soft', 'elevated', 'ghost'] as $variant) {
+    foreach (['outline', 'soft', 'surface', 'ghost'] as $variant) {
         foreach (['xs', 'sm', 'md', 'lg', 'xl'] as $size) {
-            foreach (['primary' => 'primary', 'neutral' => 'gray', 'danger' => 'danger'] as $color => $scale) {
+            foreach (['brand' => 'brand', 'neutral' => 'neutral', 'danger' => 'danger'] as $color => $scale) {
                 expect($this->render('<x-kit::input :variant="$variant" :size="$size" :color="$color" />', compact('variant', 'size', 'color')))
-                    ->toContain('<input', "focus-within:outline-{$scale}-600");
+                    ->toContain('<input', "tone-{$scale}");
             }
         }
     }
@@ -82,7 +84,7 @@ describe('label, description and error', function () {
         expect($html)
             ->toContain('<label', 'for="email"', '>*</span>', 'id="email-description"', 'id="email-error"', 'We never share it.', 'Required.')
             ->toContain('aria-describedby="email-description email-error"', 'aria-invalid="true"', ' required')
-            ->toHaveClasses(['flex-col', 'mt-4']);
+            ->toHaveClasses('flex-col')->toHaveClasses('mt-4');
 
         expect(substr_count($html, 'mt-4'))->toBe(1);
     });
@@ -98,7 +100,7 @@ describe('label, description and error', function () {
 
     it('marks invalid without a message for error true', function () {
         expect($this->render('<x-kit::input :error="true" />'))
-            ->toContain('aria-invalid="true"')->not->toContain('<p')->not->toContain(' id=');
+            ->toContain('aria-invalid="true"')->not->toContain('<p')->not->toContain('-error"');
     });
 
     it('takes the error from the validation bag by name', function () {

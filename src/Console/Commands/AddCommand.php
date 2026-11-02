@@ -28,7 +28,14 @@ class AddCommand extends Command
      * @var array<string, list<string>>
      */
     private const DEPENDENCIES = [
+        'button/group' => ['button'],
         'input' => ['field'],
+        'select' => ['field'],
+        'slider' => ['field'],
+        'tabs' => ['tabs/list', 'tabs/tab', 'tabs/panel'],
+        'tabs/list' => ['tabs'],
+        'tabs/tab' => ['tabs'],
+        'tabs/panel' => ['tabs'],
     ];
 
     public function handle(Filesystem $files): int
@@ -97,6 +104,10 @@ class AddCommand extends Command
         $name = str_replace('.', '/', $name);
         $source = self::kit().'/'.$name.'.blade.php';
 
+        if (! $files->isFile($source) && $files->isFile(self::kit().'/'.$name.'/index.blade.php')) {
+            $source = self::kit().'/'.$name.'/index.blade.php';
+        }
+
         if (! $files->isFile($source)) {
             $this->components->error("Kit component [{$name}] does not exist.");
             $this->line('Available: '.OutputFormatter::escape(implode(', ', self::available($files))));
@@ -112,7 +123,8 @@ class AddCommand extends Command
             return self::FAILURE;
         }
 
-        $path = rtrim($directory, '/\\').'/'.$name.'.blade.php';
+        $relative = substr($source, strlen(self::kit()) + 1);
+        $path = rtrim($directory, '/\\').'/'.$relative;
 
         if ($files->isDirectory($path)) {
             $this->components->error('A directory already exists at the component path.');
@@ -146,7 +158,7 @@ class AddCommand extends Command
 
     private static function normalize(string $name): string
     {
-        return str_replace('.', '/', Str::replaceEnd('.blade.php', '', str_replace('\\', '/', $name)));
+        return Str::replaceEnd('/index', '', str_replace('.', '/', Str::replaceEnd('.blade.php', '', str_replace('\\', '/', $name))));
     }
 
     /**
@@ -159,13 +171,21 @@ class AddCommand extends Command
     {
         $requested = array_map(fn (string $name) => self::normalize($name), $names);
         $needed = [];
-
-        foreach ($requested as $name) {
+        $visited = [];
+        $visit = function (string $name) use (&$visit, &$visited, &$needed, $requested): void {
+            if (isset($visited[$name])) {
+                return;
+            }
+            $visited[$name] = true;
             foreach (self::DEPENDENCIES[$name] ?? [] as $dependency) {
                 if (! in_array($dependency, $requested, true)) {
                     $needed[$dependency] = $dependency;
                 }
+                $visit($dependency);
             }
+        };
+        foreach ($requested as $name) {
+            $visit($name);
         }
 
         return array_values($needed);
@@ -173,7 +193,9 @@ class AddCommand extends Command
 
     private static function destination(string $name): string
     {
-        return rtrim((string) config('malevich.components.path'), '/\\').'/'.$name.'.blade.php';
+        $relative = is_file(self::kit().'/'.$name.'/index.blade.php') ? $name.'/index' : $name;
+
+        return rtrim((string) config('malevich.components.path'), '/\\').'/'.$relative.'.blade.php';
     }
 
     private static function kit(): string
@@ -192,7 +214,9 @@ class AddCommand extends Command
 
         foreach ($files->allFiles(self::kit()) as $file) {
             if (str_ends_with($file->getFilename(), '.blade.php')) {
-                $available[] = substr(str_replace('\\', '/', $file->getRelativePathname()), 0, -10);
+                $name = substr(str_replace('\\', '/', $file->getRelativePathname()), 0, -10);
+                $name = Str::replaceEnd('/index', '', $name);
+                $available[] = str_replace('/', '.', $name);
             }
         }
 

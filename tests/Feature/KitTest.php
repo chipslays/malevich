@@ -1,20 +1,29 @@
 <?php
 
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\View\DynamicComponent;
 use Malevich\Playground\Playground;
 
 function kitFiles(): array
 {
-    return glob(dirname(__DIR__, 2).'/resources/kit/*.blade.php') ?: [];
+    return array_values(array_map(
+        fn ($file) => $file->getPathname(),
+        array_filter((new Filesystem)->allFiles(dirname(__DIR__, 2).'/resources/kit'),
+            fn ($file) => str_ends_with($file->getFilename(), '.blade.php') && ! str_ends_with($file->getFilename(), '-old.blade.php')),
+    ));
 }
 
 beforeEach(function () {
     Blade::anonymousComponentPath(dirname(__DIR__, 2).'/resources/kit', 'kit');
+    config(['malevich.components.prefix' => 'kit']);
+    (new ReflectionProperty(DynamicComponent::class, 'compiler'))->setValue(null, null);
 });
 
 describe('every component', function () {
     it('renders every value of every option', function (string $file) {
-        $name = basename($file, '.blade.php');
+        $relative = str_replace('\\', '/', substr($file, strlen(dirname(__DIR__, 2).'/resources/kit/')));
+        $name = str_replace('/', '.', preg_replace('#(?:/index)?\.blade\.php$#', '', $relative));
         $component = Playground::make()->components()['kit::'.$name] ?? null;
 
         expect($component)->not->toBeNull();
